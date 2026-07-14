@@ -1,0 +1,91 @@
+Phase 0 - Foundation Freeze
+├── Slice 0.1 Project charter and scope guardrails
+├── Slice 0.2 Project skeleton and test harness
+├── Slice 0.3 Core semantic freeze
+├── Slice 0.4 Core contract shape spec
+├── Slice 0.5 Immutable contract skeletons
+├── Slice 0.6 Canonical serialization + deterministic IDs + invariant scaffolding
+├── Slice 0.7 Audit contracts + replay manifest foundation
+├── Slice 0.8 Golden replay fixtures and baseline replay packs
+└── Slice 0.9 Deterministic config contracts and version locking
+
+Phase 1 - Input Canonicalization
+├── Slice 1.0 Raw candle ingestion contracts
+├── Slice 1.1 Candle normalization and ordering semantics
+├── Slice 1.2 Dataset identity, hashing, and import manifests
+├── Slice 1.3 Session/calendar abstractions
+├── Slice 1.4 Multi-venue symbol/market identity contracts
+└── Slice 1.5 Input diagnostics and gap classification
+
+Phase 2 - Structure Primitives
+├── Slice 2.0 Swing point contracts and fixture semantics
+├── Slice 2.1 Deterministic swing detection engine
+├── Slice 2.2 Structural range contracts
+├── Slice 2.3 BOS detection
+├── Slice 2.4 CHOCH detection
+├── Slice 2.5 Same-bar conflict resolution policy
+└── Slice 2.6 Structure explanation and audit enrichment
+
+Phase 3 - Context Mapping
+├── Slice 3.0 Liquidity pool/level contracts
+├── Slice 3.1 Liquidity sweep detection
+├── Slice 3.2 Imbalance/FVG contracts
+├── Slice 3.3 FVG detection
+├── Slice 3.4 Displacement contracts and detection
+├── Slice 3.5 Dealing range / premium-discount contracts
+└── Slice 3.6 Context confluence aggregation
+
+Phase 4 - Setup Qualification
+├── Slice 4.0 Setup candidate contracts
+├── Slice 4.1 Setup rule profile contracts
+├── Slice 4.2 Setup precondition evaluation
+├── Slice 4.3 Setup qualification scoring semantics
+├── Slice 4.4 Setup rejection taxonomy
+└── Slice 4.5 Setup audit projections
+
+Phase 5 - Decision Synthesis
+├── Slice 5.0 Decision candidate contracts
+├── Slice 5.1 Deterministic decision synthesis
+├── Slice 5.2 Decision explainability payloads
+├── Slice 5.3 Decision replay packs
+└── Slice 5.4 Decision gating and policy freeze
+
+Phase 6 - Alert Layer
+├── Slice 6.0 Alert candidate contracts
+├── Slice 6.1 Alert rendering-neutral payloads
+├── Slice 6.2 Alert deduplication and identity semantics
+├── Slice 6.3 Alert emission manifests
+└── Slice 6.4 Replay-safe alert projections
+
+Phase 7 - Reporting and Diagnostics
+├── Slice 7.0 Projection layer contracts
+├── Slice 7.1 English internal projections
+├── Slice 7.2 Persian reporting layer
+├── Slice 7.3 Reason-code catalogs and glossary bindings
+├── Slice 7.4 Batch report builder
+└── Slice 7.5 Explainability drill-down views
+
+Phase 8 - Replay Runtime and Tooling
+├── Slice 8.0 Replay runner contracts
+├── Slice 8.1 Batch replay CLI
+├── Slice 8.2 Replay comparison/diff tooling
+├── Slice 8.3 Golden baseline approval workflow
+├── Slice 8.4 Diagnostic export bundles
+└── Slice 8.5 Performance determinism harness
+
+Phase 9 - Adapters and Outer-Layer Integration
+├── Slice 9.0 Generic importer adapter interface
+├── Slice 9.1 CSV/Parquet batch import adapter
+├── Slice 9.2 Solana market data adapter
+├── Slice 9.3 Base market data adapter
+├── Slice 9.4 Robinhood provisional adapter research freeze
+├── Slice 9.5 Robinhood provisional import adapter
+└── Slice 9.6 Outer-layer orchestration service
+
+Phase 10 - Hardening and Production Readiness
+├── Slice 10.0 Determinism audit suite
+├── Slice 10.1 Cross-platform parity suite (Windows/Linux)
+├── Slice 10.2 Config migration/version compatibility
+├── Slice 10.3 Observability outside core
+├── Slice 10.4 Packaging/release pipeline
+└── Slice 10.5 Production operating handbook

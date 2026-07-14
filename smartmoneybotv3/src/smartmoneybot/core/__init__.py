@@ -1,0 +1,1 @@
+"""Deterministic market-structure core."""

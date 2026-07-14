@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smartmoneybotv3"
+version = "0.1.0"
+description = "Deterministic, explainable, replayable market-structure and discovery platform with Persian-first reporting."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "smartmoneybotv3" }
+]
+license = { text = "Proprietary" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config"
+]

@@ -1,0 +1,15 @@
+pyproject.toml
+src/smartmoneybot/__init__.py
+src/smartmoneybot/adapters/__init__.py
+src/smartmoneybot/ai/__init__.py
+src/smartmoneybot/core/__init__.py
+src/smartmoneybot/discovery/__init__.py
+src/smartmoneybot/governance/__init__.py
+src/smartmoneybot/reporting/__init__.py
+src/smartmoneybotv3.egg-info/PKG-INFO
+src/smartmoneybotv3.egg-info/SOURCES.txt
+src/smartmoneybotv3.egg-info/dependency_links.txt
+src/smartmoneybotv3.egg-info/requires.txt
+src/smartmoneybotv3.egg-info/top_level.txt
+tests/test_project_structure.py
+tests/test_smoke_import.py
