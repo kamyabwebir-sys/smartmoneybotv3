@@ -1,6 +1,6 @@
 # Slice 0.8 Freeze Pack - Golden Replay Fixtures and Baseline Replay Packs
 
-Status: Ready for approval
+Status: Approved for implementation
 
 Prerequisite:
 - Slice 0.7 frozen and green
