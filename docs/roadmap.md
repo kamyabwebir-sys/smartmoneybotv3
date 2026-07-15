@@ -265,8 +265,8 @@ These areas remain intentionally unfrozen until later slices lock them.
 Implementation should continue with freeze-pack-first discipline.
 
 The recommended next step is:
-- finalize and accept Freeze Pack for Slice 0.8
-- implement Slice 0.8 fixtures only after freeze acceptance
+- Slice 0.8 (Golden Replay Fixtures): Freeze Pack approved; verdict APPROVE; implementation permission YES; implementation may now begin under the approved freeze pack.
+- Slice 0.8: Golden Replay Fixtures - approved for implementation.
 - then move into structure-oriented slices
 
 This ordering preserves regression confidence before market logic complexity increases.
