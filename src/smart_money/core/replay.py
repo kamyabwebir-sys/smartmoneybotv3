@@ -141,3 +141,89 @@ def make_replay_manifest(
         subject_ids=subject_ids,
         notes=notes,
     )
+
+
+# ---------------------------------------------------------------------------
+# Slice 0.8 - Golden Replay Fixtures / Baseline Replay Pack (appended)
+# ---------------------------------------------------------------------------
+from dataclasses import dataclass as _s08_dataclass
+from datetime import datetime as _s08_datetime
+from typing import Iterable as _S08Iterable, Union as _S08Union
+
+from smart_money.core.ids import deterministic_id as _s08_deterministic_id
+from smart_money.core.serialization import canonical_json as _s08_canonical_json
+from smart_money.core.time import ensure_utc_datetime as _s08_ensure_utc_datetime
+
+
+@_s08_dataclass(frozen=True, slots=True)
+class GoldenReplayFixture:
+    fixture_id: str
+    replay_manifest_id: str
+    timestamp: _s08_datetime
+    data_hash: str
+    metadata_json: str
+
+
+@_s08_dataclass(frozen=True, slots=True)
+class BaselineReplayPack:
+    pack_id: str
+    pipeline_version: str
+    config_hash: str
+    fixtures: tuple[str, ...]
+    creation_timestamp: _s08_datetime
+
+
+def create_golden_replay_fixture(
+    replay_manifest_id: str,
+    timestamp: _s08_datetime,
+    data_hash: str,
+    metadata: dict,
+) -> GoldenReplayFixture:
+    utc_ts = _s08_ensure_utc_datetime(timestamp)
+    meta_json = _s08_canonical_json(metadata)
+    fid = _s08_deterministic_id(
+        "golden_replay_fixture",
+        {
+            "replay_manifest_id": replay_manifest_id,
+            "timestamp": utc_ts.isoformat(),
+            "data_hash": data_hash,
+            "metadata_json": meta_json,
+        },
+    )
+    return GoldenReplayFixture(
+        fixture_id=fid,
+        replay_manifest_id=replay_manifest_id,
+        timestamp=utc_ts,
+        data_hash=data_hash,
+        metadata_json=meta_json,
+    )
+
+
+def create_baseline_replay_pack(
+    pipeline_version: str,
+    config_hash: str,
+    fixtures: "_S08Iterable[_S08Union[GoldenReplayFixture, str]]",
+    creation_timestamp: _s08_datetime,
+) -> BaselineReplayPack:
+    ids = [
+        f.fixture_id if isinstance(f, GoldenReplayFixture) else f
+        for f in fixtures
+    ]
+    if len(set(ids)) != len(ids):
+        raise ValueError("duplicate fixture_id values are not allowed")
+    sorted_ids = tuple(sorted(ids))
+    pid = _s08_deterministic_id(
+        "baseline_replay_pack",
+        {
+            "pipeline_version": pipeline_version,
+            "config_hash": config_hash,
+            "fixtures": list(sorted_ids),
+        },
+    )
+    return BaselineReplayPack(
+        pack_id=pid,
+        pipeline_version=pipeline_version,
+        config_hash=config_hash,
+        fixtures=sorted_ids,
+        creation_timestamp=_s08_ensure_utc_datetime(creation_timestamp),
+    )
