@@ -1,355 +1,157 @@
-# Freeze Pack — Slice 0.8
-## Golden Replay Fixtures and Baseline Replay Packs
+# Slice 0.8 Freeze Pack - Golden Replay Fixtures and Baseline Replay Packs
 
-Status: Proposed for freeze  
-Phase: Foundation  
-Slice: 0.8  
-Prerequisite: Slice 0.7 frozen and green
+Status: Ready for approval
 
----
+Prerequisite:
+- Slice 0.7 frozen and green
 
 ## Purpose
 
-Slice 0.8 freezes the golden replay fixture and baseline replay pack layer for the deterministic core.
+Slice 0.8 defines the governance boundary for golden replay fixtures and baseline replay packs.
 
-This slice does not add market logic.
-It does not add structure logic.
-It does not add setup logic.
-It does not add decision policy logic.
-It does not add adapters or alerts.
+Its purpose is to prepare stable, representative, deterministic replay examples and pack-level grouping semantics so future slices can validate behavior against explicit expectations.
 
-Its sole purpose is to create stable, representative, canonical replay examples and baseline pack semantics so future slices can be validated against frozen deterministic expectations.
+This freeze pack is documentation-first. It does not approve implementation behavior, replay execution, fixture validation, persistence, storage formats, adapters, CLI commands, market logic, execution logic, risk logic, or ML decisioning.
 
----
+## Scope Lock
 
-## Why this slice exists
+Slice 0.8 is limited to documenting the intended contract boundary for:
 
-Slice 0.7 froze the audit/replay contracts.
-That locked the semantic boundary, but not yet the regression corpus or baseline replay pack semantics.
+- `GoldenReplayFixture`
+- `BaselineReplayPack`
+- deterministic replay fixture expectations
+- baseline replay pack expectations
+- high-level invariants required for future deterministic replay validation
 
-Before higher-level engines are introduced, the repository needs:
-- frozen replay examples
-- stable canonical payload samples
-- fixed expected deterministic IDs
-- stable UTC normalization examples
-- stable canonical metadata examples
-- stable baseline replay pack identity rules
+This slice may describe expected governance semantics, but it must not finalize unresolved contract details that still require approval.
 
-Without these fixtures and baseline packs, downstream slices may accidentally preserve type shape while drifting in semantic behavior.
+## Contract Lock
 
-Slice 0.8 exists to prevent that drift.
-
----
-
-## Slice objective
-
-Create a frozen catalog of golden replay fixtures and baseline replay pack rules that proves:
-
-1. semantically identical normalized payloads produce the same IDs
-2. meaningful payload changes produce different IDs
-3. canonical serialization remains stable
-4. UTC normalization behavior remains stable
-5. metadata canonicalization expectations remain stable
-6. tuple normalization expectations remain stable
-7. baseline replay pack identity remains deterministic
-
----
-
-## Scope
-
-### In scope
-- `GoldenReplayFixture` contract semantics
-- `BaselineReplayPack` contract semantics
-- fixture definitions for `EvidenceRef`
-- fixture definitions for `RejectReason`
-- fixture definitions for `RuleHit`
-- fixture definitions for `DecisionTrace`
-- fixture definitions for `ReplayManifest`
-- golden expected IDs for representative valid cases
-- stable canonical serialization snapshots or equivalent assertions
-- UTC normalization fixture cases
-- metadata canonical JSON fixture cases
-- fixture naming and organization conventions
-- baseline pack naming and identity conventions
-- deterministic regression expectations
-
-### Out of scope
-- actual generation of replay market data
-- execution of replays
-- validation of replay data against market-derived golden outputs
-- new business logic
-- new structure taxonomy
-- setup logic
-- decision policy logic
-- alert logic
-- adapter logic
-- execution logic
-- reporting/UI work
-- venue integration
-- performance optimization work
-- persistence layer for fixtures or packs
-- CLI commands for fixture or pack management
-- fixture generators that use randomness or clock time
-
----
-
-## Frozen contract expectations
+The following contract concepts are in scope at a documentation level only.
 
 ### GoldenReplayFixture
 
-`GoldenReplayFixture` represents a deterministic fixture bound to a replay manifest.
+`GoldenReplayFixture` represents a canonical golden example for replay comparison.
 
-Expected semantic fields:
-- `fixture_id`: deterministic ID for the fixture
-- `replay_manifest_id`: reference to the `ReplayManifest` this fixture is based on
-- `timestamp`: UTC datetime of fixture creation or fixture definition
-- `data_hash`: hash of the serialized replay data or fixture payload
-- `metadata_json`: canonical JSON string for additional metadata
+At this stage, the contract may describe the fixture concept, its traceability to replay inputs or manifests, and its role in deterministic regression expectations.
+
+The exact field list, field types, ID construction, payload shape, serialization rules, and storage representation remain subject to approval.
 
 ### BaselineReplayPack
 
-`BaselineReplayPack` aggregates multiple golden replay fixtures for a pipeline version and configuration.
+`BaselineReplayPack` represents a named grouping of golden replay fixtures for a pipeline version, configuration, or deterministic replay baseline.
 
-Expected semantic fields:
-- `pack_id`: deterministic ID for the pack
-- `pipeline_version`: version of the trading pipeline
-- `config_hash`: hash of the configuration used
-- `fixtures`: tuple of `GoldenReplayFixture` IDs
-- `creation_timestamp`: UTC datetime of pack creation or pack definition
+At this stage, the contract may describe pack-level grouping semantics and traceability requirements.
 
----
+The exact shape of the `fixtures` member is not frozen. It may become a list of fixture IDs, embedded fixture payloads, references, or another approved canonical representation.
 
-## Frozen design rules
+## Invariants
 
-### Fixture policy
-1. Fixtures must be human-readable.
-2. Fixtures must be minimal but representative.
-3. Fixtures must prefer semantic clarity over volume.
-4. Every fixture must exist for a deterministic reason.
-5. Every golden expectation must be traceable to a frozen contract rule.
+The following invariants are intended for approval:
 
-### Baseline pack policy
-1. Baseline packs must use deterministic fixture ordering.
-2. Baseline packs must identify the pipeline version explicitly.
-3. Baseline packs must identify the configuration hash explicitly.
-4. Pack IDs must be content-derived from frozen pack semantics.
-5. Semantically identical normalized pack payloads must map to one expected deterministic outcome.
+1. Golden replay fixtures must be deterministic.
+2. Golden replay fixtures must be replayable in principle by future slices.
+3. Fixture expectations must be traceable to explicit contract semantics.
+4. Baseline replay packs must group fixtures in a deterministic and reviewable way.
+5. Canonical serialization compatibility must be preserved.
+6. IDs and hashes, once approved, must be content-derived or otherwise deterministic.
+7. Ordering-sensitive collections must define stable ordering before implementation.
+8. Time-related fields, if approved, must have explicit timezone and normalization semantics.
+9. Valid fixture examples must avoid non-deterministic values.
+10. Documentation must not imply execution, persistence, validation, or adapter behavior.
 
-### Determinism policy
-1. No fixture may depend on wall-clock time.
-2. No fixture may depend on randomness.
-3. No fixture may depend on environment-specific ordering.
-4. All expected IDs must be content-derived from frozen contract semantics.
-5. Equivalent normalized inputs must map to one expected deterministic outcome.
+## Acceptance Criteria
 
-### Serialization policy
-1. Golden fixtures must validate canonical serialization compatibility.
-2. Baseline packs must validate canonical serialization compatibility.
-3. Embedded metadata examples must use canonical JSON text.
-4. Serialization expectations must be stable across repeated runs.
-5. Fixtures must not rely on pretty-print formatting differences.
+Slice 0.8 is acceptable for approval when:
 
-### Datetime policy
-1. Replay manifest fixture datetimes must be timezone-aware when present.
-2. Fixture and pack timestamps must normalize to UTC.
-3. UTC normalization cases must be explicit.
-4. Naive datetime rejection belongs in tests, not in valid golden fixture examples.
-5. Range ordering expectations must be represented where relevant.
+1. The freeze pack clearly states `Ready for approval`, not `Frozen`.
+2. The scope is limited to documentation-level contract preparation.
+3. `GoldenReplayFixture` and `BaselineReplayPack` are described without over-specifying unresolved implementation details.
+4. High-level deterministic replay invariants are documented.
+5. All unresolved contract questions are explicitly listed.
+6. The roadmap links to this canonical freeze pack instead of duplicating its full content.
+7. The slice avoids implementation behavior, validation behavior, persistence behavior, adapter behavior, CLI behavior, market logic, execution logic, risk logic, and ML decisioning.
+8. `git diff --check` and `git diff --cached --check` pass.
+9. Existing tests remain green.
 
-### Numeric policy
-1. Score-bearing fixtures must use `Decimal`, not `float`.
-2. Invalid float examples may exist in negative tests, but not as valid golden fixtures.
-3. Numeric examples must be finite and deterministic.
+## Explicit Prohibitions
 
----
+Slice 0.8 must not introduce or approve:
 
-## Planned fixture categories
+- replay execution
+- replay engine behavior
+- generation of replay data
+- validation of replay output against fixtures
+- persistence implementation
+- storage/file format implementation
+- CLI commands
+- adapters or external integrations
+- market logic
+- order execution
+- risk logic
+- ML decisioning
+- reporting/UI behavior
+- non-deterministic fixture behavior
+- exact hash or ID algorithms before approval
+- exact field types before approval
+- exact `fixtures` payload shape before approval
 
-### Category A — Minimal valid evidence fixtures
-Representative cases:
-- bare minimal `EvidenceRef`
-- `EvidenceRef` with label
-- `EvidenceRef` with canonical `metadata_json`
+## Non-goals
 
-Purpose:
-Lock the smallest valid evidence shapes and metadata expectations.
+The following are explicitly out of scope:
 
-### Category B — Rule and rejection fixtures
-Representative cases:
-- `RejectReason` without evidence
-- `RejectReason` with multiple evidence refs
-- `RuleHit` without score
-- `RuleHit` with Decimal score
-- normalized evidence ordering examples where relevant
+- Implementing `GoldenReplayFixture`
+- Implementing `BaselineReplayPack`
+- Adding runtime replay comparison
+- Adding fixture loaders
+- Adding fixture writers
+- Adding storage directories or repository layout rules
+- Adding JSON/YAML/file schemas
+- Adding pack discovery
+- Adding replay execution pipelines
+- Adding CLI operations
+- Adding adapter integrations
+- Adding market data ingestion
+- Adding risk or execution behavior
+- Adding ML-based decisions
 
-Purpose:
-Lock deterministic identity behavior around rule/reject collections.
+## Open Contract Questions
 
-### Category C — Decision trace fixtures
-Representative cases:
-- empty `hits` and `rejects`
-- populated `hits`
-- populated `rejects`
-- populated `context_refs`
-- semantically identical payloads producing equal `trace_id`
-- relevant payload change producing different `trace_id`
+The following questions must remain open until reviewed and approved:
 
-Purpose:
-Freeze `DecisionTrace` identity semantics and collection normalization expectations.
+1. What is the exact field set for `GoldenReplayFixture`?
+2. What is the exact field set for `BaselineReplayPack`?
+3. What are the exact Python field types for each approved field?
+4. Which fields participate in canonical serialization?
+5. Which fields participate in deterministic ID generation?
+6. What hash or ID algorithm is approved for fixture IDs?
+7. What hash or ID algorithm is approved for pack IDs?
+8. What ordering rules apply to fixtures inside a baseline pack?
+9. Should `fixtures` contain full embedded fixture payloads, fixture IDs, references, or another approved shape?
+10. What is the exact meaning of `creation_timestamp` if it is approved?
+11. Are timestamps allowed in golden replay contracts, and if so, which timestamps are semantic versus metadata-only?
+12. What file or storage format, if any, is approved for fixture materialization?
+13. Are baseline packs stored as standalone canonical documents or derived from fixture catalogs?
+14. What is the minimum valid fixture example?
+15. What negative fixture examples are required for future validation slices?
+16. Which existing Slice 0.7 contracts are referenced directly by Slice 0.8?
+17. How should replay manifest references be represented?
+18. Which fields are human-readable labels versus canonical identity material?
+19. What canonical ordering rules apply to nested collections?
+20. What is the approved distinction between documentation examples and executable golden fixtures?
 
-### Category D — Replay manifest fixtures
-Representative cases:
-- minimal manifest
-- manifest with symbol, venue, timeframe
-- manifest with UTC-aware range
-- manifest with timezone-aware non-UTC input that normalizes to UTC
-- subject ID collection normalization examples
-- changed dataset hash causing changed `manifest_id`
-- changed config hash causing changed `manifest_id`
+## Freeze Decision
 
-Purpose:
-Freeze replay identity semantics for input scope and configuration scope.
+Slice 0.8 is not frozen yet.
 
-### Category E — Baseline replay pack fixtures
-Representative cases:
-- minimal baseline pack
-- baseline pack with one fixture ID
-- baseline pack with multiple fixture IDs
-- equivalent normalized fixture ordering producing stable `pack_id`
-- changed pipeline version causing changed `pack_id`
-- changed config hash causing changed `pack_id`
-- changed fixture collection causing changed `pack_id`
+Decision:
+- Ready for approval
 
-Purpose:
-Freeze baseline replay pack identity semantics.
+Rationale:
+- The scope boundary is documented.
+- The intended contract concepts are identified.
+- Deterministic replay invariants are captured at a high level.
+- Unresolved contract questions are explicit.
+- No implementation behavior is approved by this freeze pack.
 
-### Category F — Canonical stability fixtures
-Representative cases:
-- repeated canonical serialization of same object
-- embedded metadata already canonical
-- equivalent normalized collection payloads
-- stable serialization snapshots or explicit assertion equivalents
-
-Purpose:
-Guard against drift in serialization and identity-sensitive normalization.
-
----
-
-## Proposed repository footprint
-
-The exact file layout may follow repository conventions, but this slice expects artifacts equivalent to:
-
-- replay fixture module(s)
-- baseline replay pack fixture definitions
-- golden expectation definitions
-- regression tests bound to frozen fixture and pack cases
-- short documentation describing fixture and baseline pack naming and acceptance rules
-
-This freeze does not require a final path refactor.
-It freezes semantics, not package relocation.
-
----
-
-## Acceptance criteria
-
-Slice 0.8 may be considered complete only when all items below are true:
-
-1. A representative golden fixture catalog exists for all Slice 0.7 contracts.
-2. Expected deterministic IDs are explicitly locked for chosen valid cases.
-3. Baseline replay pack identity semantics are explicitly locked.
-4. Canonical serialization stability is verified by regression tests.
-5. UTC normalization behavior is covered by replay fixture cases.
-6. Metadata canonical JSON expectations are covered by fixture cases.
-7. Fixture and baseline pack names and organization are documented.
-8. No higher-level market logic is introduced.
-9. Repository test suite remains green.
-
----
-
-## Explicit non-goals
-
-This slice must not:
-- define BOS semantics
-- define CHOCH semantics
-- define liquidity semantics
-- define FVG semantics
-- define setup semantics
-- define decision acceptance policy
-- define alert payload contracts
-- define Solana/Base/Robinhood adapters
-- define execution or routing behavior
-- define risk controls
-- define reporting projections
-- define UI behavior
-
----
-
-## Risks being controlled
-
-Slice 0.8 is specifically intended to reduce these risks:
-
-1. semantic regression behind unchanged types
-2. replay ID drift during later engine work
-3. baseline pack ID drift during later pipeline work
-4. accidental serialization drift
-5. datetime normalization regressions
-6. metadata canonicalization regressions
-7. unstable tests caused by over-broad or under-specified examples
-
----
-
-## Risks explicitly accepted
-
-1. Fixture coverage will still be selective, not exhaustive.
-2. Structure/setup/decision semantics remain undefined at this stage.
-3. Future business taxonomy may require additional fixture families in later slices.
-4. Repository file placement may evolve as long as frozen semantics remain unchanged.
-
----
-
-## Install/implementation boundary
-
-This freeze pack is documentation only.
-
-It does not authorize:
-- implementation of Slice 0.8 in this step
-- refactors outside fixture-related scope
-- package namespace migration
-- contract semantic changes introduced by fixture work
-
-Implementation may begin only after this freeze is accepted.
-
----
-
-## Recommended implementation shape after freeze acceptance
-
-When implementation is allowed, it should aim for:
-- small curated fixture set first
-- explicit golden IDs in tests
-- explicit baseline pack IDs in tests
-- no random or generated fixture content
-- readable fixture and pack naming
-- focused regression tests tied directly to frozen invariants
-
-The first implementation pass should stay narrow and avoid introducing any non-fixture abstractions unless clearly needed.
-
----
-
-## Relationship to prior slice
-
-Slice 0.7 froze the contract boundary.
-Slice 0.8 freezes the regression corpus and baseline replay pack semantics built on top of that boundary.
-
-That ordering is intentional:
-- first freeze what the contracts mean
-- then freeze examples and packs that prove the meaning
-- only then allow higher-order engines to depend on them
-
----
-
-## Exit recommendation
-
-After Slice 0.8 is implemented and green, the project is in a stronger position to start the first structure-oriented freeze pack, because replay and audit regressions will have both:
-- semantic contract locks
-- golden example locks
-- baseline pack identity locks
+Approval may proceed only after the open contract questions are reviewed and either resolved or intentionally deferred with clear governance notes.
