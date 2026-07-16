@@ -1,142 +1,133 @@
-# Slice 1.0 Freeze Pack — Raw Candle Ingestion Contracts
+# Freeze Pack: Slice 1.0 - Raw Candle Ingestion Contracts
 
-## Status
+Status: BLOCKED
+Implementation Authority: NONE
+Approval Status: BLOCKED
 
-BLOCKED — Repository-grounded evidence required before implementation.
+## Review Preparation: Candidate Invariants and Open Questions
 
-This Freeze Pack is not approved for implementation.
+This section records candidate invariants and review questions for Slice 1.0.
+It does not approve source changes, test changes, package creation, module placement,
+class names, field names, serialization APIs, ID algorithms, validation behavior,
+or error-contract implementation.
 
-## Slice Label
+### Candidate Invariant Areas for Review
 
-Slice 1.0 — Raw Candle Ingestion Contracts
+The approval review must evaluate whether Slice 1.0 requires invariants in these areas:
 
-This is a provisional planning and review label only. It does not freeze or
-approve a package name, module name, class name, contract name, contract shape,
-or implementation boundary.
+- raw candle identity and deterministic replay compatibility
+- timestamp representation and ordering assumptions
+- OHLCV value representation and invalid-value handling
+- canonical serialization compatibility
+- source/provenance representation
+- validation and error-contract alignment
+- fixture strategy for valid and invalid raw candle examples
 
-## Current Authorization State
+These areas are evidence targets only. They are not approved contract decisions.
 
-No source code changes are authorized.
+### Required Evidence Before Approval
 
-No test changes are authorized.
+Approval review must collect and cite evidence for:
 
-No new package or directory is authorized.
+- roadmap sequencing for Slice 1.0 after the completed foundation slices
+- existing deterministic ID conventions
+- existing canonical serialization conventions
+- existing replay assumptions
+- existing domain error/event conventions
+- current test style for immutable and deterministic contracts
 
-No raw candle contract shape is authorized.
+Evidence collection alone is insufficient for approval.
 
-This document exists only to record that Slice 1.0 cannot proceed until live
-repository evidence is collected with file names and line numbers.
+### Candidate Review Questions
 
-## Decisions Safe to Freeze
+The approval review must answer the following before implementation can be authorized:
 
-The only safe decisions are process decisions:
+- Where, if anywhere, should raw candle contracts live?
+- What is the minimum contract shape required for raw candle ingestion?
+- Which fields are identity-bearing, if any?
+- Which timestamp unit and timezone assumptions are allowed?
+- Which numeric representation is deterministic enough for OHLCV values?
+- Which validation failures become domain errors?
+- Which examples are required as golden fixtures?
+- Which behavior belongs to Slice 1.0 versus Slice 1.1 normalization?
 
-1. Slice 1.0 must not be implemented while this file remains BLOCKED.
-2. No `src/smart_money/ingestion/` package is approved.
-3. No `tests/ingestion/` package is approved.
-4. No `RawCandle` model is approved.
-5. No serialization API is approved.
-6. No time representation is approved.
-7. No OHLCV representation is approved.
-8. No provenance fields are approved.
-9. No validation or error behavior is approved.
+### Explicit Non-Approval
 
-## Decisions Not Yet Grounded
+This section does not approve:
 
-The following decisions require live repository citations before they can be
-frozen:
+- `RawCandle` as a final class name
+- `candle_id` as a required field
+- any deterministic ID formula
+- any serialization method name
+- any ingestion package or module path
+- any error class or manifest shape
+- any fixture file layout
+- any source or test implementation
 
-- roadmap sequencing after the completed prior slices
-- input canonicalization phase scope
-- package or module location
-- test location
-- contract name and shape
-- field names
-- field types
-- OHLCV semantics
-- time semantics
-- serialization semantics
-- deterministic ID behavior
-- provenance semantics
-- validation and error behavior
-- testing acceptance criteria
+Final state remains BLOCKED until a separate approval review explicitly changes it.
 
-## Out of Scope
+## Review Preparation: Candidate Invariants and Open Questions
 
-This document does not authorize:
+Status: REVIEW PREPARATION ONLY
+Implementation Authority: NONE
+Approval Status: BLOCKED
 
-- source code implementation
-- test implementation
-- new package boundaries
-- module moves
-- package renames
-- broad refactoring
-- exchange adapters
-- network clients
-- database integration
-- trading execution
-- order placement
-- risk calculation
-- ML decisioning
-- analytics scoring
-- reporting or UI output
+This section records candidate invariants and review questions for Slice 1.0.
+It does not approve source changes, test changes, package creation, module placement,
+class names, field names, serialization APIs, ID algorithms, validation behavior,
+or error-contract implementation.
 
-## Required Evidence Before Approval Review
+### Candidate Invariant Areas for Review
 
-Before this Freeze Pack can be submitted for an explicit approval review, it
-must be updated with line-numbered citations from live repository files for:
+The approval review must evaluate whether Slice 1.0 requires invariants in these areas:
 
-1. roadmap or build-plan sequencing
-2. freeze-pack or contract-first governance
-3. architecture and package-boundary rules
-4. serialization conventions
-5. time and ID semantics
-6. validation and error conventions
-7. deterministic replay assumptions
-8. testing strategy
+- raw candle identity and deterministic replay compatibility
+- timestamp representation and ordering assumptions
+- OHLCV value representation and invalid-value handling
+- canonical serialization compatibility
+- source/provenance representation
+- validation and error-contract alignment
+- fixture strategy for valid and invalid raw candle examples
 
-Citation format:
+These areas are evidence targets only. They are not approved contract decisions.
 
-`path/to/file.md:line`
+### Required Evidence Before Approval
 
-## Approval Is Not Automatic
+Approval review must collect and cite evidence for:
 
-Evidence collection is necessary but not sufficient for implementation
-approval.
+- roadmap sequencing for Slice 1.0 after the completed foundation slices
+- existing deterministic ID conventions
+- existing canonical serialization conventions
+- existing replay assumptions
+- existing domain error/event conventions
+- current test style for immutable and deterministic contracts
 
-Adding citations does not automatically change this document from BLOCKED to
-DRAFT or APPROVED.
+Evidence collection alone is insufficient for approval.
 
-After evidence collection, a separate explicit review must verify:
+### Candidate Review Questions
 
-- that every normative decision is supported by live repository evidence
-- that unsupported decisions remain unresolved
-- that the proposed boundary is narrow and slice-specific
-- that no source code, tests, packages, dependencies, or future architecture
-  scaffolding were introduced
-- that the document contains an explicit approval decision
+The approval review must answer the following before implementation can be authorized:
 
-Until that separate review records an explicit approval, this Freeze Pack
-remains BLOCKED and grants no implementation authority.
+- Where, if anywhere, should raw candle contracts live?
+- What is the minimum contract shape required for raw candle ingestion?
+- Which fields are identity-bearing, if any?
+- Which timestamp unit and timezone assumptions are allowed?
+- Which numeric representation is deterministic enough for OHLCV values?
+- Which validation failures become domain errors?
+- Which examples are required as golden fixtures?
+- Which behavior belongs to Slice 1.0 versus Slice 1.1 normalization?
 
-## Review Requirement
+### Explicit Non-Approval
 
-A valid review packet must include:
+This section does not approve:
 
-- this file
-- line-numbered excerpts from every cited live repository file
-- `git status --short`
-- `git diff --no-index -- NUL docs/freeze_packs/slice_1_0_freeze_pack.md`
-  while the file is untracked, or the equivalent tracked-file diff after it is
-  added to git
-- confirmation that no files under `src/` changed
-- confirmation that no files under `tests/` changed
-- confirmation that no source code, tests, packages, dependencies, or future
-  architecture scaffolding were introduced
+- `RawCandle` as a final class name
+- `candle_id` as a required field
+- any deterministic ID formula
+- any serialization method name
+- any ingestion package or module path
+- any error class or manifest shape
+- any fixture file layout
+- any source or test implementation
 
-## Final State
-
-Not approved for implementation.
-
-The only authorized next action is live repository evidence collection followed
-by a separate explicit approval review.
+Final state remains BLOCKED until a separate approval review explicitly changes it.
