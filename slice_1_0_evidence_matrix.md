@@ -1,3 +1,8 @@
+# Slice 1.0 Evidence Matrix
+
+Slice Status: BLOCKED
+Implementation Authority: NONE
+Approval Status: NOT APPROVED
 # Slice 1.0 Evidence Matrix - Raw Candle Ingestion
 
 Status: BLOCKED
@@ -24,3 +29,6 @@ Implementation Authority: NONE
 | EM-017 | New contracts must be canonically serializable to JSON. | Contract definitions, serialization tests. | MISSING | Need to confirm canonical JSON serialization. | Blocks new contract approval. |
 | EM-018 | Backward compatibility with Slice 0.11 event/error contracts must be preserved. | Slice 0.11 source/tests/docs; current `events.py`, `errors.py`, `test_domain_events.py`, and `test_domain_errors.py`; Slice 1.0 freeze-pack non-approval boundaries. | COMPLETED | None for review preparation. Slice 0.11 defines immutable deterministic `DomainEventEnvelope` and `DomainError` contracts and acceptance criteria for their test suites. Current source and tests preserve that baseline through frozen dataclasses, defensive `MappingProxyType` copies, validation, immutability checks, and deterministic `to_dict()` output. Slice 1.0 does not approve changes to source/test/package/module/class/field/serialization/API/validation/error-contract implementation, explicitly does not approve changes to any error class or manifest shape, depends on existing domain error/event conventions, and keeps validation/error-contract alignment as an invariant review area. | Future Slice 1.0 implementation evidence must continue to demonstrate use of the existing Slice 0.11-compatible conventions without redefining them. |
 | EM-019 | Forward compatibility strategy with future slices must be defined. | Forward compatibility strategy document. | MISSING | Need a defined strategy for forward compatibility. | Blocks design approval. |
+
+
+
