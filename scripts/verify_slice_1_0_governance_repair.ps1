@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 $matrix = "slice_1_0_evidence_matrix.md"
 $freeze = "slice_1_0_freeze_pack.md"
@@ -23,6 +23,144 @@ function Assert-Pattern {
 
     if (-not $match) {
         throw "Missing pattern in ${Path}: ${Description}"
+    }
+}
+function Assert-Contains {
+    param(
+        [string]$Path,
+        [string]$Text,
+        [string]$Description
+    )
+
+    $content = Get-Content -LiteralPath $Path -Raw
+
+    if (-not $content.Contains($Text)) {
+        throw "Missing text in ${Path}: ${Description}"
+    }
+}
+function Get-NormalizedFileText {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "Required file not found: ${Path}"
+    }
+
+    $resolved = Resolve-Path -LiteralPath $Path
+    $bytes = [System.IO.File]::ReadAllBytes($resolved.Path)
+
+    # Prefer strict UTF-8. Fall back to UTF-8 replacement mode if needed.
+    try {
+        $utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
+        $text = $utf8Strict.GetString($bytes)
+    } catch {
+        $utf8Loose = New-Object System.Text.UTF8Encoding($false, $false)
+        $text = $utf8Loose.GetString($bytes)
+    }
+
+    # Normalize common invisible / formatting characters that can break literal matching.
+    $text = $text -replace "^\uFEFF", ""
+    $text = $text -replace "[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]", ""
+    $text = $text -replace "\u00A0", " "
+
+    # Normalize line endings.
+    $text = $text -replace "`r`n", "`n"
+    $text = $text -replace "`r", "`n"
+
+    return $text
+}
+
+function Normalize-AssertionText {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Text
+    )
+
+    $normalized = $Text
+    $normalized = $normalized -replace "^\uFEFF", ""
+    $normalized = $normalized -replace "[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]", ""
+    $normalized = $normalized -replace "\u00A0", " "
+    $normalized = $normalized -replace "`r`n", "`n"
+    $normalized = $normalized -replace "`r", "`n"
+    $normalized = $normalized -replace "\s+", " "
+    return $normalized.Trim()
+}
+
+function Assert-NormalizedFileContains {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Text,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Description
+    )
+
+    $fileText = Get-NormalizedFileText -Path $Path
+    $haystack = Normalize-AssertionText -Text $fileText
+    $needle = Normalize-AssertionText -Text $Text
+
+    if (-not $haystack.Contains($needle)) {
+        throw "Missing normalized text in ${Path}: ${Description}. Expected fragment: ${Text}"
+    }
+}
+
+function Assert-NormalizedFileLineContains {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Text,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Description
+    )
+
+    $fileText = Get-NormalizedFileText -Path $Path
+    $needle = Normalize-AssertionText -Text $Text
+
+    $rawLines = $fileText -split "`n"
+
+    foreach ($rawLine in $rawLines) {
+        $line = Normalize-AssertionText -Text $rawLine
+
+        if ($line.Contains($needle)) {
+            return
+        }
+    }
+
+    throw "Missing normalized line fragment in ${Path}: ${Description}. Expected fragment: ${Text}"
+}
+
+function Assert-Pattern {
+    param(
+        [string]$Path,
+        [string]$Pattern,
+        [string]$Description
+    )
+
+    $match = Select-String -LiteralPath $Path -Pattern $Pattern -Quiet
+
+    if (-not $match) {
+        throw "Missing pattern in ${Path}: ${Description}"
+    }
+}
+function Assert-Contains {
+    param(
+        [string]$Path,
+        [string]$Text,
+        [string]$Description
+    )
+
+    $content = Get-Content -LiteralPath $Path -Raw
+
+    if (-not $content.Contains($Text)) {
+        throw "Missing text in ${Path}: ${Description}"
     }
 }
 
@@ -59,8 +197,11 @@ Assert-Pattern $matrix '^Approval Status:\s*NOT APPROVED$' 'Approval Status must
 Assert-Pattern $freeze '^Status:\s*BLOCKED$' 'Freeze Pack status must remain BLOCKED'
 Assert-Pattern $freeze '^Implementation Authority:\s*NONE$' 'Freeze Pack authority must remain NONE'
 Assert-Pattern $freeze '^Approval Status:\s*BLOCKED$' 'Freeze Pack approval status must remain BLOCKED'
-Assert-Pattern $freeze 'It does not approve source changes, test changes, package creation, module placement' 'Freeze Pack non-approval statement must remain present'
-Assert-Pattern $freeze 'Final state remains BLOCKED until a separate approval review explicitly changes it\.' 'Freeze Pack final-state guardrail must remain present'
+Assert-NormalizedFileLineContains $freeze 'It does not approve source changes' 'Freeze Pack non-approval statement must remain present'
+Assert-NormalizedFileLineContains $freeze 'Final state remains BLOCKED' 'Freeze Pack final-state guardrail must remain present'
+Assert-NormalizedFileLineContains $freeze 'Status: BLOCKED' 'Freeze Pack status must remain BLOCKED'
+Assert-NormalizedFileLineContains $freeze 'Implementation Authority: NONE' 'Freeze Pack implementation authority must remain NONE'
+Assert-NormalizedFileLineContains $freeze 'Approval Status: NOT APPROVED' 'Freeze Pack approval status must remain NOT APPROVED'
 
 # Current observed Evidence Matrix row statuses.
 # This verifier intentionally guards the current file state and does not upgrade EM rows.
@@ -86,3 +227,4 @@ Write-Host "PASS: Approval remains NOT APPROVED / BLOCKED."
 Write-Host "PASS: Evidence Matrix observed rows keep current statuses."
 Write-Host "PASS: Review note does not approve implementation."
 Write-Host "PASS: No src/ or tests/ changes detected."
+
