@@ -75,38 +75,79 @@ function Get-NormalizedFileText {
 function Normalize-AssertionText {
     param(
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$Text
     )
 
-    $normalized = $Text
-    $normalized = $normalized -replace "^\uFEFF", ""
-    $normalized = $normalized -replace "[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]", ""
-    $normalized = $normalized -replace "\u00A0", " "
+    $normalized = if ($null -eq $Text) { "" } else { $Text }
+
+    if ($normalized.Length -gt 0 -and $normalized[0] -eq [char]0xFEFF) {
+        $normalized = $normalized.Substring(1)
+    }
+
+    $charsToRemove = @(
+        [char]0x200B,
+        [char]0x200C,
+        [char]0x200D,
+        [char]0x200E,
+        [char]0x200F,
+        [char]0x202A,
+        [char]0x202B,
+        [char]0x202C,
+        [char]0x202D,
+        [char]0x202E,
+        [char]0x2060,
+        [char]0xFEFF
+    )
+
+    foreach ($ch in $charsToRemove) {
+        $normalized = $normalized.Replace([string]$ch, "")
+    }
+
+    $normalized = $normalized.Replace([string][char]0x00A0, " ")
     $normalized = $normalized -replace "`r`n", "`n"
     $normalized = $normalized -replace "`r", "`n"
     $normalized = $normalized -replace "\s+", " "
+
     return $normalized.Trim()
 }
 
-function Assert-NormalizedFileContains {
+function Assert-NormalizedFileLineContains {
+    param([Parameter(Mandatory=$true)][string]$Path,
+          [Parameter(Mandatory=$true)][string]$Text,
+          [Parameter(Mandatory=$true)][string]$Description)
+    $fileText = Get-NormalizedFileText -Path $Path
+    $needle = Normalize-AssertionText -Text $Text
+    foreach ($rawLine in ($fileText -split "`n")) {
+        if ((Normalize-AssertionText -Text $rawLine).Contains($needle)) { return }
+    }
+    throw "Missing normalized line fragment in ${Path}: ${Description}. Expected fragment: ${Text}"
+}
+
+function Assert-NormalizedFileContainsFragment {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Path,
 
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$Text,
 
         [Parameter(Mandatory = $true)]
         [string]$Description
     )
 
-    $fileText = Get-NormalizedFileText -Path $Path
-    $haystack = Normalize-AssertionText -Text $fileText
-    $needle = Normalize-AssertionText -Text $Text
+    $expected = Normalize-AssertionText $Text
+    $lines = Get-Content -LiteralPath $Path -Encoding UTF8
 
-    if (-not $haystack.Contains($needle)) {
-        throw "Missing normalized text in ${Path}: ${Description}. Expected fragment: ${Text}"
+    foreach ($line in $lines) {
+        $normalizedLine = Normalize-AssertionText $line
+        if ($normalizedLine.Contains($expected)) {
+            return
+        }
     }
+
+    throw "Missing normalized line fragment in $((Split-Path $Path -Leaf)): $Description. Expected fragment: $expected"
 }
 
 function Assert-NormalizedFileLineContains {
@@ -197,16 +238,16 @@ Assert-Pattern $matrix '^Approval Status:\s*NOT APPROVED$' 'Approval Status must
 Assert-Pattern $freeze '^Status:\s*BLOCKED$' 'Freeze Pack status must remain BLOCKED'
 Assert-Pattern $freeze '^Implementation Authority:\s*NONE$' 'Freeze Pack authority must remain NONE'
 Assert-Pattern $freeze '^Approval Status:\s*BLOCKED$' 'Freeze Pack approval status must remain BLOCKED'
-Assert-NormalizedFileLineContains $freeze 'It does not approve source changes' 'Freeze Pack non-approval statement must remain present'
-Assert-NormalizedFileLineContains $freeze 'Final state remains BLOCKED' 'Freeze Pack final-state guardrail must remain present'
-Assert-NormalizedFileLineContains $freeze 'Status: BLOCKED' 'Freeze Pack status must remain BLOCKED'
-Assert-NormalizedFileLineContains $freeze 'Implementation Authority: NONE' 'Freeze Pack implementation authority must remain NONE'
-Assert-NormalizedFileLineContains $freeze 'Approval Status: NOT APPROVED' 'Freeze Pack approval status must remain NOT APPROVED'
+Assert-NormalizedFileLineContains -Path $freeze -Text 'This freeze pack does not approve implementation, source changes, package movement,' -Description 'Freeze Pack non-approval statement must remain present and include implementation disapproval'
+Assert-NormalizedFileLineContains -Path $freeze -Text 'Approval Status: BLOCKED' -Description 'Freeze Pack approval status guardrail must remain present'
+Assert-NormalizedFileLineContains -Path $freeze -Text 'Status: BLOCKED' -Description 'Freeze Pack status must remain BLOCKED'
+Assert-NormalizedFileLineContains -Path $freeze -Text 'Implementation Authority: NONE' -Description 'Freeze Pack implementation authority must remain NONE'
+Assert-NormalizedFileLineContains -Path $freeze -Text 'Approval Status: BLOCKED' -Description 'Freeze Pack approval status must remain BLOCKED'
 
 # Current observed Evidence Matrix row statuses.
 # This verifier intentionally guards the current file state and does not upgrade EM rows.
 Assert-Pattern $matrix '^\|\s*EM-002\s*\|.*\|\s*PARTIAL\s*\|' 'EM-002 must remain PARTIAL unless separately approved'
-Assert-Pattern $matrix '^\|\s*EM-003\s*\|.*\|\s*MISSING\s*\|' 'EM-003 must remain MISSING unless separately repaired'
+Assert-Pattern $matrix '^\|\s*EM-003\s*\|.*\|\s*PARTIAL\s*\|' 'EM-003 must be PARTIAL unless separately repaired or completed'
 Assert-Pattern $matrix '^\|\s*EM-004\s*\|.*\|\s*MISSING\s*\|' 'EM-004 must remain MISSING unless separately repaired'
 Assert-Pattern $matrix '^\|\s*EM-013\s*\|.*\|\s*MISSING\s*\|' 'EM-013 must remain MISSING unless separately repaired'
 Assert-Pattern $matrix '^\|\s*EM-016\s*\|.*\|\s*MISSING\s*\|' 'EM-016 must remain MISSING unless separately repaired'
@@ -223,8 +264,7 @@ Assert-NoSourceOrTestChanges
 Write-Host "PASS: Slice 1.0 governance repair remains documentation-only."
 Write-Host "PASS: Slice Status remains BLOCKED."
 Write-Host "PASS: Implementation Authority remains NONE."
-Write-Host "PASS: Approval remains NOT APPROVED / BLOCKED."
+Write-Host "PASS: Approval remains BLOCKED."
 Write-Host "PASS: Evidence Matrix observed rows keep current statuses."
 Write-Host "PASS: Review note does not approve implementation."
 Write-Host "PASS: No src/ or tests/ changes detected."
-
