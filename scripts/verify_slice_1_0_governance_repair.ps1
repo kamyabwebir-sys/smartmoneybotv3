@@ -247,9 +247,9 @@ Assert-NormalizedFileLineContains -Path $freeze -Text 'Approval Status: BLOCKED'
 # Current observed Evidence Matrix row statuses.
 # This verifier intentionally guards the current file state and does not upgrade EM rows.
 Assert-Pattern $matrix '^\|\s*EM-002\s*\|.*\|\s*PARTIAL\s*\|' 'EM-002 must remain PARTIAL unless separately approved'
-Assert-Pattern $matrix '^\|\s*EM-003\s*\|.*\|\s*PARTIAL\s*\|' 'EM-003 must be PARTIAL unless separately repaired or completed'
-Assert-Pattern $matrix '^\|\s*EM-004\s*\|.*\|\s*MISSING\s*\|' 'EM-004 must remain MISSING unless separately repaired'
-Assert-Pattern $matrix '^\|\s*EM-013\s*\|.*\|\s*MISSING\s*\|' 'EM-013 must remain MISSING unless separately repaired'
+Assert-Pattern $matrix '^\|\s*EM-003\s*\|.*deterministic_assumptions_v1\.md.*replay\.py.*\|\s*SUFFICIENT_FOR_REVIEW\s*\|' 'EM-003 must cite deterministic/replay evidence and be SUFFICIENT_FOR_REVIEW after repair'
+Assert-Pattern $matrix '^\|\s*EM-004\s*\|.*errors\.py.*events\.py.*replay\.py.*core_contracts_principles\.md.*\|\s*SUFFICIENT_FOR_REVIEW\s*\|' 'EM-004 must cite immutable contract evidence and be SUFFICIENT_FOR_REVIEW after repair'
+Assert-Pattern $matrix '^\|\s*EM-013\s*\|.*architecture_boundaries\.md.*scope_guardrails\.md.*\|\s*SUFFICIENT_FOR_REVIEW\s*\|' 'EM-013 must cite boundary/guardrail evidence and be SUFFICIENT_FOR_REVIEW after repair'
 Assert-Pattern $matrix '^\|\s*EM-016\s*\|.*\|\s*MISSING\s*\|' 'EM-016 must remain MISSING unless separately repaired'
 
 # Review note must not approve implementation.
