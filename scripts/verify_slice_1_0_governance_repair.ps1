@@ -247,7 +247,7 @@ Assert-NormalizedFileLineContains -Path $freeze -Text 'Approval Status: BLOCKED'
 # Current observed Evidence Matrix row statuses.
 # This verifier intentionally guards the current file state and does not upgrade EM rows.
 Assert-Pattern $matrix '^\|\s*EM-002\s*\|.*\|\s*PARTIAL\s*\|' 'EM-002 must remain PARTIAL unless separately approved'
-Assert-NormalizedFileContainsFragment -Path $matrix -Text 'SUFFICIENT_FOR_REVIEW | Evidence is available and ready for formal review.' -Description 'EM-003 sufficient-for-review evidence note must remain present'
+Assert-Pattern $matrix '^\|\s*EM-003\s*\|.*\|\s*PARTIAL\s*\|' 'EM-003 must remain PARTIAL unless separately approved'
 Assert-Pattern $matrix '^\|\s*EM-004\s*\|.*\|\s*MISSING\s*\|' 'EM-004 must remain MISSING unless separately repaired'
 Assert-Pattern $matrix '^\|\s*EM-013\s*\|.*\|\s*MISSING\s*\|' 'EM-013 must remain MISSING unless separately repaired'
 Assert-Pattern $matrix '^\|\s*EM-016\s*\|.*\|\s*MISSING\s*\|' 'EM-016 must remain MISSING unless separately repaired'
