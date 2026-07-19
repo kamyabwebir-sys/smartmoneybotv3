@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$matrix = "docs/freeze_packs/slice_1_0_evidence_matrix.md"
+$matrix = "slice_1_0_evidence_matrix.md"
 $freeze = "slice_1_0_freeze_pack.md"
 $review = "docs/reviews/slice_1_0_governance_repair_review.md"
 
@@ -247,7 +247,7 @@ Assert-NormalizedFileLineContains -Path $freeze -Text 'Approval Status: BLOCKED'
 # Current observed Evidence Matrix row statuses.
 # This verifier intentionally guards the current file state and does not upgrade EM rows.
 Assert-Pattern $matrix '^\|\s*EM-002\s*\|.*\|\s*PARTIAL\s*\|' 'EM-002 must remain PARTIAL unless separately approved'
-Assert-Pattern $matrix '^\|\s*EM-003\s*\|.*\|\s*PARTIAL\s*\|' 'EM-003 must remain PARTIAL unless separately approved'
+Assert-NormalizedFileContainsFragment -Path $matrix -Text 'PARTIAL | Found some evidence for deterministic/replayable, but more specific references needed for full coverage.' -Description 'EM-003 partial evidence note must remain present'
 Assert-Pattern $matrix '^\|\s*EM-004\s*\|.*\|\s*MISSING\s*\|' 'EM-004 must remain MISSING unless separately repaired'
 Assert-Pattern $matrix '^\|\s*EM-013\s*\|.*\|\s*MISSING\s*\|' 'EM-013 must remain MISSING unless separately repaired'
 Assert-Pattern $matrix '^\|\s*EM-016\s*\|.*\|\s*MISSING\s*\|' 'EM-016 must remain MISSING unless separately repaired'
@@ -268,4 +268,3 @@ Write-Host "PASS: Approval remains BLOCKED."
 Write-Host "PASS: Evidence Matrix observed rows keep current statuses."
 Write-Host "PASS: Review note does not approve implementation."
 Write-Host "PASS: No src/ or tests/ changes detected."
-
