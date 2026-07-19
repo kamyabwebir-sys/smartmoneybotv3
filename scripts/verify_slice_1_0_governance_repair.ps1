@@ -268,3 +268,4 @@ Write-Host "PASS: Approval remains BLOCKED."
 Write-Host "PASS: Evidence Matrix observed rows keep current statuses."
 Write-Host "PASS: Review note does not approve implementation."
 Write-Host "PASS: No src/ or tests/ changes detected."
+
