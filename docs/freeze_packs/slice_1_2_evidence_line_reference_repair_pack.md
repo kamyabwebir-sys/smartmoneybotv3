@@ -1,180 +1,152 @@
-# Slice 1.2 — Evidence Line Reference Repair Freeze Pack
+# Freeze Pack: Slice 1.2 - Evidence Line Reference Repair
 
 Status: PROPOSED
-Change Authority: DOCUMENTATION-ONLY
 Implementation Authority: NONE
-Approval Status: PENDING REVIEW
+Approval Status: NOT APPROVED
+Scope Type: documentation-only / governance-only
 
-## 1. Purpose
+## Objective
 
-Slice 1.2 is a narrow governance-only repair slice.
+This Freeze Pack exists only to repair, normalize, and validate evidence line references for already-declared governance artifacts.
 
-Its sole purpose is to add precise, repository-grounded line references
-for EM-003 and EM-013 in the Slice 1.0 evidence matrix.
+This Slice does not authorize implementation.
 
-This slice does not authorize implementation work and does not unblock
-Slice 1.0.
+This Slice does not authorize source code changes.
 
-## 2. Authoritative Target
+This Slice does not authorize test changes.
 
-The only evidence-matrix target authorized for later repair under this
-pack is:
+This Slice does not authorize architectural migration, package movement, or repository restructuring.
 
+## Scope
+
+This Slice is limited to line-reference repair for the following evidence matrix rows only:
+
+- EM-003
+- EM-013
+
+The repair is documentation-only and must remain bounded to authoritative governance artifacts.
+
+Preferred authoritative sources for this Slice include:
+
+- `docs/freeze_packs/slice_1_0_freeze_pack.md`
 - `docs/freeze_packs/slice_1_0_evidence_matrix.md`
+- `docs/reviews/slice_1_0_governance_repair_review.md`
+- other existing governance documents only if cited precisely by file path and exact line reference
 
-The only matrix entries in scope are:
+If duplicate root-level copies exist, they must not be treated as authoritative when a `docs/freeze_packs/` version exists.
 
-- `EM-003`
-- `EM-013`
+## Governance Baseline
 
-## 3. In Scope
+The following governance posture remains unchanged and must not be weakened:
 
-The following changes are in scope:
+- Slice 1.0 remains BLOCKED.
+- Implementation Authority remains NONE.
+- Approval Status remains NOT APPROVED / BLOCKED.
+- Evidence collection alone is not approval.
+- No evidence matrix row grants implementation authority.
+- No source or test implementation is authorized by this Slice.
 
-1. Record exact line references for deterministic and replayable
-   repository constraints supporting EM-003.
-2. Record exact line references for the separation of Core from
-   Reporting/UI concerns supporting EM-013.
-3. Modify only the evidence-source, status, gap, or impact cells of
-   EM-003 and EM-013 when justified by reviewed evidence.
-4. Preserve the original meaning of both evidence requirements.
-5. Keep all changes documentation-only, narrow, reviewable, and
-   deterministic.
+## Non-Goals
 
-## 4. Candidate Evidence for EM-003
+This Slice does not:
 
-Candidate documentation evidence includes:
+- approve implementation
+- grant implementation authority
+- unblock Slice 1.0
+- modify `src/`
+- modify `tests/`
+- change contracts
+- change discovery behavior
+- change architecture
+- create future folder structure
+- perform package renames
+- perform module moves
+- perform broad refactors
+- upgrade evidence status by wording alone
 
-- `docs/core_contracts_principles.md:12-14`
-- `docs/deterministic_assumptions_v1.md:8-13`
-- `docs/testing_strategy.md:11-19`
-- `docs/core_contract_semantics_v1.md:17-27`
-- `docs/core_contract_semantics_v1.md:377-384`
-- `docs/roadmap.md:5`
-- `docs/roadmap.md:13-22`
-- `docs/architecture_boundaries.md:7-12`
+## EM-003 Constraint
 
-Candidate implementation or test evidence already referenced by the
-matrix may be retained only if its exact line reference is verified
-against the current repository revision.
+EM-003 is in scope only for line-reference repair.
 
-Candidate references are not automatically accepted evidence. Each
-reference must be reviewed against the exact claim made by EM-003.
+Line-reference repair for EM-003 means correcting, normalizing, or making explicit the exact file-path and line-reference grounding for already-intended governance evidence.
 
-## 5. Candidate Evidence for EM-013
+Line-reference repair for EM-003 does not, by itself:
 
-Candidate documentation evidence includes:
+- prove semantic completeness
+- grant approval
+- grant implementation authority
+- convert a partial evidence posture into an approved posture
 
-- `docs/architecture_boundaries.md:5-23`
-- `docs/deterministic_assumptions_v1.md:13-23`
-- `docs/roadmap.md:35`
-- `docs/roadmap.md:128`
-- `docs/roadmap.md:197-211`
-- `docs/slice_0_6_domain_contracts.md:24-30`
+If the authoritative evidence matrix continues to mark EM-003 as `PARTIAL`, that remains acceptable for Slice 1.2 closure, provided the required line-reference repair is completed.
 
-Repository inspection may be recorded as supplementary evidence only.
-The absence of reporting/UI search matches in source files must not be
-treated as proof beyond the exact inspected paths and patterns.
+EM-003 status must not be upgraded by implication, wording cleanup, or verifier success alone.
 
-Candidate references are not automatically accepted evidence. Each
-reference must be reviewed against the exact claim made by EM-013.
+## EM-013 Constraint
 
-## 6. Explicit Exclusions
+EM-013 is in scope only for line-reference repair.
 
-This slice must not:
+Line-reference repair for EM-013 means correcting, normalizing, or making explicit the exact file-path and line-reference grounding for already-intended governance evidence.
 
-- modify any file under `src/`;
-- modify any file under `tests/`;
-- add or change runtime behavior;
-- introduce domain contracts;
-- introduce reporting or UI fields into Core or Domain contracts;
-- rename packages or move modules;
-- create future target-architecture package trees;
-- perform a broad documentation refactor;
-- authorize execution or trading logic;
-- authorize risk calculation;
-- authorize opaque ML decisioning;
-- change Slice 1.0 implementation authority;
-- change Slice 1.0 from BLOCKED to unblocked;
-- claim implementation completion.
+Bounded inspection may be used only if needed to support the repair intent of EM-013.
 
-## 7. Status Discipline
+Any bounded inspection result must be treated conservatively.
 
-The following Slice 1.0 governance declarations remain unchanged:
+Keyword absence, limited file inspection, or bounded repository review must not be treated as proof of full absence of reporting/UI leakage.
 
-- `Status: BLOCKED`
-- `Implementation Authority: NONE`
-- `Approval Status: BLOCKED`
+Line-reference repair for EM-013 does not, by itself:
 
-A repaired evidence reference does not, by itself, grant implementation
-authority or approve Slice 1.0.
+- prove full non-leakage
+- grant approval
+- grant implementation authority
+- convert a partial or missing evidence posture into an approved posture
 
-## 8. Evidence Repair Rules
+If the authoritative evidence matrix continues to mark EM-013 as `PARTIAL` or `MISSING`, that remains acceptable for Slice 1.2 closure, provided the required line-reference repair is completed.
 
-For each repaired matrix entry:
+EM-013 status must not be upgraded by implication, wording cleanup, bounded keyword absence, or verifier success alone.
 
-1. The referenced file must exist in the current repository.
-2. The referenced line or line range must contain evidence relevant to
-   the exact matrix claim.
-3. References must use repository-relative paths.
-4. Status changes must be justified by the complete evidence set.
-5. `MISSING` must not become `VERIFIED` merely because one related
-   statement exists.
-6. `PARTIAL` must not become `VERIFIED` unless the full claim is
-   demonstrably covered.
-7. Unresolved gaps must remain explicit.
-8. Evidence must not rely on unstated architectural intent.
+## Completion Criteria
 
-## 9. Allowed Files
+Slice 1.2 may be considered governance-complete only if all of the following are true:
 
-The maximum allowed change set for this slice is:
+1. EM-003 evidence references are repaired, normalized, or made explicit with precise file-path and line-reference grounding, where intended.
+2. EM-013 evidence references are repaired, normalized, or made explicit with precise file-path and line-reference grounding, where intended.
+3. No source files under `src/` are changed.
+4. No test files under `tests/` are changed.
+5. No implementation authority is granted.
+6. No approval is granted.
+7. Slice 1.0 remains BLOCKED.
+8. The evidence matrix remains non-authorizing.
+9. No statement in this Slice implies implementation readiness.
 
-- `docs/freeze_packs/slice_1_2_evidence_line_reference_repair_pack.md`
-- `docs/freeze_packs/slice_1_0_evidence_matrix.md`
+## Verifier Interpretation Rule
 
-The freeze-pack file should be committed separately before any
-evidence-matrix repair unless governance review explicitly approves a
-single combined commit.
+A verifier PASS for Slice 1.2 means only that the intended documentation repair is internally consistent with the blocked governance posture.
 
-## 10. Exit Criteria
+A verifier PASS does not mean:
 
-Slice 1.2 may be considered complete only when:
+- implementation approved
+- implementation authorized
+- source changes allowed
+- test changes allowed
+- architecture changes allowed
+- evidence fully complete for all future purposes
 
-1. This freeze pack exists and has been reviewed.
-2. EM-003 contains exact and verified repository line references.
-3. EM-013 contains exact and verified repository line references.
-4. Any status changes are supported by the full referenced evidence.
-5. No files under `src/` or `tests/` have changed.
-6. Slice 1.0 remains BLOCKED.
-7. Slice 1.0 implementation authority remains NONE.
-8. The final Git diff contains only authorized documentation files.
-9. The working tree is clean after the approved commit or commits.
+## Exit Rule
 
-## 11. Review Commands
+Completion of Slice 1.2 closes only the governance task of evidence line-reference repair.
 
-Review must include:
-```powershell
-git status --short
-git diff --check
-git diff --name-only
-git diff -- docs/freeze_packs/slice_1_2_evidence_line_reference_repair_pack.md
-git diff -- docs/freeze_packs/slice_1_0_evidence_matrix.md
+Completion of Slice 1.2 does not approve implementation.
 
-Before committing the evidence-matrix repair, verify that no source or
-test files changed:
+Completion of Slice 1.2 does not unblock Slice 1.0.
 
-powershell
-$Forbidden = git diff --name-only |
-Where-Object { $_ -match '^(src|tests)/' }
+Completion of Slice 1.2 does not change the authoritative status of any matrix row unless the authoritative matrix is explicitly and validly updated.
 
-if ($Forbidden) {
-$Forbidden
-throw "Slice 1.2 violation: src/ or tests/ changes detected."
-}
+## Final Authority Statement
 
-## 12. Governance Result
+Implementation Authority: NONE
 
-This pack authorizes documentation review and evidence-line-reference
-repair only.
+## Final Status Statement
 
-It grants no implementation authority and does not unblock Slice 1.0.
+Slice 1.0 remains BLOCKED.
+Slice 1.2 remains documentation-only / governance-only.
+No implementation is authorized.
