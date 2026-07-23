@@ -20,42 +20,35 @@ This request does not approve implementation work, does not modify the evidence 
 
 The current governance state identifies a mismatch between the EM-003 status recorded in the Slice 1.0 Evidence Matrix and the expected status asserted by the Slice 1.0 governance repair verifier.
 
-Authoritative references currently indicate:
-
-- `docs/freeze_packs/slice_1_0_evidence_matrix.md`
-  - EM-003 status is recorded as `PARTIAL`.
-- `scripts/verify_slice_1_0_governance_repair.ps1`
-  - EM-003 verifier expectation is `MISSING`.
-- `docs/reviews/slice_1_0_governance_repair_review.md`
-  - Slice status remains `BLOCKED`.
-  - Implementation Authority remains `NONE`.
-  - A separate and explicit approval review is required before any implementation authority may be granted.
-- `docs/freeze_packs/slice_1_2_freeze_pack_replacement_audit_checklist.md`
-  - Status must not be upgraded by inference.
-  - Implementation authority must not be inferred from documentation repair.
-  - Decision Outcome and Sign-Off sections are required for formal governance decisions.
-
-## 3. Problem Statement
-
-EM-003 currently has an unresolved alignment issue:
+Known mismatch:
 ```text
 Evidence Matrix Status: PARTIAL
 Verifier Expected Status: MISSING
 
-This mismatch prevents deterministic governance closure because the authoritative documentation and executable verification expectation do not currently describe the same EM-003 state.
+This mismatch must not be resolved by inference.
 
-The mismatch must not be resolved by inference.
+A separate explicit approval review is required before any authoritative alignment, replacement, implementation authority, or status change may be recorded.
 
-A separate approval review is required to determine whether the authoritative alignment path should be:
+## 3. Problem Statement
 
-1. Update the Evidence Matrix to match the verifier expectation.
-2. Update the verifier expectation to match the Evidence Matrix.
-3. Keep both unchanged and document the mismatch as intentionally blocked.
-4. Require additional governance artifacts before either side may be changed.
+EM-003 currently has an unresolved alignment issue between documented governance status and verifier expectation.
+
+This request does not decide which artifact is correct.
+
+This request only asks for a separate review to determine the authorized alignment path.
+
+Possible review outcomes may include:
+
+1. Evidence Matrix alignment.
+2. Verifier expectation alignment.
+3. Explicit fail-closed outcome.
+4. Deferral pending additional governance artifact.
+
+No outcome is approved by this request.
 
 ## 4. Authoritative Input Set
 
-The requested review should consider only the following authoritative inputs:
+The requested review should consider only the following governance inputs:
 
 text
 docs/freeze_packs/slice_1_0_evidence_matrix.md
@@ -69,14 +62,14 @@ No source code, tests, execution logic, trading logic, risk logic, reporting log
 
 ### RQ-001: EM-003 Status Authority
 
-Which artifact is authoritative for the current EM-003 governance status?
+Which artifact, if any, should be treated as authoritative for the current EM-003 governance status?
 
 Options:
 
 text
-A. Evidence Matrix status `PARTIAL`
-B. Verifier expectation `MISSING`
-C. Neither; the mismatch remains blocked pending a replacement authority decision
+A. Evidence Matrix status PARTIAL
+B. Verifier expectation MISSING
+C. Neither; mismatch remains blocked pending explicit replacement authority
 
 ### RQ-002: Alignment Direction
 
@@ -87,12 +80,12 @@ Options:
 text
 A. Matrix should be changed from PARTIAL to MISSING
 B. Verifier should be changed from MISSING to PARTIAL
-C. No alignment change is approved in this review
+C. No alignment change is approved
 D. Additional governance artifact is required before alignment
 
-### RQ-003: Authority Boundary
+### RQ-003: Implementation Authority
 
-Does this request grant any implementation authority?
+Does this request grant implementation authority?
 
 Required answer:
 
@@ -147,20 +140,12 @@ This request does not authorize:
 
 ## 7. Required Review Artifact
 
-The follow-up review, if created, should be a separate file:
+The follow-up review, if created, must be a separate file:
 
 text
 docs/reviews/em_003_alignment_separate_approval_review.md
 
-The review must explicitly record one of the following outcomes:
-
-text
-APPROVED
-REJECTED
-FAIL-CLOSED
-DEFERRED
-
-Until that review exists and is explicitly approved, the active state remains:
+Until that review exists and records an explicit final decision, the active state remains:
 
 text
 Request Status: PENDING REVIEW
@@ -178,9 +163,9 @@ NOT DECIDED
 
 This file is only a request for review.
 
-It does not approve any implementation work.
+It does not approve implementation work.
 
-It does not approve any replacement work.
+It does not approve replacement work.
 
 It does not resolve the EM-003 mismatch.
 
