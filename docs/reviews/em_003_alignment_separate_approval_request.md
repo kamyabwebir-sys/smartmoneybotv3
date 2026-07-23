@@ -1,205 +1,310 @@
-# EM-003 Alignment Separate Approval Request
+# EM-003 Alignment — Separate Approval Request
 
-Review Type: Separate Approval Request  
-Scope: Governance-only / Docs-only  
-Requested Authority: Limited artifact-alignment authority  
-Current Implementation Authority: NONE  
-Current Slice Status: BLOCKED  
-Current Approval Status: NOT APPROVED  
-Current EM-003 Status: PARTIAL  
+Status: PENDING REVIEW
+Decision: NOT RECORDED
+Request Type: GOVERNANCE-ONLY EVIDENCE ALIGNMENT
+Slice: 1.0 Governance Repair
+
+Implementation Authority Requested: NONE
+Source Changes Requested: NO
+Test Changes Requested: NO
+Slice Unblock Requested: NO
 
 ---
 
 ## 1. Purpose
 
-This document requests a separate explicit approval to decide the authorized alignment path for EM-003 evidence verification.
+This document requests a separate governance review for the narrow
+alignment of EM-003.
 
-This request exists because EM-003 has a documented historical/archive verifier and Evidence Matrix wording mismatch, while later live-branch inspection indicates that the active verifier appears aligned with the current EM-003 PARTIAL note.
+This request is not an approval.
 
-This document does not itself approve implementation work, source changes, test changes, verifier mutation, Evidence Matrix mutation, or Slice unblocking.
+This request does not authorize changes to:
 
----
+- source code;
+- tests;
+- runtime behavior;
+- package structure;
+- domain contracts;
+- discovery registry behavior.
 
-## 2. Current Governance State
-
-The current governance state remains:
-
-- Slice Status: BLOCKED
-- Implementation Authority: NONE
-- Approval Status: NOT APPROVED
-- EM-003 Status: PARTIAL
-
-No implementation authority has been granted.
-
-No source or test mutation is authorized by this request.
+The requested review is limited to whether EM-003 may be aligned between
+the Evidence Matrix and the governance verifier.
 
 ---
 
-## 3. Historical / Archive Observation
+## 2. Current State
 
-Historical/archive inspection recorded a mismatch between the archived Evidence Matrix EM-003 note and an archived verifier expectation.
+The current governance state is:
+```text
+Slice Status: BLOCKED
+Implementation Authority: NONE
+Approval Status: NOT APPROVED
+EM-003 Evidence Matrix Status: PARTIAL
+EM-003 Verifier Expectation: MISSING
 
-The archived Evidence Matrix represented EM-003 as PARTIAL with the note:
+No separate approval review for EM-003 has been recorded.
 
-> Found some evidence for deterministic/replayable, but more specific references needed for full coverage.
-
-The archived verifier expectation was observed as:
-
-> MISSING | Need exact file and line references showing deterministic/replayable requirements.
-
-This historical mismatch was valid to document as an archive/snapshot governance observation.
-
----
-
-## 4. Live Branch Observation
-
-Later live-branch inspection showed that the active verifier checks for the PARTIAL EM-003 fragment:
-
-> PARTIAL | Found some evidence for deterministic/replayable, but more specific references needed for full coverage.
-
-Therefore, an active live-branch verifier/matrix mismatch is not currently proven.
-
-The historical/archive mismatch remains documented, but it must not be treated as proof of a current live mismatch without revalidation.
+No `Decision: APPROVED` exists for EM-003.
 
 ---
 
-## 5. Requested Decision
+## 3. Alignment Defect
 
-This request asks for a separate approval decision selecting one authorized EM-003 alignment path, if any future mutation is required.
+The Evidence Matrix and verifier currently encode different expected
+states for EM-003.
 
-The approver must explicitly choose one of the following options before any mutation occurs.
+Current Evidence Matrix state:
 
-### Option A: Verifier-To-Matrix Alignment
+text
+EM-003: PARTIAL
 
-Authorize a narrow verifier update so that verifier expectations match the authoritative Evidence Matrix text.
+Current verifier expectation:
 
-Allowed mutation target:
+text
+EM-003: MISSING
 
-- `scripts/verify_slice_1_0_governance_repair.ps1`
+This creates a governance-tooling mismatch.
 
-Not authorized:
-
-- source changes
-- test changes unless separately approved
-- Evidence Matrix status upgrade
-- EM-003 completion
-- Slice unblocking
-
-### Option B: Matrix-To-Verifier Alignment
-
-Authorize a narrow Evidence Matrix update so that the EM-003 wording matches the authoritative verifier expectation.
-
-Allowed mutation target:
-
-- `slice_1_0_evidence_matrix.md`
-- or the repo-authoritative Evidence Matrix path, if different
-
-Not authorized:
-
-- source changes
-- test changes unless separately approved
-- verifier rewrite
-- EM-003 completion unless line-grounded evidence is separately approved
-- Slice unblocking
-
-### Option C: Structured Verification Replacement
-
-Authorize replacement of brittle full-text coupling with a structured EM-003-specific verification approach.
-
-Allowed mutation target:
-
-- `scripts/verify_slice_1_0_governance_repair.ps1`
-- supporting governance documentation required to define the structured check
-
-Not authorized:
-
-- source changes
-- runtime behavior changes
-- broad verifier rewrite outside EM-003 scope
-- EM-003 completion
-- Slice unblocking
+This is not a runtime implementation defect.
 
 ---
 
-## 6. Recommended Default
+## 4. Claim Under Review
 
-Recommended decision: NO MUTATION UNTIL REVALIDATION.
+The EM-003 claim under review is:
 
-Because live-branch inspection currently indicates alignment between the active verifier and the EM-003 PARTIAL note, no immediate verifier or Evidence Matrix mutation should occur unless a fresh line-grounded revalidation proves an active mismatch.
+text
+Repository already has deterministic and replayable design constraints.
 
-If revalidation proves no active mismatch, this request should be closed without mutation.
+The review should determine only whether the repository contains enough
+explicit evidence to mark this claim as sufficiently grounded for review.
 
-If revalidation proves an active mismatch, one and only one of Option A, Option B, or Option C must be explicitly approved before mutation.
+This does not mean:
 
----
-
-## 7. Required Evidence Before Approval
-
-Before approving any mutation path, the reviewer must provide line-grounded evidence for:
-
-- the authoritative Evidence Matrix path
-- the current EM-003 row or note
-- the current verifier assertion for EM-003
-- the exact mismatch, if one exists
-- the selected mutation target
-- why the selected option is the narrowest safe repair
-
-Approval must not rely on stale archive-only evidence if live-branch files differ.
+- implementation is complete;
+- replay behavior is fully verified;
+- Slice 1.0 is unblocked;
+- implementation authority is granted;
+- any source or test change is approved.
 
 ---
 
-## 8. Explicit Non-Authorizations
+## 5. Repository-Grounded Evidence
+
+The following repository documents are expected to support the limited
+EM-003 claim:
+
+text
+docs/core_contracts_principles.md
+docs/deterministic_assumptions_v1.md
+docs/evidence_policy_v1.md
+docs/serialization_time_id_semantics_v1.md
+
+Expected evidence themes:
+
+- deterministic contracts;
+- replayable behavior;
+- canonical serialization;
+- stable evidence under deterministic replay;
+- frozen inputs;
+- avoidance of hidden wall-clock dependency in core semantics;
+- deterministic identifiers and time semantics.
+
+Exact line references must be confirmed during review.
+
+---
+
+## 6. Requested Governance Outcome
+
+The requested reviewer decision is one of:
+
+text
+APPROVED
+REJECTED
+RETURNED_FOR_EVIDENCE_REPAIR
+
+Only `APPROVED` may authorize the narrow replacement described below.
+
+If the decision is not `APPROVED`, no replacement is permitted.
+
+---
+
+## 7. Requested Replacement If Approved
+
+If separately approved, the requested replacement is limited to:
+
+text
+docs/freeze_packs/slice_1_0_evidence_matrix.md
+scripts/verify_slice_1_0_governance_repair.ps1
+
+The requested semantic outcome is:
+
+text
+EM-003 Evidence Status: SUFFICIENT_FOR_REVIEW
+EM-003 Matrix/Verifier Alignment: RESOLVED
+Slice Status: BLOCKED
+Implementation Authority: NONE
+
+The replacement must not modify unrelated rows or unrelated verifier
+assertions.
+
+---
+
+## 8. Proposed EM-003 Matrix Semantics
+
+If approved, the EM-003 row may be changed to communicate:
+
+text
+The repository contains explicit deterministic and replayable design
+constraints sufficient for governance review.
+
+The row must also communicate:
+
+text
+This evidence status does not approve implementation.
+This evidence status does not unblock Slice 1.0.
+This evidence status does not grant implementation authority.
+
+---
+
+## 9. Proposed Verifier Semantics
+
+If approved, the verifier may be changed so that it no longer expects
+EM-003 to be `MISSING`.
+
+Instead, it should verify that:
+
+text
+EM-003 is marked SUFFICIENT_FOR_REVIEW.
+The matrix contains exact repository evidence references.
+The matrix states that this does not grant implementation authority.
+The matrix states that Slice 1.0 remains BLOCKED.
+
+All unrelated verifier assertions must remain unchanged.
+
+---
+
+## 10. Prohibited Changes
 
 This request does not authorize:
 
-- modifying `src/`
-- modifying `tests/`
-- changing runtime behavior
-- changing trading, risk, ML, reporting, or UI behavior
-- marking EM-003 as COMPLETE
-- changing Slice Status from BLOCKED
-- changing Implementation Authority from NONE
-- changing Approval Status from NOT APPROVED
-- broad verifier rewrite
-- broad Evidence Matrix rewrite
-- package rename
-- module move
-- target architecture migration
-- selecting Option A, B, or C without recorded approval
+- changes under `src/`;
+- changes under `tests/`;
+- registry implementation changes;
+- core/domain model changes;
+- serialization changes;
+- identifier changes;
+- validation behavior changes;
+- replay implementation changes;
+- package rename;
+- module move;
+- broad refactor;
+- execution logic;
+- trading logic;
+- risk calculation;
+- opaque ML decisioning;
+- reporting/UI leakage into core/domain logic;
+- Slice 1.0 unblock.
 
 ---
 
-## 9. Approval Requirements
+## 11. Audit Requirements If Approved
 
-A valid approval must explicitly state:
+If a separate review records `Decision: APPROVED`, the replacement audit
+must record:
 
-- selected option: A, B, C, or NO MUTATION
-- authorized file path or paths
-- maximum allowed scope
-- whether tests may be changed
-- whether verifier may be changed
-- whether Evidence Matrix may be changed
-- confirmation that Slice Status remains BLOCKED
-- confirmation that Implementation Authority remains NONE unless separately changed
-- confirmation that EM-003 remains PARTIAL unless separately approved with line-grounded evidence
+text
+Repository:
+Branch:
+Baseline commit:
+Resulting commit:
+Replacement type:
+Reason:
+Expected effect:
 
-Without this explicit approval, no mutation is authorized.
+Required hash evidence:
+
+text
+Evidence Matrix before SHA-256:
+Evidence Matrix after SHA-256:
+Verifier before SHA-256:
+Verifier after SHA-256:
+
+Required changed-file evidence:
+
+text
+git status --short
+git diff --name-only
+git diff --check
+
+Required verifier command:
+
+powershell
+pwsh -NoProfile -File ./scripts/verify_slice_1_0_governance_repair.ps1
+
+Required verification record:
+
+text
+Verifier exit code:
+Verifier output:
+All assertions passed: YES / NO
+
+Required confirmations:
+
+text
+No src/ changes: YES / NO
+No tests/ changes: YES / NO
+Only approved files changed: YES / NO
+Unrelated matrix rows unchanged: YES / NO
+Unrelated verifier assertions unchanged: YES / NO
+Slice remains BLOCKED: YES / NO
+Implementation Authority remains NONE: YES / NO
 
 ---
 
-## 10. Final Request State
+## 12. Approval Gate
 
-Decision Requested: YES  
-Decision Granted By This Document: NO  
-Implementation Authority Granted: NO  
-Source Changes Authorized: NO  
-Test Changes Authorized: NO  
-Verifier Changes Authorized: NO  
-Evidence Matrix Changes Authorized: NO  
-EM-003 Completion Authorized: NO  
-Slice Unblocking Authorized: NO  
+No replacement may occur unless all conditions below are true:
 
-Current Slice Status: BLOCKED  
-Current Implementation Authority: NONE  
-Current Approval Status: NOT APPROVED  
-Current EM-003 Status: PARTIAL
+text
+[ ] Separate approval review exists.
+[ ] Decision: APPROVED is explicitly recorded.
+[ ] Approved file set is explicit.
+[ ] Approved semantic replacement is explicit.
+[ ] Slice Status remains BLOCKED.
+[ ] Implementation Authority remains NONE.
+[ ] Source changes remain prohibited.
+[ ] Test changes remain prohibited.
+
+---
+
+## 13. Requester Confirmation
+
+text
+Requester:
+Role:
+Date:
+Branch:
+Baseline Commit:
+
+Confirmations:
+
+text
+[ ] This is a governance-only request.
+[ ] This request is not an approval.
+[ ] No implementation authority is requested.
+[ ] No source changes are requested.
+[ ] No test changes are requested.
+[ ] Slice 1.0 remains BLOCKED.
+[ ] Replacement requires separate explicit approval.
+
+---
+
+## 14. Conclusion
+
+This document requests a separate approval review for the narrow
+alignment of EM-003.
+
+Until an authorized reviewer records `Decision: APPROVED`, no Evidence
+Matrix or verifier replacement is permitted.
