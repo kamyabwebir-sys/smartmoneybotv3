@@ -3,181 +3,247 @@
 Status: PENDING REVIEW
 Decision: NOT RECORDED
 Request Type: DOCUMENTATION/GOVERNANCE-ONLY
-Requested Authority: LIMITED REPLACEMENT REVIEW
 Implementation Authority Requested: NONE
+Replacement Authority: NONE
 Source Changes Requested: NO
 Test Changes Requested: NO
 Slice Unblock Requested: NO
-
----
-
-## 1. Request Purpose
-
-This document requests a separate and explicit governance review of the
-EM-003 alignment defect in Slice 1.0.
-
-This request does not approve or execute any repository replacement.
-
-Creation or acceptance of this request does not grant implementation
-authority.
-
----
-
-## 2. Current Governance State
-
-The authoritative state at the time of this request is:
-```text
 Slice Status: BLOCKED
 Implementation Authority: NONE
-Approval Status: NOT APPROVED
-EM-003 Evidence Matrix Status: PARTIAL
-EM-003 Verifier Expectation: MISSING
+
+---
+
+## 1. Replacement Request Summary
+
+This artifact requests a separate and explicit governance review of the
+EM-003 alignment defect in Slice 1.0.
+
+The current authoritative artifacts are inconsistent:
+
+- the Slice 1.0 Evidence Matrix records EM-003 as `PARTIAL`;
+- the Slice 1.0 governance verifier expects the EM-003 evidence note to
+  remain `MISSING`.
+
+Repository-grounded deterministic and replayable evidence has been
+identified for governance inspection. Its presence does not itself
+upgrade EM-003, authorize a replacement, establish implementation
+completeness, or unblock Slice 1.0.
+
+Current state:
+```text
+EM-003 Effective Status: PARTIAL
+EM-003 Candidate Status: SUFFICIENT_FOR_REVIEW
+Verifier Expectation: MISSING
+Decision: NOT RECORDED
 Replacement Authority: NONE
+Implementation Authority: NONE
+Slice Status: BLOCKED
 
-This request does not alter that state.
+Requested action:
+
+text
+Perform a separate governance review of the identified evidence and
+decide whether a narrow documentation/governance-only replacement of
+the EM-003 Matrix row and its corresponding verifier assertion may be
+authorized.
+
+This Request is non-authorizing.
 
 ---
 
-## 3. Repository-Grounded Mismatch
+## 2. Defect Statement
 
-The current Slice 1.0 Evidence Matrix records EM-003 as:
+The following mismatch must be independently reproduced by the
+reviewer.
+
+Evidence Matrix:
 
 text
+File:
+docs/freeze_packs/slice_1_0_evidence_matrix.md
+
+Location:
+EM-003 row; repository snapshot line 49
+
+Current effective status:
 PARTIAL
 
-The Slice 1.0 governance verifier requires an EM-003 fragment containing:
+Governance verifier:
 
 text
-MISSING | Need exact file and line references showing deterministic/replayable requirements.
+File:
+scripts/verify_slice_1_0_governance_repair.ps1
 
-These two governance artifacts therefore do not express the same EM-003
-status.
+Location:
+EM-003 assertion; repository snapshot line 259
 
-The mismatch is classified as a governance consistency defect.
+Current expected text:
+MISSING | Need exact file and line references showing
+deterministic/replayable requirements.
 
-It is not classified as:
+Preliminary classification:
 
-- a runtime defect;
-- a domain-model defect;
-- a serialization defect;
-- an identifier defect;
-- a registry defect;
-- a source implementation defect;
-- a test implementation defect.
+text
+Defect Class: GOVERNANCE CONSISTENCY DEFECT
+Runtime Defect Claimed: NO
+Source Defect Claimed: NO
+Test Defect Claimed: NO
+Implementation Defect Claimed: NO
 
 ---
 
-## 4. Current Evidence-Matrix Reading
+## 3. Authoritative Input Set
 
-The current EM-003 row states that the repository already contains some
-deterministic and replayable design constraints, while additional
-specific references are required for full coverage.
-
-The current status remains:
+The separate review must inspect the following authoritative inputs:
 
 text
-PARTIAL
-
-This request does not claim that the current status is incorrect.
-
-It requests review of whether the available repository-grounded evidence
-supports a more precise governance status and matching verifier
-assertion.
-
----
-
-## 5. Requested Review Question
-
-The Governance Owner and authorized reviewers are asked to decide:
-
-text
-Do the repository-grounded deterministic and replayable contract
-references support classifying EM-003 as SUFFICIENT_FOR_REVIEW, while
-explicitly avoiding any claim of implementation completeness?
-
-Candidate answer requested for review:
-
-text
-EM-003 Evidence Status: SUFFICIENT_FOR_REVIEW
-
-This is only a candidate status.
-
-It must not be treated as effective unless a separate approval review
-records an explicit and authorized:
-
-text
-Decision: APPROVED
-
----
-
-## 6. Meaning of the Candidate Status
-
-For this request, `SUFFICIENT_FOR_REVIEW` would mean only:
-
-1. explicit deterministic constraints are documented in repository
-   artifacts;
-2. explicit replayability constraints are documented in repository
-   artifacts;
-3. the references are specific enough for governance review;
-4. the Evidence Matrix and verifier may be aligned to one accepted
-   governance reading.
-
-It would not mean:
-
-- implementation completeness;
-- runtime correctness;
-- full test coverage;
-- approval of source behavior;
-- approval of serialization behavior;
-- approval of identifier algorithms;
-- approval of validation behavior;
-- approval of registry behavior;
-- approval of execution or trading logic;
-- Slice 1.0 completion;
-- Slice 1.0 unblock;
-- implementation authority.
-
----
-
-## 7. Candidate Evidence Set
-
-The separate approval review should inspect at least:
-
-text
+docs/freeze_packs/slice_1_0_evidence_matrix.md
+scripts/verify_slice_1_0_governance_repair.ps1
+docs/reviews/slice_1_0_governance_repair_review.md
 docs/core_contracts_principles.md
 docs/deterministic_assumptions_v1.md
 docs/evidence_policy_v1.md
 docs/serialization_time_id_semantics_v1.md
 docs/freeze_packs/slice_0_10.md
-docs/freeze_packs/slice_1_0_evidence_matrix.md
-docs/reviews/slice_1_0_governance_repair_review.md
 src/smart_money/core/replay.py
 tests/core/test_golden_replay.py
-scripts/verify_slice_1_0_governance_repair.ps1
 
-The current Evidence Matrix identifies candidate references including:
+Candidate evidence references:
+
+### 3.1. Core contract principles
 
 text
+docs/core_contracts_principles.md:12
+- deterministic
+
 docs/core_contracts_principles.md:13
-docs/deterministic_assumptions_v1.md:10-11
-src/smart_money/core/replay.py:7
-tests/core/test_golden_replay.py:3,12
-docs/freeze_packs/slice_0_10.md:77,143
+- replayable
 
-These references are review inputs, not automatically accepted findings.
+### 3.2. Deterministic assumptions
 
-The reviewer must verify the current repository contents and record exact
-line references before approving any status change.
+text
+docs/deterministic_assumptions_v1.md:1
+# Deterministic Assumptions v1
+
+docs/deterministic_assumptions_v1.md:13
+- Reporting language may vary, but deterministic truth may not.
+
+### 3.3. Evidence policy
+
+text
+docs/evidence_policy_v1.md:7
+Evidence exists so that every important derived output can be explained
+in deterministic, machine-readable terms.
+
+docs/evidence_policy_v1.md:11
+Evidence must be derived from observable frozen inputs or derived
+deterministic references.
+
+docs/evidence_policy_v1.md:12
+Evidence must not rely on undocumented human interpretation.
+
+docs/evidence_policy_v1.md:14
+Evidence must not be replaced by AI-generated rationale.
+
+docs/evidence_policy_v1.md:15
+Evidence should remain stable under deterministic replay.
+
+### 3.4. Serialization, time, and identifier semantics
+
+text
+docs/serialization_time_id_semantics_v1.md:12
+created_at does not participate in deterministic ID inputs.
+
+These references are candidate inputs for separate review. Inclusion in
+this Request does not make them approved findings.
+
+All exact paths and line references must be verified against the
+recorded repository baseline during the separate review.
 
 ---
 
-## 8. Requested Replacement Classification
+## 4. Replacement File Set
 
-If, and only if, the separate approval review is approved, the requested
-replacement classification is:
+Maximum candidate replacement file set:
 
 text
-Replacement Class: DOCUMENTATION/GOVERNANCE-ONLY
+docs/freeze_packs/slice_1_0_evidence_matrix.md
+scripts/verify_slice_1_0_governance_repair.ps1
+
+No other file is requested for replacement.
+
+The Request artifact itself is not evidence of authorization to modify
+the candidate replacement file set.
+
+Any future replacement must:
+
+1. use exact wording explicitly approved by the Governance Owner;
+2. keep the Matrix and verifier semantically aligned;
+3. preserve all unrelated Matrix rows;
+4. preserve all unrelated verifier assertions;
+5. preserve Slice 1.0 as `BLOCKED`;
+6. preserve Implementation Authority as `NONE`;
+7. avoid claims of implementation completeness;
+8. remain documentation/governance-only.
+
+---
+
+## 5. Requested Review Questions
+
+The separate review must answer:
+
+1. Is the Matrix/verifier mismatch reproduced at the recorded baseline?
+2. Are the deterministic references exact and repository-grounded?
+3. Are the replayability references exact and repository-grounded?
+4. Does the evidence satisfy the repository evidence policy?
+5. Does the evidence support only `SUFFICIENT_FOR_REVIEW`, or does it
+   support another explicitly defined governance status?
+6. What exact Matrix wording, if any, is approved?
+7. What exact verifier wording, if any, is approved?
+8. Is the two-file replacement set complete and minimal?
+9. Are Slice Status and Implementation Authority preserved?
+10. Are there residual evidence gaps that require rejection or return
+for evidence repair?
+
+No answer may be inferred from the existence of this Request.
+
+---
+
+## 6. Requested Decision Outcomes
+
+Allowed separate-review outcomes:
+
+text
+APPROVED
+REJECTED
+RETURNED_FOR_EVIDENCE_REPAIR
+
+Current decision state:
+
+text
+Decision: NOT RECORDED
+Decision Owner: NOT RECORDED
+Decision Date: NOT RECORDED
+Approved Effective EM-003 Status: NOT RECORDED
+Approved Matrix Wording: NOT RECORDED
+Approved Verifier Wording: NOT RECORDED
+Replacement Authority: NONE
+Implementation Authority: NONE
+Slice Status: BLOCKED
+
+Only an authorized Governance Owner may record an outcome.
+
+An `APPROVED` outcome must include exact approved Matrix wording, exact
+approved verifier wording, the exact replacement file set, decision
+owner, decision date, and recorded sign-off.
+
+---
+
+## 7. Scope Constraints
+
+This Request does not request or authorize:
+
+text
 Runtime Behavior Change: NO
 Source Change: NO
 Test Change: NO
@@ -186,187 +252,88 @@ Serialization Change: NO
 Identifier Algorithm Change: NO
 Validation Behavior Change: NO
 Registry Behavior Change: NO
-Package Boundary Change: NO
+Execution or Trading Logic: NO
+Risk Calculation: NO
+ML Decisioning: NO
+Package Rename: NO
 Module Move: NO
 Broad Refactor: NO
 Slice Unblock: NO
 Implementation Authority Grant: NO
 
----
-
-## 9. Maximum Candidate Replacement File Set
-
-If the request is explicitly approved, the maximum candidate replacement
-file set is:
-
-text
-docs/freeze_packs/slice_1_0_evidence_matrix.md
-scripts/verify_slice_1_0_governance_repair.ps1
-
-No other file is included in the requested replacement authority.
-
-In particular, this request does not request changes under:
-
-text
-src/**
-tests/**
+No Target Architecture work is included in this Request.
 
 ---
 
-## 10. Maximum Candidate Replacement Semantics
+## 8. Non-Authorization Statement
 
-Subject to explicit approval, the requested replacement may only:
+The following do not constitute approval:
 
-1. change the EM-003 Evidence Matrix status and note to the exact wording
-   accepted by the separate approval review;
-2. change the EM-003 verifier assertion to match that accepted Matrix
-   wording;
-3. preserve all unrelated Evidence Matrix rows;
-4. preserve all unrelated verifier assertions;
-5. preserve `Slice Status: BLOCKED`;
-6. preserve `Implementation Authority: NONE`;
-7. preserve the distinction between documented constraints and verified
-   implementation completeness.
+- creation of this Request;
+- commit of this Request;
+- circulation of this Request;
+- repository-grounded evidence discovery;
+- successful mismatch reproduction;
+- reviewer discussion;
+- an incomplete checklist;
+- an unsigned review;
+- an inferred or implied decision.
 
-No implementation replacement is requested.
+Until a separate review records an explicit authorized decision:
+
+text
+EM-003 Effective Status: PARTIAL
+Verifier Expectation: MISSING
+Replacement Authority: NONE
+Implementation Authority: NONE
+Slice Status: BLOCKED
+Matrix Replacement Permitted: NO
+Verifier Replacement Permitted: NO
 
 ---
 
-## 11. Requested Decision Outcomes
-
-The separate approval review may record one of:
+## 9. Request Submission Record
 
 text
-APPROVED
-REJECTED
-RETURNED_FOR_EVIDENCE_REPAIR
-
-An approval, if issued, must use a decision type equivalent to:
-
-text
-Accepted as documentation-only replacement
-
-Approval must be explicit, attributable, dated, and signed or recorded by
-the authorized Governance Owner.
-
-Silence, document creation, commit existence, reviewer discussion, or
-partial checklist completion must not be interpreted as approval.
-
----
-
-## 12. Approval Conditions
-
-Approval is requested only if reviewers confirm all applicable items:
-
-text
-[ ] The Matrix/verifier mismatch was independently reproduced.
-[ ] Exact deterministic evidence references were verified.
-[ ] Exact replayability evidence references were verified.
-[ ] Evidence-policy compatibility was verified.
-[ ] The candidate status does not imply implementation completeness.
-[ ] The replacement file set is exact and limited.
-[ ] No source change is authorized.
-[ ] No test change is authorized.
-[ ] No runtime behavior change is authorized.
-[ ] Slice 1.0 remains BLOCKED.
-[ ] Implementation Authority remains NONE.
-[ ] Required reviewer and Governance Owner sign-offs are complete.
-
-If required evidence is absent, ambiguous, stale, or insufficient, this
-request should be returned for evidence repair or rejected.
-
----
-
-## 13. Required Separate Approval Artifact
-
-This request requires a separate review artifact:
-
-text
-docs/reviews/em_003_alignment_separate_approval_review.md
-
-That review should record:
-
-- the authoritative input set;
-- exact repository-grounded evidence references;
-- mismatch reproduction;
-- scope determination;
-- decision outcome;
-- decision owner;
-- decision date;
-- required sign-offs;
-- final governance reading;
-- post-decision handoff conditions.
-
-This request is not a substitute for that review.
-
----
-
-## 14. Non-Authorization Statement
-
-Unless and until a valid separate approval review records an authorized
-`Decision: APPROVED`, this request grants no permission to modify:
-
-text
-docs/freeze_packs/slice_1_0_evidence_matrix.md
-scripts/verify_slice_1_0_governance_repair.ps1
-src/**
-tests/**
-
-This request never grants authority for:
-
-- execution or trading logic;
-- risk calculation;
-- opaque ML decisioning;
-- reporting/UI leakage into core/domain logic;
-- model or public API changes;
-- serialization behavior changes;
-- identifier algorithm changes;
-- validation behavior changes;
-- ingestion changes;
-- registry changes;
-- package rename;
-- module move;
-- broad refactor;
-- Slice 1.0 unblock;
-- implementation authority.
-
----
-
-## 15. Requester Record
-
-text
-Requester Name:
-Requester Role:
-Request Date:
 Repository Branch: docs/em-003-alignment-approval-request-final
-Baseline Commit: fd993f946580bbedc07a81edfb6ee4fd777da1c7
-Signature/Recorded Submission:
-
-Requester confirmations:
-
-text
-[ ] I confirm this is a governance-only request.
-[ ] I confirm no replacement has been executed by this request.
-[ ] I confirm Slice 1.0 remains BLOCKED.
-[ ] I confirm Implementation Authority remains NONE.
-[ ] I confirm SUFFICIENT_FOR_REVIEW is only a candidate status.
-
-Blank requester fields must not be interpreted as completed sign-off.
-
----
-
-## 16. Current Request Conclusion
-
-Current state:
-
-text
+Request Baseline Commit: e62ee39a9d010f69c326fd58ebba3a2429a540a0
 Request Status: PENDING REVIEW
 Decision: NOT RECORDED
-Slice Status: BLOCKED
-Implementation Authority: NONE
 Replacement Authority: NONE
+Implementation Authority: NONE
+Slice Status: BLOCKED
+
+Request author:
+
+text
+Name:
+Role:
+Submission Date:
+Recorded Sign-Off:
+
+Blank fields do not constitute sign-off.
+
+---
+
+## 10. Final Request Statement
+
+This Request asks only for a separate governance review of the EM-003
+Matrix/verifier alignment defect.
+
+It does not approve or execute the proposed replacement.
+
+Final state at submission:
+
+text
+Request: CREATED
+Review: NOT YET CREATED
+Decision: NOT RECORDED
 EM-003 Effective Status: PARTIAL
 EM-003 Candidate Status: SUFFICIENT_FOR_REVIEW
-
-No Matrix or verifier replacement is authorized by this request.
-
+Replacement Authority: NONE
+Implementation Authority: NONE
+Slice Status: BLOCKED
+Matrix Changed: NO
+Verifier Changed: NO
+Source Changed: NO
+Tests Changed: NO
