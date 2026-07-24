@@ -1,4 +1,4 @@
-﻿# Slice 1.0 Governance Repair Review
+# Slice 1.0 Governance Repair Review
 
 ## Review Decision
 
@@ -131,3 +131,26 @@ Slice Status: BLOCKED
 Source/Test Changes Authorized: NO
 
 Separate Implementation Approval Required: YES
+
+## Governance Alignment Note — EM-003 Mismatch
+
+Date UTC: 1405-05-02T19:07:56Z
+
+Observed governance mismatch:
+
+- The official Slice 1.0 verifier expects the EM-003 evidence note to contain:
+  MISSING | Need exact file and line references showing deterministic/replayable requirements.
+- The current Evidence Matrix EM-003 row now contains reference-based PARTIAL evidence instead of that legacy MISSING fragment.
+
+Interpretation:
+
+- This review does not approve implementation.
+- This review does not modify Evidence Matrix authority.
+- This review does not modify verifier authority.
+- Slice Status remains BLOCKED.
+- Implementation Authority remains NONE.
+- Approval Status remains NOT APPROVED.
+
+Required follow-up:
+
+A separate governance alignment patch is required if the repository intends to reconcile the verifier assertion with the current EM-003 matrix row.
