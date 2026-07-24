@@ -1,249 +1,198 @@
-# EM-003 Alignment — Separate Approval Request
+# EM-003 Alignment Separate Approval Request
 
-Status: PENDING REVIEW
-Decision: NOT RECORDED
-Request Type: DOCUMENTATION/GOVERNANCE-ONLY
-Replacement Authority: NONE
-Implementation Authority: NONE
-Slice Status: BLOCKED
-Source Changes Requested: NO
-Test Changes Requested: NO
-Runtime Changes Requested: NO
-Slice Unblock Requested: NO
+## 1. Request Submission Record
 
----
+- Request ID: EM-003-ALIGNMENT-SEPARATE-APPROVAL-REQUEST
+- Request Type: Governance Alignment Request
+- Scope Type: docs-only
+- Target Artifact Class: Review Request
+- Request Status: PENDING REVIEW
+- Slice Status: BLOCKED
+- Implementation Authority: NONE
+- Replacement Authority: NONE
+- Decision Outcome: NOT DECIDED
 
-## 1. Replacement Request Summary
+This document requests a separate and explicit approval review for the EM-003 governance alignment issue.
 
-This document requests a separate and explicit governance review for the
-EM-003 Matrix/verifier alignment defect.
+This request does not approve implementation work, does not modify the evidence matrix, does not modify verifier expectations, and does not grant any authority.
 
-The current repository state contains a governance inconsistency:
+## 2. Background
 
-- EM-003 is recorded as PARTIAL in the Slice 1.0 Evidence Matrix.
-- The Slice 1.0 governance verifier expects EM-003 wording equivalent to
-  MISSING.
+The current governance state identifies a mismatch between the EM-003 status recorded in the Slice 1.0 Evidence Matrix and the expected status asserted by the Slice 1.0 governance repair verifier.
 
-This Request does not approve any replacement, does not change any
-authoritative artifact, and does not grant implementation authority.
+Known mismatch:
+```text
+Evidence Matrix Status: PARTIAL
+Verifier Expected Status: MISSING
 
-Current requested review state:
-`	ext
-EM-003 Effective Status: PARTIAL
-Verifier Expectation: MISSING
-Candidate Review Status: SUFFICIENT_FOR_REVIEW
-Decision: NOT RECORDED
-Replacement Authority: NONE
-Implementation Authority: NONE
-Slice Status: BLOCKED
+This mismatch must not be resolved by inference.
 
----
+A separate explicit approval review is required before any authoritative alignment, replacement, implementation authority, or status change may be recorded.
 
-## 2. Defect Statement
+## 3. Problem Statement
 
-The reviewer must independently verify the following mismatch.
+EM-003 currently has an unresolved alignment issue between documented governance status and verifier expectation.
 
-Evidence Matrix:
+This request does not decide which artifact is correct.
 
-text
-File: docs/freeze_packs/slice_1_0_evidence_matrix.md
-Location: EM-003 row; observed line 49
-Current Status: PARTIAL
+This request only asks for a separate review to determine the authorized alignment path.
 
-Governance verifier:
+Possible review outcomes may include:
 
-text
-File: scripts/verify_slice_1_0_governance_repair.ps1
-Location: EM-003 assertion; observed line 259
-Current Expected Status Text: MISSING
+1. Evidence Matrix alignment.
+2. Verifier expectation alignment.
+3. Explicit fail-closed outcome.
+4. Deferral pending additional governance artifact.
 
-Classification:
+No outcome is approved by this request.
 
-text
-Defect Class: GOVERNANCE CONSISTENCY DEFECT
-Runtime Defect Claimed: NO
-Source Defect Claimed: NO
-Test Defect Claimed: NO
-Implementation Defect Claimed: NO
+## 4. Authoritative Input Set
 
----
-
-## 3. Authoritative Input Set
-
-The separate approval review must inspect the following authoritative
-inputs:
+The requested review should consider only the following governance inputs:
 
 text
 docs/freeze_packs/slice_1_0_evidence_matrix.md
 scripts/verify_slice_1_0_governance_repair.ps1
 docs/reviews/slice_1_0_governance_repair_review.md
 docs/freeze_packs/slice_1_2_freeze_pack_replacement_audit_checklist.md
-docs/core_contracts_principles.md
-docs/deterministic_assumptions_v1.md
-docs/evidence_policy_v1.md
-docs/serialization_time_id_semantics_v1.md
 
-Candidate repository-grounded evidence references:
+No source code, tests, execution logic, trading logic, risk logic, reporting logic, UI logic, or ML decisioning logic is included in this request.
 
-text
-docs/core_contracts_principles.md:12
-docs/core_contracts_principles.md:13
+## 5. Requested Review Questions
 
-docs/deterministic_assumptions_v1.md:1
-docs/deterministic_assumptions_v1.md:13
+### RQ-001: EM-003 Status Authority
 
-docs/evidence_policy_v1.md:1
-docs/evidence_policy_v1.md:7
-docs/evidence_policy_v1.md:11
-docs/evidence_policy_v1.md:12
-docs/evidence_policy_v1.md:13
-docs/evidence_policy_v1.md:14
-docs/evidence_policy_v1.md:15
-docs/evidence_policy_v1.md:19
-docs/evidence_policy_v1.md:28
+Which artifact, if any, should be treated as authoritative for the current EM-003 governance status?
 
-docs/serialization_time_id_semantics_v1.md:12
-
-These references are candidate review inputs only. Their inclusion in
-this Request does not approve an EM-003 status change.
-
----
-
-## 4. Governance Constraints
-
-The following governance constraints remain active:
+Options:
 
 text
-Slice Status: BLOCKED
-Implementation Authority: NONE
-Replacement Authority: NONE
-No status upgrade by inference
-No implementation authority inferred from documentation repair
-Separate explicit approval required before authority can be granted
-Decision Outcome required
-Sign-Off required
+A. Evidence Matrix status PARTIAL
+B. Verifier expectation MISSING
+C. Neither; mismatch remains blocked pending explicit replacement authority
 
-Supporting governance references:
+### RQ-002: Alignment Direction
 
-text
-docs/reviews/slice_1_0_governance_repair_review.md:20
-docs/reviews/slice_1_0_governance_repair_review.md:34
-docs/reviews/slice_1_0_governance_repair_review.md:40
-docs/reviews/slice_1_0_governance_repair_review.md:129
+If alignment is permitted, which direction is approved?
 
-docs/freeze_packs/slice_1_2_freeze_pack_replacement_audit_checklist.md:65
-docs/freeze_packs/slice_1_2_freeze_pack_replacement_audit_checklist.md:194
-docs/freeze_packs/slice_1_2_freeze_pack_replacement_audit_checklist.md:196
-docs/freeze_packs/slice_1_2_freeze_pack_replacement_audit_checklist.md:199
-docs/freeze_packs/slice_1_2_freeze_pack_replacement_audit_checklist.md:384
-docs/freeze_packs/slice_1_2_freeze_pack_replacement_audit_checklist.md:417
-
----
-
-## 5. Candidate Replacement File Set
-
-Maximum candidate replacement file set for a future review decision:
+Options:
 
 text
-docs/freeze_packs/slice_1_0_evidence_matrix.md
-scripts/verify_slice_1_0_governance_repair.ps1
+A. Matrix should be changed from PARTIAL to MISSING
+B. Verifier should be changed from MISSING to PARTIAL
+C. No alignment change is approved
+D. Additional governance artifact is required before alignment
 
-No replacement is authorized by this Request.
+### RQ-003: Implementation Authority
 
-Any future approved replacement must be:
+Does this request grant implementation authority?
 
-text
-Documentation/Governance-only
-Two-file maximum
-Explicitly approved
-Exact-wording based
-Matrix/verifier aligned
-Non-runtime
-Non-source
-Non-test
-Non-unblocking
-
----
-
-## 6. Requested Review Questions
-
-The future separate approval review must answer:
-
-1. Is the Matrix/verifier mismatch reproduced?
-2. Are the deterministic references exact and repository-grounded?
-3. Are the replayability references exact and repository-grounded?
-4. Does the evidence satisfy the repository evidence policy?
-5. Is SUFFICIENT_FOR_REVIEW an acceptable candidate governance status?
-6. What exact Matrix wording, if any, is approved?
-7. What exact verifier wording, if any, is approved?
-8. Is the candidate replacement file set complete and minimal?
-9. Does the replacement preserve Slice Status: BLOCKED?
-10. Does the replacement preserve Implementation Authority: NONE?
-
----
-
-## 7. Non-Authorization Statement
-
-This Request does not authorize:
+Required answer:
 
 text
-Decision: APPROVED
-Replacement Authority: GRANTED
-Implementation Authority: GRANTED
-Slice Status: UNBLOCKED
-Matrix Changed: YES
-Verifier Changed: YES
-Source Changed: YES
-Tests Changed: YES
+No. This request grants no implementation authority.
 
-Until a separate approval review records an explicit decision:
+### RQ-004: Replacement Authority
+
+Does this request grant replacement authority over any authoritative artifact?
+
+Required answer:
 
 text
-EM-003 Effective Status: PARTIAL
-Verifier Expectation: MISSING
-Decision: NOT RECORDED
-Replacement Authority: NONE
-Implementation Authority: NONE
-Slice Status: BLOCKED
+No. This request grants no replacement authority.
 
----
+### RQ-005: Status Upgrade
 
-## 8. Request Submission Record
+Does this request upgrade EM-003, Slice 1.0, or any related governance status?
+
+Required answer:
 
 text
-Repository Branch: docs/em-003-alignment-approval-request-final
-Request Baseline Commit: 87f69b25c2da41f96549153bd10629d5aa67fc7e
+No. This request does not upgrade any status.
+
+### RQ-006: Required Next Artifact
+
+Is a separate review artifact required after this request?
+
+Required answer:
+
+text
+Yes. A separate review artifact is required before any approval, rejection, or authority change may be recorded.
+
+## 6. Non-Goals
+
+This request does not authorize:
+
+- Source code changes.
+- Test changes.
+- Verifier changes.
+- Evidence Matrix changes.
+- Freeze Pack changes.
+- Approval of EM-003.
+- Closure of EM-003.
+- Implementation authority.
+- Replacement authority.
+- Status upgrade.
+- Trading execution logic.
+- Risk calculation.
+- ML-based decisioning.
+- Reporting or UI changes.
+
+## 7. Required Review Artifact
+
+The follow-up review, if created, must be a separate file:
+
+text
+docs/reviews/em_003_alignment_separate_approval_review.md
+
+Until that review exists and records an explicit final decision, the active state remains:
+
+text
 Request Status: PENDING REVIEW
-Decision: NOT RECORDED
-Replacement Authority: NONE
-Implementation Authority: NONE
 Slice Status: BLOCKED
+Implementation Authority: NONE
+Replacement Authority: NONE
+Decision Outcome: NOT DECIDED
 
-Request author:
+## 8. Decision Outcome
+
+Decision Outcome for this request:
 
 text
-Name:
-Role:
-Submission Date:
-Recorded Sign-Off:
+NOT DECIDED
 
-Blank fields do not constitute sign-off.
+This file is only a request for review.
 
----
+It does not approve implementation work.
 
-## 9. Final State
+It does not approve replacement work.
+
+It does not resolve the EM-003 mismatch.
+
+It does not change the current blocked state.
+
+## 9. Final Markers
 
 text
-Request: CREATED
-Review: NOT CREATED
-Decision: NOT RECORDED
-EM-003 Effective Status: PARTIAL
-Candidate Status: SUFFICIENT_FOR_REVIEW
-Verifier Expectation: MISSING
-Replacement Authority: NONE
-Implementation Authority: NONE
+EM-003 Alignment Request: CREATED
+Request Status: PENDING REVIEW
+Review Status: NOT CREATED
+Decision Outcome: NOT DECIDED
 Slice Status: BLOCKED
-Matrix Changed: NO
-Verifier Changed: NO
-Source Changed: NO
-Tests Changed: NO
+Implementation Authority: NONE
+Replacement Authority: NONE
+Status Upgrade: NONE
+Approval Granted: NO
+
+## 10. Sign-Off Section
+
+Prepared for separate explicit approval review.
+
+text
+Requester: Governance Repair Process
+Request Status: PENDING REVIEW
+Review Required: YES
+Review Artifact Required: docs/reviews/em_003_alignment_separate_approval_review.md
+Implementation Authority: NONE
+Replacement Authority: NONE
+Final Decision: NOT DECIDED
