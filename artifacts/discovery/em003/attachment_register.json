@@ -1,0 +1,7 @@
+{
+  "artifacts": [
+    "artifacts/discovery/em003/evidence_report.json",
+    "artifacts/discovery/em003/attachment_register.json"
+  ],
+  "em_id": "EM-003"
+}

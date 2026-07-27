@@ -1,0 +1,10 @@
+{
+  "approval_status": "NOT_APPROVED",
+  "cases": [],
+  "deterministic": true,
+  "em_id": "EM-003",
+  "implementation_authority": "NONE",
+  "promotion_gate": "LOCKED",
+  "replayable": true,
+  "status": "PARTIAL"
+}
