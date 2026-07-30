@@ -120,3 +120,9 @@ After closure:
 - Canonical Manifest Verification Contract is LOCKED.
 - Implementation Authority remains NOT GRANTED.
 - Promotion Authority remains NOT GRANTED.
+
+## Fail-closed Verification Language
+
+Fail-closed rule: any missing, ambiguous, contradictory, incomplete, or unverified verification evidence must keep EM-003 Status: PARTIAL and Promotion Gate: LOCKED.
+
+This Slice grants no implementation, promotion, source-code, test-code, registry, or replay-engine change authority.

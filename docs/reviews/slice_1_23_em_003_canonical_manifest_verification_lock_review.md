@@ -75,3 +75,9 @@ It must not be used as proof of:
 - risk calculation authority
 - opaque ML decisioning authority
 - reporting/UI authority
+
+## Fail-closed Review Confirmation
+
+The review confirms the fail-closed rule: any missing, ambiguous, contradictory, incomplete, or unverified verification evidence must keep EM-003 Status: PARTIAL and Promotion Gate: LOCKED.
+
+No implementation, promotion, source-code, test-code, registry, or replay-engine change authority is granted by this review.
