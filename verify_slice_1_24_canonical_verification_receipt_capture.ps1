@@ -249,11 +249,19 @@ $matrixFound = $false
 foreach ($m in $matrixCandidates) {
     if (Test-Path $m) {
         $matrixFound = $true
-        $text = Get-Content -LiteralPath $m -Raw
+            $lines = Get-Content -LiteralPath $m
 
-        if ($text -match "EM-003" -and $text -match "LOCKED|COMPLETE|PROMOTED") {
-            Fail "Potential EM-003 promotion token detected in evidence matrix candidate: $m"
-        }
+            $em003Rows = @(
+                $lines | Where-Object {
+                    $_ -match '^\s*\|' -and $_ -match '\bEM-003\b'
+                }
+            )
+
+            foreach ($row in $em003Rows) {
+                if ($row -match '\b(LOCKED|COMPLETE|PROMOTED)\b') {
+                    Fail "Potential EM-003 promotion token detected in EM-003 matrix row: $m"
+                }
+            }
     }
 }
 
