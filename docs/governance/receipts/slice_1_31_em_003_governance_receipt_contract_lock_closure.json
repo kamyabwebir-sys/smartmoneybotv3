@@ -1,0 +1,17 @@
+{
+  "scope": "governance-only",
+  "slice": "1.31",
+  "upstream_slice": "1.30",
+  "review_verdict": "PASS",
+  "em_003_status": "CONTRACT_LOCKED",
+  "promotion_gate": "LOCKED",
+  "execution_authority": "NO",
+  "implementation_promotion_authority": "NO",
+  "trading_authority": "NO",
+  "risk_authority": "NO",
+  "ml_decisioning_authority": "NO",
+  "receipt_type": "em_003_governance_receipt_contract_lock_closure",
+  "timestamp": "2026-08-01T00:00:00Z",
+  "upstream_verification": "Slice 1.30 EM-003 governance receipt contract lock verification passed.",
+  "receipt_id": "2adfdf1628a97dca3bfd0a98195e8d92ac4c473ec17449b138b88c6300f4296d"
+}
