@@ -1,0 +1,35 @@
+{
+  "slice": "1.27",
+  "status": "PASS",
+  "authority_scope": "governance_and_documentation_lock_only",
+  "verification_mode": "deterministic_replayable_fail_closed",
+  "evidence_class": "read_only_downstream_consumption_contract",
+  "receipt_path": "artifacts/governance/slice_1_27_em_003_discovery_registry_read_only_consumption_contract_lock.receipt.json",
+  "freeze_pack": {
+    "sha256": "607cdb8349137450511093abdd2ec9ce7d5b4b2b0acef430e5c0ae13ff124b1a",
+    "path": "docs/freeze_packs/slice_1_27_em_003_discovery_registry_read_only_consumption_contract_lock.md"
+  },
+  "review": {
+    "sha256": "a315d2c914ab3d945d7b6d059d072d15d107af12ec04e7e66c19cf41d013682d",
+    "path": "docs/reviews/slice_1_27_em_003_discovery_registry_read_only_consumption_contract_lock_review.md"
+  },
+  "protected_paths": [
+    {
+      "sha256": "744c4cc809794efb455f209f9857ed0f89a5a97f135e872b0f014f50082742d7",
+      "path": "src/smart_money/discovery/registry.py"
+    },
+    {
+      "sha256": "a68aa20a90826aed09e4bcd61837499583cac5401372a1fbc587de9b636ed26a",
+      "path": "tests/discovery/test_registry.py"
+    }
+  ],
+  "guardrails": {
+    "no_execution_logic": true,
+    "read_only_registry_consumption": true,
+    "no_risk_calculation": true,
+    "no_reporting_ui_leakage": true,
+    "no_trading_logic": true,
+    "no_opaque_ml_decisioning": true,
+    "registry_mutation_allowed": false
+  }
+}
