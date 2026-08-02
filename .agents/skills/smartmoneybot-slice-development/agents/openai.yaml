@@ -1,0 +1,3 @@
+interface:
+  display_name: "SmartMoneyBot Slice Development"
+  short_description: "Implement and review narrow deterministic SmartMoneyBotV3 slices"
