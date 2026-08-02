@@ -1,43 +1,58 @@
-# SmartMoneyBot Slice Development
+# SmartMoneyBot Slice Development Skill
 
 ## Purpose
 
-Assist with narrow, deterministic, replayable, slice-based development for SmartMoneyBotV3.
-
-## When to Use
-
-Use this skill when implementing or reviewing a concrete project slice.
+Help implement and review narrow, deterministic, replayable SmartMoneyBotV3 slices with minimal repo impact.
 
 ## Guardrails
 
-- Do not modify protected files unless explicitly authorized:
-  - `src/smart_money/discovery/registry.py`
-  - `tests/discovery/test_registry.py`
-- No execution or trading logic.
-- No risk calculation.
-- No opaque ML decisioning.
-- No reporting/UI leakage into core/domain logic.
-- Keep changes narrow, deterministic, replayable, and testable.
-- Prefer max 3 primary files per slice unless the slice explicitly allows more.
+Do not introduce:
 
-## Expected Inputs
+- execution or trading logic
+- broker/exchange automation
+- wallet signing
+- risk calculation
+- position sizing
+- leverage logic
+- live trading decisions
+- opaque ML decisioning
+- reporting/UI leakage into core or domain logic
 
-- Active Slice number and scope.
-- Freeze Pack path, if available.
-- Target files.
-- Out-of-scope items.
-- Verification command, usually:
-  - `pytest -q`
+Analytics may produce evidence and score breakdowns, but must not make direct trading decisions.
 
-## Output Style
+## Protected Files
 
-Return:
+Do not modify these files unless explicitly authorized for the current slice:
 
-1. Current Slice Scope
-2. Proposed Minimal Changes
-3. Guardrail Check
-4. Verification Plan
+- src/smart_money/discovery/registry.py
+- tests/discovery/test_registry.py
 
 ## Default Behavior
 
-If a request is ambiguous, propose the safest narrow path instead of broad refactor.
+Prefer the smallest safe path.
+
+Use:
+
+- patch-first changes
+- placement-based edits
+- idempotent installers when useful
+- narrow scope
+- deterministic and replayable behavior
+- no broad refactor without explicit request
+
+## Standard Output
+
+When useful, respond with:
+
+1. Current Slice Scope
+2. Minimal Proposed Changes
+3. Guardrail Check
+4. Verification Plan
+
+## Verification
+
+Before commit, recommend:
+
+git status --short
+git diff --check
+pytest -q

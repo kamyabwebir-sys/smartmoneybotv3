@@ -1,3 +1,33 @@
 interface:
   display_name: "SmartMoneyBot Slice Development"
   short_description: "Implement and review narrow deterministic SmartMoneyBotV3 slices"
+  version: "1.0.0"
+
+behavior:
+  default_language: "fa-IR"
+  code_language: "en"
+  response_style: "precise, executable, low-friction"
+
+scope:
+  project: "SmartMoneyBotV3"
+  slice_based: true
+  deterministic: true
+  replayable: true
+  patch_first: true
+
+guardrails:
+  no_execution_or_trading_logic: true
+  no_risk_calculation: true
+  no_opaque_ml_decisioning: true
+  no_reporting_ui_leakage_into_core_domain: true
+  analytics_outputs_evidence_not_decisions: true
+
+protected_files:
+  - "src/smart_money/discovery/registry.py"
+  - "tests/discovery/test_registry.py"
+
+standard_output:
+  - "Current Slice Scope"
+  - "Minimal Proposed Changes"
+  - "Guardrail Check"
+  - "Verification Plan"
