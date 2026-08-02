@@ -1,0 +1,139 @@
+{
+  "slice_id": "1.32",
+  "slice_name": "Canonical Snapshot and Governance Inventory Lock",
+  "generated_at_utc": "2026-08-02T20:37:59Z",
+  "status": "inventory-recorded",
+  "closure_status": "not-claimed",
+  "promotion_gate": "locked-pending-review",
+  "deterministic_scope": "governance-docs-only",
+  "protected_files_not_modified": [
+    "src/smart_money/discovery/registry.py",
+    "tests/discovery/test_registry.py"
+  ],
+  "guardrails": {
+    "no_execution_or_trading_logic": true,
+    "no_risk_calculation": true,
+    "no_opaque_ml_decisioning": true,
+    "no_reporting_ui_leakage_into_core_domain": true,
+    "analytics_does_not_make_direct_decisions": true
+  },
+  "snapshot_ambiguity": {
+    "acknowledged": true,
+    "note": "Multiple prior archives/snapshots may contain root-level and nested project layouts. This inventory records observed paths without promoting ambiguous paths to canonical status."
+  },
+  "counts": {
+    "docs_files": 68,
+    "scripts_files": 20,
+    "tests_files": 72,
+    "canonical_package_files": 36,
+    "legacy_package_files": 10,
+    "nested_legacy_package_files": 7
+  },
+  "inventory": [
+    {
+      "path": "pyproject.toml",
+      "exists": true,
+      "type": "file",
+      "classification": "canonical-root-signal",
+      "notes": "Repository root marker when present."
+    },
+    {
+      "path": "pytest.ini",
+      "exists": true,
+      "type": "file",
+      "classification": "canonical-root-signal",
+      "notes": "Test configuration root marker when present."
+    },
+    {
+      "path": "README.md",
+      "exists": true,
+      "type": "file",
+      "classification": "canonical-root-signal",
+      "notes": "Root documentation marker when present."
+    },
+    {
+      "path": "docs",
+      "exists": true,
+      "type": "directory",
+      "classification": "governance-docs-root",
+      "notes": "Governance and architecture documentation area."
+    },
+    {
+      "path": "docs/freeze_packs",
+      "exists": true,
+      "type": "directory",
+      "classification": "freeze-pack-area",
+      "notes": "Expected location for locked slice freeze packs."
+    },
+    {
+      "path": "docs/reviews",
+      "exists": true,
+      "type": "directory",
+      "classification": "review-area",
+      "notes": "Expected location for review verdict documents."
+    },
+    {
+      "path": "docs/governance/receipts",
+      "exists": true,
+      "type": "directory",
+      "classification": "legacy-or-parallel-receipt-area",
+      "notes": "Observed receipt location in prior snapshots; inventory only."
+    },
+    {
+      "path": "artifacts/governance",
+      "exists": true,
+      "type": "directory",
+      "classification": "governance-artifact-area",
+      "notes": "Expected machine-readable governance artifacts."
+    },
+    {
+      "path": "scripts",
+      "exists": true,
+      "type": "directory",
+      "classification": "installer-verifier-area",
+      "notes": "Expected location for PowerShell installers and verifiers."
+    },
+    {
+      "path": "src/smart_money",
+      "exists": true,
+      "type": "directory",
+      "classification": "canonical-package-root",
+      "notes": "Canonical-looking package root; read-only for this slice."
+    },
+    {
+      "path": "src/smartmoneybot",
+      "exists": true,
+      "type": "directory",
+      "classification": "legacy-or-ambiguous-package-root",
+      "notes": "Legacy/ambiguous package root if present; inventory only."
+    },
+    {
+      "path": "smartmoneybotv3/src/smartmoneybot",
+      "exists": true,
+      "type": "directory",
+      "classification": "nested-snapshot-or-ambiguous-package-root",
+      "notes": "Nested package root observed in some snapshots; inventory only."
+    },
+    {
+      "path": "tests",
+      "exists": true,
+      "type": "directory",
+      "classification": "test-root",
+      "notes": "Test root; read-only for this slice."
+    },
+    {
+      "path": "src/smart_money/discovery/registry.py",
+      "exists": true,
+      "type": "file",
+      "classification": "protected-baseline",
+      "notes": "Protected Slice 0.10 file; must not be modified."
+    },
+    {
+      "path": "tests/discovery/test_registry.py",
+      "exists": true,
+      "type": "file",
+      "classification": "protected-baseline",
+      "notes": "Protected Slice 0.10 test; must not be modified."
+    }
+  ]
+}
