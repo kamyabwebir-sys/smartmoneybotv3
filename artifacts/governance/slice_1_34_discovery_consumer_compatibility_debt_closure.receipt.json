@@ -1,0 +1,58 @@
+{
+  "schema_version": "governance_debt_closure_receipt.v1",
+  "slice": "1.34",
+  "title": "Discovery Consumer Compatibility Debt Closure",
+  "status": "closed",
+  "closure_type": "compatibility_regression_governance_debt",
+  "changed_runtime_files": [
+"src/smart_money/discovery/consumer.py"
+  ],
+  "added_governance_files": [
+"docs/freeze_packs/slice_1_34_discovery_consumer_compatibility_debt_closure.md",
+"docs/reviews/slice_1_34_discovery_consumer_compatibility_debt_closure_review.md",
+"artifacts/governance/slice_1_34_discovery_consumer_compatibility_debt_closure.receipt.json"
+  ],
+  "protected_files_unchanged": [
+"src/smart_money/discovery/registry.py",
+"tests/discovery/test_registry.py"
+  ],
+  "contract_closure": {
+"to_dict": {
+"purpose": "Slice 1.32 locked legacy deterministic evidence projection shape",
+"includes_generated_from": false
+},
+"to_canonical_dict": {
+"purpose": "Slice 1.33 governance verifier-facing canonical projection shape",
+"includes_generated_from": true
+}
+  },
+  "verification": {
+"combined": {
+"command": "python -m pytest tests/discovery/test_consumer.py tests/governance/test_consumer_verifier.py -q",
+"result": "5 passed"
+},
+"slice_1_32_regression": {
+"command": "python -m pytest tests/discovery/test_consumer.py -q",
+"result": "3 passed"
+},
+"slice_1_33_governance": {
+"command": "python -m pytest tests/governance/test_consumer_verifier.py -q",
+"result": "2 passed"
+}
+  },
+  "guardrails": {
+"execution_logic": "absent",
+"trading_logic": "absent",
+"risk_calculation": "absent",
+"opaque_ml_decisioning": "absent",
+"reporting_ui_leakage": "absent",
+"registry_mutation": "absent",
+"direct_promotion_verdict": "absent"
+  },
+  "determinism": {
+"runtime_clock_dependency": "absent",
+"randomness": "absent",
+"network_dependency": "absent",
+"canonical_projection_split": "locked"
+  }
+}
