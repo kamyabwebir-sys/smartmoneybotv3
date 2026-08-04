@@ -1,0 +1,53 @@
+{
+  "schema_version": "governance.receipt.v1",
+  "slice_id": "slice_1_30_em_003_discovery_registry_consumer_evidence_verification_case_matrix_lock",
+  "status": "PASS",
+  "verifier": ".\\scripts\\verify_slice_1_30_em_003_discovery_registry_consumer_evidence_verification_case_matrix_lock.ps1",
+  "freeze_pack": ".\\docs\\freeze_packs\\slice_1_30_em_003_discovery_registry_consumer_evidence_verification_case_matrix_lock.md",
+  "review": ".\\docs\\reviews\\slice_1_30_em_003_discovery_registry_consumer_evidence_verification_case_matrix_lock_review.md",
+  "protected_paths": [
+    {
+      "path": ".\\src\\smart_money\\discovery\\registry.py",
+      "sha256": "744c4cc809794efb455f209f9857ed0f89a5a97f135e872b0f014f50082742d7",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": ".\\tests\\discovery\\test_registry.py",
+      "sha256": "a68aa20a90826aed09e4bcd61837499583cac5401372a1fbc587de9b636ed26a",
+      "status": "UNCHANGED"
+    }
+  ],
+  "locked_contract": {
+    "previous_contract": "SLICE_1_29_EVIDENCE_OUTPUT_CONTRACT_LOCK",
+    "verification_case_matrix": "LOCKED",
+    "required_pass_cases": [
+      "EM003-CONS-EV-001",
+      "EM003-CONS-EV-002",
+      "EM003-CONS-EV-003",
+      "EM003-CONS-EV-004",
+      "EM003-CONS-EV-005"
+    ],
+    "required_fail_cases": [
+      "EM003-CONS-EV-006",
+      "EM003-CONS-EV-007",
+      "EM003-CONS-EV-008",
+      "EM003-CONS-EV-009",
+      "EM003-CONS-EV-010",
+      "EM003-CONS-EV-011",
+      "EM003-CONS-EV-012",
+      "EM003-CONS-EV-013",
+      "EM003-CONS-EV-014",
+      "EM003-CONS-EV-015"
+    ],
+    "execution_logic": "FORBIDDEN",
+    "order_intent": "FORBIDDEN",
+    "position_sizing": "FORBIDDEN",
+    "risk_calculation": "FORBIDDEN",
+    "opaque_ml_decisioning": "FORBIDDEN",
+    "reporting_ui_leakage": "FORBIDDEN",
+    "replay_traceability": "REQUIRED",
+    "deterministic_output": "REQUIRED",
+    "fail_closed_future_verifier": "REQUIRED"
+  },
+  "generated_at_utc": "1405-05-10T19:49:32Z"
+}

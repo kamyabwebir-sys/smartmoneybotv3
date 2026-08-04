@@ -1,0 +1,35 @@
+{
+  "schema_version": "governance.receipt.v1",
+  "slice_id": "slice_1_29_em_003_discovery_registry_consumer_evidence_output_contract_lock",
+  "status": "PASS",
+  "verifier": ".\\scripts\\verify_slice_1_29_em_003_discovery_registry_consumer_evidence_output_contract_lock.ps1",
+  "freeze_pack": ".\\docs\\freeze_packs\\slice_1_29_em_003_discovery_registry_consumer_evidence_output_contract_lock.md",
+  "review": ".\\docs\\reviews\\slice_1_29_em_003_discovery_registry_consumer_evidence_output_contract_lock_review.md",
+  "protected_paths": [
+    {
+      "path": ".\\src\\smart_money\\discovery\\registry.py",
+      "sha256": "744c4cc809794efb455f209f9857ed0f89a5a97f135e872b0f014f50082742d7",
+      "status": "UNCHANGED"
+    },
+    {
+      "path": ".\\tests\\discovery\\test_registry.py",
+      "sha256": "a68aa20a90826aed09e4bcd61837499583cac5401372a1fbc587de9b636ed26a",
+      "status": "UNCHANGED"
+    }
+  ],
+  "locked_contract": {
+    "registry_consumption": "READ_ONLY",
+    "consumer_interface_shape": "PREVIOUSLY_LOCKED_BY_SLICE_1_28",
+    "evidence_output_contract": "LOCKED",
+    "analytics_output": "EVIDENCE_AND_SCORE_BREAKDOWN_ONLY",
+    "execution_logic": "FORBIDDEN",
+    "order_intent": "FORBIDDEN",
+    "position_sizing": "FORBIDDEN",
+    "risk_calculation": "FORBIDDEN",
+    "opaque_ml_decisioning": "FORBIDDEN",
+    "reporting_ui_leakage": "FORBIDDEN",
+    "replay_traceability": "REQUIRED",
+    "deterministic_output": "REQUIRED"
+  },
+  "generated_at_utc": "1405-05-10T19:42:42Z"
+}

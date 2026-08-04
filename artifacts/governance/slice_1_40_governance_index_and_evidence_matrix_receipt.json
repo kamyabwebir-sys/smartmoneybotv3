@@ -1,0 +1,19 @@
+{
+  "slice": "1.40",
+  "title": "governance_index_and_evidence_matrix",
+  "status": "reconstructed",
+  "mode": "path_based_recovery",
+  "deterministic": true,
+  "replayable": true,
+  "protected_files_unchanged": [
+    "src/smart_money/discovery/registry.py",
+    "tests/discovery/test_registry.py"
+  ],
+  "required_paths": [
+    "docs/governance/slice_1_40_evidence_matrix_freeze_pack.md",
+    "docs/governance/slice_1_40_freeze_pack_governance_index_and_evidence_matrix.md",
+    "artifacts/governance/slice_1_40_governance_index_and_evidence_matrix_verifier_output.md",
+    "scripts/install_slice_1_40_governance_index_and_evidence_matrix.ps1",
+    "scripts/verify_slice_1_40_governance_index_and_evidence_matrix.ps1"
+  ]
+}

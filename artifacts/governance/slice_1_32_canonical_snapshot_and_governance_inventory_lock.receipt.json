@@ -1,0 +1,36 @@
+{
+  "slice_id": "1.32",
+  "slice_name": "Canonical Snapshot and Governance Inventory Lock",
+  "generated_at_utc": "2026-08-02T20:37:59Z",
+  "installation_status": "completed",
+  "status": "installed_for_review",
+  "closure_status": "not_closed",
+  "promotion_gate": "locked_pending_review",
+  "scope": "governance_docs_inventory_only",
+  "created_files": [
+    "docs/freeze_packs/slice_1_32_canonical_snapshot_and_governance_inventory_lock.md",
+    "docs/reviews/slice_1_32_canonical_snapshot_and_governance_inventory_lock_review.md",
+    "artifacts/governance/slice_1_32_canonical_snapshot_and_governance_inventory_lock.inventory.json",
+    "artifacts/governance/slice_1_32_canonical_snapshot_and_governance_inventory_lock.receipt.json"
+  ],
+  "modified_source_files": [],
+  "modified_test_files": [],
+  "protected_files_modified": [],
+  "protected_files": [
+    "src/smart_money/discovery/registry.py",
+    "tests/discovery/test_registry.py"
+  ],
+  "guardrails": {
+    "no_execution_or_trading_logic": true,
+    "no_risk_calculation": true,
+    "no_opaque_ml_decisioning": true,
+    "no_reporting_ui_leakage_into_core_domain": true,
+    "analytics_does_not_make_direct_decisions": true
+  },
+  "evidence": {
+    "inventory_artifact": "artifacts/governance/slice_1_32_canonical_snapshot_and_governance_inventory_lock.inventory.json",
+    "freeze_pack": "docs/freeze_packs/slice_1_32_canonical_snapshot_and_governance_inventory_lock.md",
+    "review": "docs/reviews/slice_1_32_canonical_snapshot_and_governance_inventory_lock_review.md"
+  },
+  "verdict": "INSTALLED_FOR_REVIEW_NOT_CLOSED"
+}
