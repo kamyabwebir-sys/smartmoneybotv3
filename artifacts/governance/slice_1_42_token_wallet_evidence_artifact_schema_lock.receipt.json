@@ -1,0 +1,16 @@
+{
+  "schema_version": "governance.receipt.v1",
+  "slice_id": "1.42",
+  "status": "PASS",
+  "governance_mode": "FAIL_CLOSED",
+  "scope": "governance-only",
+  "locked_contract": "token_wallet_evidence_artifact_schema_lock",
+  "freeze_pack_path": "docs/freeze_packs/slice_1_42_token_wallet_evidence_artifact_schema_lock.md",
+  "evidence_matrix_path": "docs/evidence_matrices/slice_1_42_token_wallet_evidence_artifact_schema_lock_matrix.md",
+  "review_path": "docs/reviews/slice_1_42_token_wallet_evidence_artifact_schema_lock_review.md",
+  "verifier_path": "scripts/verify_slice_1_42_token_wallet_evidence_artifact_schema_lock.ps1",
+  "protected_hashes": {
+    "src/smart_money/discovery/registry.py": "744c4cc809794efb455f209f9857ed0f89a5a97f135e872b0f014f50082742d7",
+    "tests/discovery/test_registry.py": "a68aa20a90826aed09e4bcd61837499583cac5401372a1fbc587de9b636ed26a"
+  }
+}
