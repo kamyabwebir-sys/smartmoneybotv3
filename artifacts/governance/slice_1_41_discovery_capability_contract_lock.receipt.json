@@ -1,0 +1,47 @@
+{
+  "slice_id": "slice_1_41_discovery_capability_contract_lock",
+  "slice_type": "Governance-only",
+  "contract_status": "CONTRACT_LOCKED",
+  "promotion_gate": "LOCKED",
+  "verifier_mode": "Fail-closed",
+  "implementation_authority": "NO",
+  "deterministic": true,
+  "replayable": true,
+  "guardrails": {
+    "no_execution_logic": true,
+    "no_trading_logic": true,
+    "no_risk_calculation": true,
+    "no_opaque_ml_decisioning": true,
+    "no_reporting_ui_leakage": true,
+    "registry_mutation_allowed": false
+  },
+  "protected_files": {
+    "registry_py": {
+      "path": "src/smart_money/discovery/registry.py",
+      "sha256": "744c4cc809794efb455f209f9857ed0f89a5a97f135e872b0f014f50082742d7"
+    },
+    "test_registry_py": {
+      "path": "tests/discovery/test_registry.py",
+      "sha256": "a68aa20a90826aed09e4bcd61837499583cac5401372a1fbc587de9b636ed26a"
+    }
+  },
+  "governance_artifacts": {
+    "freeze_pack": {
+      "path": "docs/freeze_packs/slice_1_41_discovery_capability_contract_lock.md",
+      "sha256": "9a573bbced43ff83a2f67ebf91979ed53315a0a41bf1611864f9953a253a7513"
+    },
+    "evidence_matrix": {
+      "path": "docs/evidence_matrices/slice_1_41_discovery_capability_contract_lock_matrix.md",
+      "sha256": "002143cf33c7a42d0ade787fbbadeceb94c4a03fc75fbc7ac734e53a2da35de3"
+    },
+    "review": {
+      "path": "docs/reviews/slice_1_41_discovery_capability_contract_lock_review.md",
+      "sha256": "1a06a6bbbfba5e5b706b767a4b6aecaf4da846a3fda968ee8385b6de954353df"
+    },
+    "verifier": {
+      "path": "scripts/verify_slice_1_41_discovery_capability_contract_lock.ps1",
+      "sha256": "834f998e8d5f93856065b6247670c6b3041a02d14ae4c263f84ee2fe4edfcdbf"
+    }
+  },
+  "verdict": "PASS"
+}
