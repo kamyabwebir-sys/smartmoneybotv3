@@ -1,180 +1,215 @@
-# verify_slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock.ps1
 $ErrorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
 
-function Resolve-RepoRoot {
-    $start = Split-Path -Parent $MyInvocation.ScriptName
-    if ([string]::IsNullOrWhiteSpace($start)) {
-        $start = (Get-Location).Path
-    }
+$sliceId = "slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock"
 
-    $current = [System.IO.DirectoryInfo]::new($start)
-    while ($null -ne $current) {
-        $pyproject = Join-Path $current.FullName "pyproject.toml"
-        $gitDir = Join-Path $current.FullName ".git"
-        if ((Test-Path $pyproject) -or (Test-Path $gitDir)) {
-            return $current.FullName
+$protectedHashesExpected = @{
+    "src/smart_money/discovery/registry.py" = "744c4cc809794efb455f209f9857ed0f89a5a97f135e872b0f014f50082742d7"
+    "tests/discovery/test_registry.py" = "a68aa20a90826aed09e4bcd61837499583cac5401372a1fbc587de9b636ed26a"
+}
+
+function Resolve-ProjectRoot {
+    $current = (Get-Location).Path
+
+    while ($true) {
+        $pyproject = Join-Path $current "pyproject.toml"
+        $srcRoot = Join-Path $current "src/smart_money"
+
+        if ((Test-Path $pyproject) -and (Test-Path $srcRoot)) {
+            return $current
         }
-        $current = $current.Parent
-    }
 
-    return (Get-Location).Path
+        $parent = Split-Path -Parent $current
+        if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $current) {
+            throw "Fail-Closed: Unable to resolve project root from current working directory."
+        }
+
+        $current = $parent
+    }
 }
 
-function Require-Path {
+function Get-Sha256 {
     param([Parameter(Mandatory = $true)][string]$Path)
+
     if (-not (Test-Path $Path)) {
-        throw "Required path missing: $Path"
+        throw "Fail-Closed: Missing file for SHA256 calculation: $Path"
+    }
+
+    return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
+}
+
+function Write-Receipt {
+    param(
+        [Parameter(Mandatory = $true)][string]$Status,
+        [Parameter(Mandatory = $true)][string]$Reason,
+        [Parameter(Mandatory = $true)][object]$Details
+    )
+
+    $receiptDirectory = Join-Path $repoRoot "artifacts/governance"
+    if (-not (Test-Path $receiptDirectory)) {
+        New-Item -ItemType Directory -Force -Path $receiptDirectory | Out-Null
+    }
+
+    $receiptPath = Join-Path $receiptDirectory "$sliceId.receipt.json"
+
+    $receipt = [ordered]@{
+        slice_id = $sliceId
+        status = $Status
+        reason = $Reason
+        verifier_mode = "fail-closed"
+        generated_by = "scripts/verify_${sliceId}.ps1"
+        details = $Details
+    }
+
+    $receipt | ConvertTo-Json -Depth 10 | Set-Content -Path $receiptPath -Encoding utf8NoBOM
+}
+
+function Fail {
+    param(
+        [Parameter(Mandatory = $true)][string]$Reason,
+        [Parameter(Mandatory = $true)][object]$Details
+    )
+
+    Write-Receipt -Status "FAIL" -Reason $Reason -Details $Details
+    throw "Fail-Closed: $Reason"
+}
+
+function Require-File {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        Fail -Reason "MISSING_REQUIRED_FILE" -Details @{ path = $Path }
     }
 }
 
-function Require-Marker {
+function Require-Token {
     param(
         [Parameter(Mandatory = $true)][string]$Content,
-        [Parameter(Mandatory = $true)][string]$Marker,
-        [Parameter(Mandatory = $true)][string]$Path
+        [Parameter(Mandatory = $true)][string]$Token,
+        [Parameter(Mandatory = $true)][string]$Document
     )
-    if ($Content -notlike "*$Marker*") {
-        throw "Missing marker in ${Path}: ${Marker}"
-    }
-}
 
-$RepoRoot = Resolve-RepoRoot
-Set-Location $RepoRoot
-
-$Slug = "slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock"
-$FreezePath = Join-Path $RepoRoot "docs/freeze_packs/$Slug.md"
-$ReviewPath = Join-Path $RepoRoot "docs/reviews/${Slug}_review.md"
-$ReceiptPath = Join-Path $RepoRoot "docs/governance/receipts/${Slug}.json"
-$ArtifactPath = Join-Path $RepoRoot "artifacts/governance/${Slug}.receipt.json"
-
-Require-Path $FreezePath
-Require-Path $ReviewPath
-Require-Path $ReceiptPath
-Require-Path $ArtifactPath
-
-$FreezeContent = Get-Content -Raw -Path $FreezePath
-$ReviewContent = Get-Content -Raw -Path $ReviewPath
-
-$RequiredMarkers = @(
-    "Review Verdict: PASS",
-    "Slice Status: LOCKED",
-    "Matrix Status: LOCKED",
-    "Promotion Gate: LOCKED",
-    "Governance Only: YES",
-    "Implementation Authority: NO",
-    "Runtime Authority: NO",
-    "Trading Authority: NO",
-    "Risk Authority: NO",
-    "ML Decision Authority: NO",
-    "TW-EVID-001",
-    "TW-EVID-015"
-)
-
-foreach ($marker in $RequiredMarkers) {
-    Require-Marker -Content $FreezeContent -Marker $marker -Path $FreezePath
-    Require-Marker -Content $ReviewContent -Marker $marker -Path $ReviewPath
-}
-
-$ProtectedFiles = @(
-    "src/smart_money/discovery/registry.py",
-    "tests/discovery/test_registry.py"
-)
-
-if (Get-Command git -ErrorAction SilentlyContinue) {
-    foreach ($protected in $ProtectedFiles) {
-        $status = git status --porcelain -- $protected 2>$null
-        if (-not [string]::IsNullOrWhiteSpace(($status -join ""))) {
-            throw "Protected Slice 0.10 file has local mutation: $protected"
+    if (-not $Content.Contains($Token)) {
+        Fail -Reason "MISSING_REQUIRED_TOKEN" -Details @{
+            document = $Document
+            token = $Token
         }
     }
 }
 
-$Python = @"
-import hashlib
-import json
-import re
-import sys
-from pathlib import Path
+$repoRoot = Resolve-ProjectRoot
 
-receipt_path = Path(sys.argv[1])
-artifact_path = Path(sys.argv[2])
+$freezePackPath = Join-Path $repoRoot "docs/freeze_packs/$sliceId.md"
+$reviewPath = Join-Path $repoRoot "docs/reviews/${sliceId}_review.md"
+$verifierPath = Join-Path $repoRoot "scripts/verify_${sliceId}.ps1"
 
-receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+Require-File -Path $freezePackPath
+Require-File -Path $reviewPath
+Require-File -Path $verifierPath
 
-if receipt != artifact:
-    raise SystemExit("receipt and artifact mirror mismatch")
+foreach ($relativePath in $protectedHashesExpected.Keys) {
+    $absolutePath = Join-Path $repoRoot $relativePath
+    Require-File -Path $absolutePath
 
-required = [
-    "slice_id",
-    "slice_name",
-    "status",
-    "governance_only",
-    "implementation_authority",
-    "runtime_authority",
-    "trading_authority",
-    "risk_authority",
-    "ml_decision_authority",
-    "matrix_case_ids",
-    "created_at_utc",
-    "locked_at_utc",
-    "canonical_payload_sha256",
-    "receipt_id",
-]
+    $actualHash = Get-Sha256 -Path $absolutePath
+    $expectedHash = $protectedHashesExpected[$relativePath]
 
-for key in required:
-    if key not in receipt:
-        raise SystemExit(f"missing receipt key: {key}")
+    if ([string]::IsNullOrWhiteSpace($expectedHash) -or $expectedHash.StartsWith("__")) {
+        Fail -Reason "PROTECTED_HASH_PLACEHOLDER" -Details @{
+            path = $relativePath
+            expected = $expectedHash
+        }
+    }
 
-if receipt["slice_id"] != "1.43":
-    raise SystemExit("slice_id mismatch")
-if receipt["status"] != "LOCKED":
-    raise SystemExit("status mismatch")
-if receipt["governance_only"] is not True:
-    raise SystemExit("governance_only must be true")
-
-for key in [
-    "implementation_authority",
-    "runtime_authority",
-    "trading_authority",
-    "risk_authority",
-    "ml_decision_authority",
-]:
-    if receipt[key] != "NO":
-        raise SystemExit(f"{key} must be NO")
-
-expected_cases = [f"TW-EVID-{i:03d}" for i in range(1, 16)]
-if receipt["matrix_case_ids"] != expected_cases:
-    raise SystemExit("matrix_case_ids mismatch")
-
-utc_re = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
-for key in ["created_at_utc", "locked_at_utc"]:
-    if not isinstance(receipt[key], str) or not utc_re.match(receipt[key]):
-        raise SystemExit(f"{key} is not a fixed UTC string")
-    if receipt[key] != "2026-08-05T00:00:00Z":
-        raise SystemExit(f"{key} must match fixed Slice 1.43 UTC timestamp")
-
-payload = dict(receipt)
-payload.pop("receipt_id", None)
-payload.pop("canonical_payload_sha256", None)
-
-canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
-if receipt["canonical_payload_sha256"] != digest:
-    raise SystemExit("canonical_payload_sha256 mismatch")
-
-if receipt["receipt_id"] != "sha256:" + digest:
-    raise SystemExit("receipt_id mismatch")
-
-print("PASS slice_1_43 token wallet evidence artifact verification case matrix lock")
-"@
-
-if (Get-Command python -ErrorAction SilentlyContinue) {
-    & python -c $Python $ReceiptPath $ArtifactPath
-} elseif (Get-Command py -ErrorAction SilentlyContinue) {
-    & py -3 -c $Python $ReceiptPath $ArtifactPath
-} else {
-    throw "Python is required for canonical JSON SHA-256 verification."
+    if ($actualHash -ne $expectedHash) {
+        Fail -Reason "PROTECTED_FILE_MUTATION" -Details @{
+            path = $relativePath
+            expected = $expectedHash
+            actual = $actualHash
+        }
+    }
 }
+
+$freezePackContent = Get-Content -Raw -Path $freezePackPath
+$reviewContent = Get-Content -Raw -Path $reviewPath
+
+$freezePackTokens = @(
+    "Slice 1.43 - Token and Wallet Evidence Artifact Verification Case Matrix Lock",
+    "Scope: Governance / Evidence / Documentation Only",
+    "Verifier Mode: Fail-closed",
+    "Fast Lane Delivery: ALLOWED",
+    "Protected Paths: UNCHANGED REQUIRED",
+    "TW-EA-001",
+    "TW-EA-002",
+    "TW-EA-003",
+    "TW-EA-004",
+    "TW-EA-005",
+    "TW-EA-006",
+    "TW-EA-007",
+    "TW-EA-008",
+    "TW-EA-009",
+    "TW-EA-010",
+    "MISSING_REQUIRED_FILE",
+    "MISSING_REQUIRED_TOKEN",
+    "MISSING_REQUIRED_ARTIFACT",
+    "NON_CANONICAL_ARTIFACT_NAME",
+    "CANONICAL_HASH_DRIFT",
+    "NON_DETERMINISTIC_ORDERING",
+    "ARTIFACT_SHAPE_VIOLATION",
+    "RUNTIME_LOGIC_LEAKAGE",
+    "WRITE_SIDE_EFFECT_DETECTED",
+    "PROTECTED_FILE_MUTATION",
+    "REPLAY_METADATA_MISSING",
+    "SCOPE_GUARDRAIL_VIOLATION",
+    "No execution/trading logic",
+    "No risk calculation",
+    "No opaque ML decisioning",
+    "No reporting/UI leakage into core/domain logic",
+    "No wallet/token tracing implementation",
+    "No token scoring implementation",
+    "No artifact shape implementation in this slice",
+    "No artifact generation implementation in this slice",
+    "No runtime behavior implementation in this slice"
+)
+
+foreach ($token in $freezePackTokens) {
+    Require-Token -Content $freezePackContent -Token $token -Document "freeze_pack"
+}
+
+$reviewTokens = @(
+    "Verdict: PASS-CANDIDATE",
+    "Scope: Governance-only",
+    "Protected Paths: UNCHANGED REQUIRED",
+    "Fast Lane Delivery: ALLOWED",
+    "Runtime Logic Leakage: NOT ALLOWED",
+    "Execution Logic: NOT ALLOWED",
+    "Risk Calculation: NOT ALLOWED",
+    "Opaque ML Decisioning: NOT ALLOWED",
+    "Reporting/UI Leakage: NOT ALLOWED",
+    "TW-EA-001",
+    "TW-EA-010"
+)
+
+foreach ($token in $reviewTokens) {
+    Require-Token -Content $reviewContent -Token $token -Document "review"
+}
+
+Write-Receipt -Status "PASS" -Reason "SLICE_1_43_VERIFICATION_CASE_MATRIX_LOCK_VERIFIED" -Details @{
+    freeze_pack = "docs/freeze_packs/$sliceId.md"
+    review = "docs/reviews/${sliceId}_review.md"
+    verifier = "scripts/verify_${sliceId}.ps1"
+    protected_paths = $protectedHashesExpected.Keys
+    case_ids = @(
+        "TW-EA-001",
+        "TW-EA-002",
+        "TW-EA-003",
+        "TW-EA-004",
+        "TW-EA-005",
+        "TW-EA-006",
+        "TW-EA-007",
+        "TW-EA-008",
+        "TW-EA-009",
+        "TW-EA-010"
+    )
+}
+
+Write-Host "PASS: Slice 1.43 verification case matrix lock verified."

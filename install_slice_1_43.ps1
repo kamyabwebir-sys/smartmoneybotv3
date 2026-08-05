@@ -1,24 +1,26 @@
 # install_slice_1_43.ps1
 $ErrorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
 
-function Resolve-RepoRoot {
-    $start = Split-Path -Parent $MyInvocation.ScriptName
-    if ([string]::IsNullOrWhiteSpace($start)) {
-        $start = (Get-Location).Path
-    }
+$SliceId = "slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock"
 
-    $current = [System.IO.DirectoryInfo]::new($start)
-    while ($null -ne $current) {
-        $pyproject = Join-Path $current.FullName "pyproject.toml"
-        $gitDir = Join-Path $current.FullName ".git"
-        if ((Test-Path $pyproject) -or (Test-Path $gitDir)) {
-            return $current.FullName
+function Resolve-ProjectRoot {
+    $current = (Get-Location).Path
+
+    while ($true) {
+        $pyproject = Join-Path $current "pyproject.toml"
+        $srcRoot = Join-Path $current "src/smart_money"
+
+        if ((Test-Path $pyproject) -and (Test-Path $srcRoot)) {
+            return $current
         }
-        $current = $current.Parent
-    }
 
-    return (Get-Location).Path
+        $parent = Split-Path -Parent $current
+        if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $current) {
+            throw "Fail-Closed: Unable to resolve project root from current working directory."
+        }
+
+        $current = $parent
+    }
 }
 
 function Write-Utf8NoBom {
@@ -26,435 +28,462 @@ function Write-Utf8NoBom {
         [Parameter(Mandatory = $true)][string]$Path,
         [Parameter(Mandatory = $true)][string]$Content
     )
-    $encoding = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($Path, $Content, $encoding)
+
+    $directory = Split-Path -Parent $Path
+    if (-not (Test-Path $directory)) {
+        New-Item -ItemType Directory -Force -Path $directory | Out-Null
+    }
+
+    [System.IO.File]::WriteAllText($Path, $Content, [System.Text.UTF8Encoding]::new($false))
 }
 
-function Require-GovernanceMarker {
-    param(
-        [Parameter(Mandatory = $true)][string]$Content,
-        [Parameter(Mandatory = $true)][string]$Marker,
-        [Parameter(Mandatory = $true)][string]$Path
-    )
-    if ($Content -notlike "*$Marker*") {
-        throw "Missing governance marker in ${Path}: ${Marker}"
+function Get-Sha256 {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        throw "Fail-Closed: Missing file for SHA256 calculation: $Path"
+    }
+
+    return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
+}
+
+function Assert-ProtectedFilesClean {
+    param([Parameter(Mandatory = $true)][string[]]$RelativePaths)
+
+    foreach ($relativePath in $RelativePaths) {
+        $absolutePath = Join-Path $RepoRoot $relativePath
+        if (-not (Test-Path $absolutePath)) {
+            throw "Fail-Closed: Protected file missing: $relativePath"
+        }
+    }
+
+    $gitDirectory = Join-Path $RepoRoot ".git"
+    if (Test-Path $gitDirectory) {
+        foreach ($relativePath in $RelativePaths) {
+            $gitPath = $relativePath -replace "\\", "/"
+            $status = git -C $RepoRoot status --porcelain -- $gitPath
+            if (-not [string]::IsNullOrWhiteSpace($status)) {
+                throw "Fail-Closed: Protected file mutation detected: $relativePath"
+            }
+        }
     }
 }
 
-$RepoRoot = Resolve-RepoRoot
-Set-Location $RepoRoot
+$RepoRoot = Resolve-ProjectRoot
 
-$SliceId = "1.43"
-$Slug = "slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock"
-$FixedUtc = "2026-08-05T00:00:00Z"
-
-$FreezeDir = Join-Path $RepoRoot "docs/freeze_packs"
-$ReviewDir = Join-Path $RepoRoot "docs/reviews"
-$ReceiptDir = Join-Path $RepoRoot "docs/governance/receipts"
-$ArtifactDir = Join-Path $RepoRoot "artifacts/governance"
-$ScriptsDir = Join-Path $RepoRoot "scripts"
-
-$FreezePath = Join-Path $FreezeDir "$Slug.md"
-$ReviewPath = Join-Path $ReviewDir "${Slug}_review.md"
-$ReceiptPath = Join-Path $ReceiptDir "${Slug}.json"
-$ArtifactPath = Join-Path $ArtifactDir "${Slug}.receipt.json"
-$VerifierPath = Join-Path $ScriptsDir "verify_${Slug}.ps1"
-
-@($FreezeDir, $ReviewDir, $ReceiptDir, $ArtifactDir, $ScriptsDir) | ForEach-Object {
-    New-Item -ItemType Directory -Force -Path $_ | Out-Null
-}
+$FreezePackPath = Join-Path $RepoRoot "docs/freeze_packs/$SliceId.md"
+$ReviewPath = Join-Path $RepoRoot "docs/reviews/${SliceId}_review.md"
+$VerifierPath = Join-Path $RepoRoot "scripts/verify_${SliceId}.ps1"
 
 $ProtectedFiles = @(
     "src/smart_money/discovery/registry.py",
     "tests/discovery/test_registry.py"
 )
 
-if (Get-Command git -ErrorAction SilentlyContinue) {
-    foreach ($protected in $ProtectedFiles) {
-        $status = git status --porcelain -- $protected 2>$null
-        if (-not [string]::IsNullOrWhiteSpace(($status -join ""))) {
-            throw "Protected Slice 0.10 file has local mutation; refusing Slice 1.43 governance install: $protected"
-        }
-    }
-}
+Assert-ProtectedFilesClean -RelativePaths $ProtectedFiles
 
-$Freeze = @"
+$RegistryHash = Get-Sha256 -Path (Join-Path $RepoRoot "src/smart_money/discovery/registry.py")
+$RegistryTestHash = Get-Sha256 -Path (Join-Path $RepoRoot "tests/discovery/test_registry.py")
+
+$FreezePack = @'
 # Slice 1.43 - Token and Wallet Evidence Artifact Verification Case Matrix Lock
 
-Slice ID: 1.43
-Slice Status: LOCKED
-Matrix Status: LOCKED
-Review Verdict: PASS
-Promotion Gate: LOCKED
-Governance Only: YES
-Implementation Authority: NO
-Runtime Authority: NO
-Trading Authority: NO
-Risk Authority: NO
-ML Decision Authority: NO
-Reporting Authority: NO
+Status: LOCKED
+Scope: Governance / Evidence / Documentation Only
+Verifier Mode: Fail-closed
+Fast Lane Delivery: ALLOWED
+Protected Paths: UNCHANGED REQUIRED
 
-## Scope
+## Current Slice Scope
 
-This slice locks the deterministic verifier case matrix for token and wallet evidence artifacts.
+Slice 1.43 locks the future verification case matrix for token and wallet evidence artifacts.
 
-It is a governance-only contract lock. It does not authorize runtime implementation, trading logic, execution logic, risk calculation, opaque ML decisioning, alert generation, reporting/UI behavior, or mutation of protected discovery registry files.
+This slice is governance-only. It does not implement token evidence artifact generation, wallet evidence artifact generation, wallet tracing, token tracing, token scoring, wallet scoring, trading logic, execution logic, risk calculation, opaque ML decisioning, analytics decisioning, reporting behavior, UI behavior, or artifact shape validation.
 
-## Protected Files
+The verifier for this slice is allowed to verify governance integrity, required tokens, protected file hashes, canonical file placement, and receipt generation only.
 
-The following files remain protected and must not be changed by this slice:
+## Target Architecture Notes
 
-- src/smart_money/discovery/registry.py
-- tests/discovery/test_registry.py
+This slice supports the accepted destination architecture:
 
-## Verifier Case Matrix
+- Core
+- Domain
+- Application
+- Adapters
+- Analytics
+- Reporting
 
-| Case ID | Verification Case | Expected Result |
-|---|---|---|
-| TW-EVID-001 | Artifact file exists at the declared path. | PASS when present; FAIL when missing. |
-| TW-EVID-002 | Artifact is valid JSON and parseable with deterministic tooling. | PASS when valid JSON; FAIL on parse error. |
-| TW-EVID-003 | Artifact declares schema_version as a fixed string. | PASS when present and fixed; FAIL when missing or dynamic. |
-| TW-EVID-004 | Artifact declares evidence_kind as token_wallet_evidence. | PASS when exact; FAIL otherwise. |
-| TW-EVID-005 | Artifact declares token evidence section without runtime enrichment. | PASS when structural only; FAIL on execution-derived enrichment. |
-| TW-EVID-006 | Artifact declares wallet evidence section without runtime enrichment. | PASS when structural only; FAIL on execution-derived enrichment. |
-| TW-EVID-007 | Token identifiers are canonical strings. | PASS when deterministic strings; FAIL on ambiguous identifiers. |
-| TW-EVID-008 | Wallet identifiers are canonical strings. | PASS when deterministic strings; FAIL on ambiguous identifiers. |
-| TW-EVID-009 | Evidence timestamps, when present, are fixed UTC strings. | PASS when fixed UTC; FAIL when generated dynamically. |
-| TW-EVID-010 | Evidence source references are explicit and replayable. | PASS when source references are stable; FAIL when opaque. |
-| TW-EVID-011 | No trading, execution, or order intent fields are introduced. | PASS when absent; FAIL when present. |
-| TW-EVID-012 | No risk scoring, exposure sizing, or portfolio action fields are introduced. | PASS when absent; FAIL when present. |
-| TW-EVID-013 | No opaque ML decision output is introduced. | PASS when absent; FAIL when present. |
-| TW-EVID-014 | Evidence score breakdown, if later authorized, remains explanatory only. | PASS when non-decisional; FAIL when used as decision authority. |
-| TW-EVID-015 | Verification result is deterministic and replayable from the artifact bytes. | PASS when replayable; FAIL when dependent on runtime state. |
+No logic is added to those layers in this slice.
 
-## Receipt Rules
+Analytics remains evidence-only and may produce future evidence and score breakdowns only after separate governance approval. It must not make direct trading, execution, risk, or opaque ML decisions.
 
-- receipt_id must be derived from canonical JSON using SHA-256.
-- canonical_payload_sha256 must match the canonical payload with receipt_id and canonical_payload_sha256 excluded.
-- Temporal fields must be fixed UTC strings.
-- Verifier must fail closed on missing markers, missing files, protected-file mutation, or hash mismatch.
+## Locked Verification Case Matrix
 
-## Authority Boundary
+| Case ID | Acceptance Area | Future Verifier Intent | Expected Fail-Closed Behavior | Implementation Now |
+|---|---|---|---|---|
+| TW-EA-001 | Artifact existence | Verify required token/wallet evidence artifact files exist at canonical paths. | Fail with `MISSING_REQUIRED_ARTIFACT` if any required artifact is absent. | Governance lock only |
+| TW-EA-002 | Canonical naming | Verify artifact filenames follow locked canonical naming rules. | Fail with `NON_CANONICAL_ARTIFACT_NAME` if naming drifts. | Governance lock only |
+| TW-EA-003 | Canonical hash stability | Verify artifact content hash remains stable across repeated verification. | Fail with `CANONICAL_HASH_DRIFT` if hash changes without governance approval. | Governance lock only |
+| TW-EA-004 | Deterministic ordering | Verify wallet/token evidence entries are sorted deterministically. | Fail with `NON_DETERMINISTIC_ORDERING` if filesystem, insertion order, or runtime order affects output. | Governance lock only |
+| TW-EA-005 | Shape compliance | Verify artifact shape matches a future locked schema without interpreting evidence meaning. | Fail with `ARTIFACT_SHAPE_VIOLATION` if required fields or structure drift. | Governance lock only |
+| TW-EA-006 | Evidence-only boundary | Verify artifact contains evidence metadata only, not trading, risk, decision, or alert output. | Fail with `RUNTIME_LOGIC_LEAKAGE` if execution, risk, score-decision, or alerting logic appears. | Governance lock only |
+| TW-EA-007 | Read-only governance boundary | Verify verifier reads artifacts and governance docs only. | Fail with `WRITE_SIDE_EFFECT_DETECTED` if verifier mutates repo state outside receipt generation. | Governance lock only |
+| TW-EA-008 | Protected file integrity | Verify protected discovery registry files remain unchanged. | Fail with `PROTECTED_FILE_MUTATION` if protected file hashes drift. | Governance lock only |
+| TW-EA-009 | Replayability metadata | Verify future artifact includes deterministic replay metadata such as source id, generated-at policy, and canonical version fields once shape is locked. | Fail with `REPLAY_METADATA_MISSING` if required replay fields are absent. | Governance lock only |
+| TW-EA-010 | Scope compliance | Verify no wallet tracing, token scoring, ML inference, trading, risk, or reporting/UI leakage is introduced. | Fail with `SCOPE_GUARDRAIL_VIOLATION` on any forbidden capability. | Governance lock only |
 
-Analytics may only produce evidence and score breakdown in future authorized slices. This slice grants no authority for direct decisions.
-"@
+## Fail-Closed Taxonomy
 
-$Review = @"
+The following fail-closed labels are locked for future verifier use:
+
+- MISSING_REQUIRED_FILE
+- MISSING_REQUIRED_TOKEN
+- MISSING_REQUIRED_ARTIFACT
+- NON_CANONICAL_ARTIFACT_NAME
+- CANONICAL_HASH_DRIFT
+- NON_DETERMINISTIC_ORDERING
+- ARTIFACT_SHAPE_VIOLATION
+- RUNTIME_LOGIC_LEAKAGE
+- WRITE_SIDE_EFFECT_DETECTED
+- PROTECTED_FILE_MUTATION
+- REPLAY_METADATA_MISSING
+- SCOPE_GUARDRAIL_VIOLATION
+
+## Required Governance Boundaries
+
+No execution/trading logic
+No risk calculation
+No opaque ML decisioning
+No reporting/UI leakage into core/domain logic
+No wallet/token tracing implementation
+No token/wallet tracing implementation
+No token scoring implementation
+No wallet scoring implementation
+No artifact shape implementation in this slice
+No artifact generation implementation in this slice
+No runtime behavior implementation in this slice
+No changes under `src/`
+No changes under `tests/`
+
+## Out-of-Scope Items
+
+This slice does not implement:
+
+- wallet tracing
+- token tracing
+- token holder graph analysis
+- token scoring
+- wallet scoring
+- trading or execution logic
+- risk calculation
+- opaque ML inference
+- alerting logic
+- reporting/UI behavior
+- artifact schema validation
+- artifact shape validation
+- artifact generation
+- analytics decisioning
+- changes under `src/`
+- changes under `tests/`
+- changes to protected discovery registry files
+
+## Protected Paths
+
+The following paths must remain unchanged:
+
+- `src/smart_money/discovery/registry.py`
+- `tests/discovery/test_registry.py`
+
+## Slice 1.44 Handoff
+
+Slice 1.44 may define Token and Wallet Evidence Artifact Shape Lock after this case matrix is closed.
+
+Slice 1.44 must remain shape/schema governance only unless a later explicit authority grant permits artifact generation or runtime verification.
+'@
+
+$Review = @'
 # Slice 1.43 Review - Token and Wallet Evidence Artifact Verification Case Matrix Lock
 
-Review Verdict: PASS
-Slice Status: LOCKED
-Matrix Status: LOCKED
-Promotion Gate: LOCKED
-Governance Only: YES
-Implementation Authority: NO
-Runtime Authority: NO
-Trading Authority: NO
-Risk Authority: NO
-ML Decision Authority: NO
-Reporting Authority: NO
+Verdict: PASS-CANDIDATE
+
+Scope: Governance-only
+
+Protected Paths: UNCHANGED REQUIRED
+
+Fast Lane Delivery: ALLOWED
+
+Runtime Logic Leakage: NOT ALLOWED
 
 ## Review Summary
 
-Slice 1.43 locks the Token and Wallet Evidence Artifact Verification Case Matrix with cases TW-EVID-001 through TW-EVID-015.
+Slice 1.43 locks the future verification case matrix for token and wallet evidence artifacts.
 
-The slice is limited to governance documentation, deterministic receipt capture, and fail-closed verifier generation. It grants no implementation or runtime authority.
-
-## Case Coverage
-
-- TW-EVID-001: LOCKED
-- TW-EVID-002: LOCKED
-- TW-EVID-003: LOCKED
-- TW-EVID-004: LOCKED
-- TW-EVID-005: LOCKED
-- TW-EVID-006: LOCKED
-- TW-EVID-007: LOCKED
-- TW-EVID-008: LOCKED
-- TW-EVID-009: LOCKED
-- TW-EVID-010: LOCKED
-- TW-EVID-011: LOCKED
-- TW-EVID-012: LOCKED
-- TW-EVID-013: LOCKED
-- TW-EVID-014: LOCKED
-- TW-EVID-015: LOCKED
+It does not implement wallet tracing, token tracing, token scoring, wallet scoring, artifact generation, artifact schema validation, artifact shape validation, execution logic, trading logic, risk calculation, opaque ML decisioning, reporting behavior, UI behavior, analytics decisioning, or runtime behavior.
 
 ## Guardrail Review
 
-No execution/trading logic is authorized.
-No risk calculation is authorized.
-No opaque ML decisioning is authorized.
-No reporting/UI leakage into core/domain logic is authorized.
-No protected registry file mutation is authorized.
+- Execution Logic: NOT ALLOWED
+- Trading Logic: NOT ALLOWED
+- Risk Calculation: NOT ALLOWED
+- Opaque ML Decisioning: NOT ALLOWED
+- Reporting/UI Leakage: NOT ALLOWED
+- Runtime Logic Leakage: NOT ALLOWED
+- Protected File Mutation: NOT ALLOWED
+- Artifact Shape Implementation: NOT ALLOWED IN THIS SLICE
+- Artifact Generation Implementation: NOT ALLOWED IN THIS SLICE
 
-## Closure
+## Case Matrix Review
 
-Slice 1.43 is approved only as a governance-only contract lock.
-"@
+The locked case matrix includes:
 
-$Verifier = @'
-# verify_slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock.ps1
-$ErrorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
+- TW-EA-001
+- TW-EA-002
+- TW-EA-003
+- TW-EA-004
+- TW-EA-005
+- TW-EA-006
+- TW-EA-007
+- TW-EA-008
+- TW-EA-009
+- TW-EA-010
 
-function Resolve-RepoRoot {
-    $start = Split-Path -Parent $MyInvocation.ScriptName
-    if ([string]::IsNullOrWhiteSpace($start)) {
-        $start = (Get-Location).Path
-    }
+## Closure Position
 
-    $current = [System.IO.DirectoryInfo]::new($start)
-    while ($null -ne $current) {
-        $pyproject = Join-Path $current.FullName "pyproject.toml"
-        $gitDir = Join-Path $current.FullName ".git"
-        if ((Test-Path $pyproject) -or (Test-Path $gitDir)) {
-            return $current.FullName
-        }
-        $current = $current.Parent
-    }
+PASS-CANDIDATE is appropriate because this slice is limited to governance documents and a fail-closed verifier for those documents.
 
-    return (Get-Location).Path
-}
-
-function Require-Path {
-    param([Parameter(Mandatory = $true)][string]$Path)
-    if (-not (Test-Path $Path)) {
-        throw "Required path missing: $Path"
-    }
-}
-
-function Require-Marker {
-    param(
-        [Parameter(Mandatory = $true)][string]$Content,
-        [Parameter(Mandatory = $true)][string]$Marker,
-        [Parameter(Mandatory = $true)][string]$Path
-    )
-    if ($Content -notlike "*$Marker*") {
-        throw "Missing marker in ${Path}: ${Marker}"
-    }
-}
-
-$RepoRoot = Resolve-RepoRoot
-Set-Location $RepoRoot
-
-$Slug = "slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock"
-$FreezePath = Join-Path $RepoRoot "docs/freeze_packs/$Slug.md"
-$ReviewPath = Join-Path $RepoRoot "docs/reviews/${Slug}_review.md"
-$ReceiptPath = Join-Path $RepoRoot "docs/governance/receipts/${Slug}.json"
-$ArtifactPath = Join-Path $RepoRoot "artifacts/governance/${Slug}.receipt.json"
-
-Require-Path $FreezePath
-Require-Path $ReviewPath
-Require-Path $ReceiptPath
-Require-Path $ArtifactPath
-
-$FreezeContent = Get-Content -Raw -Path $FreezePath
-$ReviewContent = Get-Content -Raw -Path $ReviewPath
-
-$RequiredMarkers = @(
-    "Review Verdict: PASS",
-    "Slice Status: LOCKED",
-    "Matrix Status: LOCKED",
-    "Promotion Gate: LOCKED",
-    "Governance Only: YES",
-    "Implementation Authority: NO",
-    "Runtime Authority: NO",
-    "Trading Authority: NO",
-    "Risk Authority: NO",
-    "ML Decision Authority: NO",
-    "TW-EVID-001",
-    "TW-EVID-015"
-)
-
-foreach ($marker in $RequiredMarkers) {
-    Require-Marker -Content $FreezeContent -Marker $marker -Path $FreezePath
-    Require-Marker -Content $ReviewContent -Marker $marker -Path $ReviewPath
-}
-
-$ProtectedFiles = @(
-    "src/smart_money/discovery/registry.py",
-    "tests/discovery/test_registry.py"
-)
-
-if (Get-Command git -ErrorAction SilentlyContinue) {
-    foreach ($protected in $ProtectedFiles) {
-        $status = git status --porcelain -- $protected 2>$null
-        if (-not [string]::IsNullOrWhiteSpace(($status -join ""))) {
-            throw "Protected Slice 0.10 file has local mutation: $protected"
-        }
-    }
-}
-
-$Python = @"
-import hashlib
-import json
-import re
-import sys
-from pathlib import Path
-
-receipt_path = Path(sys.argv[1])
-artifact_path = Path(sys.argv[2])
-
-receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
-
-if receipt != artifact:
-    raise SystemExit("receipt and artifact mirror mismatch")
-
-required = [
-    "slice_id",
-    "slice_name",
-    "status",
-    "governance_only",
-    "implementation_authority",
-    "runtime_authority",
-    "trading_authority",
-    "risk_authority",
-    "ml_decision_authority",
-    "matrix_case_ids",
-    "created_at_utc",
-    "locked_at_utc",
-    "canonical_payload_sha256",
-    "receipt_id",
-]
-
-for key in required:
-    if key not in receipt:
-        raise SystemExit(f"missing receipt key: {key}")
-
-if receipt["slice_id"] != "1.43":
-    raise SystemExit("slice_id mismatch")
-if receipt["status"] != "LOCKED":
-    raise SystemExit("status mismatch")
-if receipt["governance_only"] is not True:
-    raise SystemExit("governance_only must be true")
-
-for key in [
-    "implementation_authority",
-    "runtime_authority",
-    "trading_authority",
-    "risk_authority",
-    "ml_decision_authority",
-]:
-    if receipt[key] != "NO":
-        raise SystemExit(f"{key} must be NO")
-
-expected_cases = [f"TW-EVID-{i:03d}" for i in range(1, 16)]
-if receipt["matrix_case_ids"] != expected_cases:
-    raise SystemExit("matrix_case_ids mismatch")
-
-utc_re = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
-for key in ["created_at_utc", "locked_at_utc"]:
-    if not isinstance(receipt[key], str) or not utc_re.match(receipt[key]):
-        raise SystemExit(f"{key} is not a fixed UTC string")
-    if receipt[key] != "2026-08-05T00:00:00Z":
-        raise SystemExit(f"{key} must match fixed Slice 1.43 UTC timestamp")
-
-payload = dict(receipt)
-payload.pop("receipt_id", None)
-payload.pop("canonical_payload_sha256", None)
-
-canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
-if receipt["canonical_payload_sha256"] != digest:
-    raise SystemExit("canonical_payload_sha256 mismatch")
-
-if receipt["receipt_id"] != "sha256:" + digest:
-    raise SystemExit("receipt_id mismatch")
-
-print("PASS slice_1_43 token wallet evidence artifact verification case matrix lock")
-"@
-
-if (Get-Command python -ErrorAction SilentlyContinue) {
-    & python -c $Python $ReceiptPath $ArtifactPath
-} elseif (Get-Command py -ErrorAction SilentlyContinue) {
-    & py -3 -c $Python $ReceiptPath $ArtifactPath
-} else {
-    throw "Python is required for canonical JSON SHA-256 verification."
-}
+No source, test, domain, core, analytics, adapter, reporting, trading, risk, or ML behavior is modified.
 '@
 
-Write-Utf8NoBom -Path $FreezePath -Content $Freeze
+$VerifierTemplate = @'
+$ErrorActionPreference = "Stop"
+
+$sliceId = "__SLICE_ID__"
+
+$protectedHashesExpected = @{
+    "src/smart_money/discovery/registry.py" = "__REGISTRY_HASH__"
+    "tests/discovery/test_registry.py" = "__REGISTRY_TEST_HASH__"
+}
+
+function Resolve-ProjectRoot {
+    $current = (Get-Location).Path
+
+    while ($true) {
+        $pyproject = Join-Path $current "pyproject.toml"
+        $srcRoot = Join-Path $current "src/smart_money"
+
+        if ((Test-Path $pyproject) -and (Test-Path $srcRoot)) {
+            return $current
+        }
+
+        $parent = Split-Path -Parent $current
+        if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $current) {
+            throw "Fail-Closed: Unable to resolve project root from current working directory."
+        }
+
+        $current = $parent
+    }
+}
+
+function Get-Sha256 {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        throw "Fail-Closed: Missing file for SHA256 calculation: $Path"
+    }
+
+    return (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
+}
+
+function Write-Receipt {
+    param(
+        [Parameter(Mandatory = $true)][string]$Status,
+        [Parameter(Mandatory = $true)][string]$Reason,
+        [Parameter(Mandatory = $true)][object]$Details
+    )
+
+    $receiptDirectory = Join-Path $repoRoot "artifacts/governance"
+    if (-not (Test-Path $receiptDirectory)) {
+        New-Item -ItemType Directory -Force -Path $receiptDirectory | Out-Null
+    }
+
+    $receiptPath = Join-Path $receiptDirectory "$sliceId.receipt.json"
+
+    $receipt = [ordered]@{
+        slice_id = $sliceId
+        status = $Status
+        reason = $Reason
+        verifier_mode = "fail-closed"
+        generated_by = "scripts/verify_${sliceId}.ps1"
+        details = $Details
+    }
+
+    $receipt | ConvertTo-Json -Depth 10 | Set-Content -Path $receiptPath -Encoding utf8NoBOM
+}
+
+function Fail {
+    param(
+        [Parameter(Mandatory = $true)][string]$Reason,
+        [Parameter(Mandatory = $true)][object]$Details
+    )
+
+    Write-Receipt -Status "FAIL" -Reason $Reason -Details $Details
+    throw "Fail-Closed: $Reason"
+}
+
+function Require-File {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        Fail -Reason "MISSING_REQUIRED_FILE" -Details @{ path = $Path }
+    }
+}
+
+function Require-Token {
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Token,
+        [Parameter(Mandatory = $true)][string]$Document
+    )
+
+    if (-not $Content.Contains($Token)) {
+        Fail -Reason "MISSING_REQUIRED_TOKEN" -Details @{
+            document = $Document
+            token = $Token
+        }
+    }
+}
+
+$repoRoot = Resolve-ProjectRoot
+
+$freezePackPath = Join-Path $repoRoot "docs/freeze_packs/$sliceId.md"
+$reviewPath = Join-Path $repoRoot "docs/reviews/${sliceId}_review.md"
+$verifierPath = Join-Path $repoRoot "scripts/verify_${sliceId}.ps1"
+
+Require-File -Path $freezePackPath
+Require-File -Path $reviewPath
+Require-File -Path $verifierPath
+
+foreach ($relativePath in $protectedHashesExpected.Keys) {
+    $absolutePath = Join-Path $repoRoot $relativePath
+    Require-File -Path $absolutePath
+
+    $actualHash = Get-Sha256 -Path $absolutePath
+    $expectedHash = $protectedHashesExpected[$relativePath]
+
+    if ([string]::IsNullOrWhiteSpace($expectedHash) -or $expectedHash.StartsWith("__")) {
+        Fail -Reason "PROTECTED_HASH_PLACEHOLDER" -Details @{
+            path = $relativePath
+            expected = $expectedHash
+        }
+    }
+
+    if ($actualHash -ne $expectedHash) {
+        Fail -Reason "PROTECTED_FILE_MUTATION" -Details @{
+            path = $relativePath
+            expected = $expectedHash
+            actual = $actualHash
+        }
+    }
+}
+
+$freezePackContent = Get-Content -Raw -Path $freezePackPath
+$reviewContent = Get-Content -Raw -Path $reviewPath
+
+$freezePackTokens = @(
+    "Slice 1.43 - Token and Wallet Evidence Artifact Verification Case Matrix Lock",
+    "Scope: Governance / Evidence / Documentation Only",
+    "Verifier Mode: Fail-closed",
+    "Fast Lane Delivery: ALLOWED",
+    "Protected Paths: UNCHANGED REQUIRED",
+    "TW-EA-001",
+    "TW-EA-002",
+    "TW-EA-003",
+    "TW-EA-004",
+    "TW-EA-005",
+    "TW-EA-006",
+    "TW-EA-007",
+    "TW-EA-008",
+    "TW-EA-009",
+    "TW-EA-010",
+    "MISSING_REQUIRED_FILE",
+    "MISSING_REQUIRED_TOKEN",
+    "MISSING_REQUIRED_ARTIFACT",
+    "NON_CANONICAL_ARTIFACT_NAME",
+    "CANONICAL_HASH_DRIFT",
+    "NON_DETERMINISTIC_ORDERING",
+    "ARTIFACT_SHAPE_VIOLATION",
+    "RUNTIME_LOGIC_LEAKAGE",
+    "WRITE_SIDE_EFFECT_DETECTED",
+    "PROTECTED_FILE_MUTATION",
+    "REPLAY_METADATA_MISSING",
+    "SCOPE_GUARDRAIL_VIOLATION",
+    "No execution/trading logic",
+    "No risk calculation",
+    "No opaque ML decisioning",
+    "No reporting/UI leakage into core/domain logic",
+    "No wallet/token tracing implementation",
+    "No token scoring implementation",
+    "No artifact shape implementation in this slice",
+    "No artifact generation implementation in this slice",
+    "No runtime behavior implementation in this slice"
+)
+
+foreach ($token in $freezePackTokens) {
+    Require-Token -Content $freezePackContent -Token $token -Document "freeze_pack"
+}
+
+$reviewTokens = @(
+    "Verdict: PASS-CANDIDATE",
+    "Scope: Governance-only",
+    "Protected Paths: UNCHANGED REQUIRED",
+    "Fast Lane Delivery: ALLOWED",
+    "Runtime Logic Leakage: NOT ALLOWED",
+    "Execution Logic: NOT ALLOWED",
+    "Risk Calculation: NOT ALLOWED",
+    "Opaque ML Decisioning: NOT ALLOWED",
+    "Reporting/UI Leakage: NOT ALLOWED",
+    "TW-EA-001",
+    "TW-EA-010"
+)
+
+foreach ($token in $reviewTokens) {
+    Require-Token -Content $reviewContent -Token $token -Document "review"
+}
+
+Write-Receipt -Status "PASS" -Reason "SLICE_1_43_VERIFICATION_CASE_MATRIX_LOCK_VERIFIED" -Details @{
+    freeze_pack = "docs/freeze_packs/$sliceId.md"
+    review = "docs/reviews/${sliceId}_review.md"
+    verifier = "scripts/verify_${sliceId}.ps1"
+    protected_paths = $protectedHashesExpected.Keys
+    case_ids = @(
+        "TW-EA-001",
+        "TW-EA-002",
+        "TW-EA-003",
+        "TW-EA-004",
+        "TW-EA-005",
+        "TW-EA-006",
+        "TW-EA-007",
+        "TW-EA-008",
+        "TW-EA-009",
+        "TW-EA-010"
+    )
+}
+
+Write-Host "PASS: Slice 1.43 verification case matrix lock verified."
+'@
+
+$Verifier = $VerifierTemplate `
+    -replace "__SLICE_ID__", $SliceId `
+    -replace "__REGISTRY_HASH__", $RegistryHash `
+    -replace "__REGISTRY_TEST_HASH__", $RegistryTestHash
+
+Write-Utf8NoBom -Path $FreezePackPath -Content $FreezePack
 Write-Utf8NoBom -Path $ReviewPath -Content $Review
 Write-Utf8NoBom -Path $VerifierPath -Content $Verifier
 
-$FreezeContent = Get-Content -Raw -Path $FreezePath
-$ReviewContent = Get-Content -Raw -Path $ReviewPath
+Write-Host "Installed Slice 1.43 governance package:"
+Write-Host " - docs/freeze_packs/$SliceId.md"
+Write-Host " - docs/reviews/${SliceId}_review.md"
+Write-Host " - scripts/verify_${SliceId}.ps1"
 
-$RequiredMarkers = @(
-    "Review Verdict: PASS",
-    "Slice Status: LOCKED",
-    "Matrix Status: LOCKED",
-    "Promotion Gate: LOCKED",
-    "Governance Only: YES",
-    "Implementation Authority: NO",
-    "Runtime Authority: NO",
-    "Trading Authority: NO",
-    "Risk Authority: NO",
-    "ML Decision Authority: NO",
-    "TW-EVID-001",
-    "TW-EVID-015"
-)
-
-foreach ($marker in $RequiredMarkers) {
-    Require-GovernanceMarker -Content $FreezeContent -Marker $marker -Path $FreezePath
-    Require-GovernanceMarker -Content $ReviewContent -Marker $marker -Path $ReviewPath
-}
-
-$ReceiptPython = @"
-import hashlib
-import json
-import sys
-from pathlib import Path
-
-receipt_path = Path(sys.argv[1])
-artifact_path = Path(sys.argv[2])
-
-payload = {
-    "slice_id": "1.43",
-    "slice_name": "Token and Wallet Evidence Artifact Verification Case Matrix Lock",
-    "status": "LOCKED",
-    "governance_only": True,
-    "implementation_authority": "NO",
-    "runtime_authority": "NO",
-    "trading_authority": "NO",
-    "risk_authority": "NO",
-    "ml_decision_authority": "NO",
-    "reporting_authority": "NO",
-    "protected_files": [
-        "src/smart_money/discovery/registry.py",
-        "tests/discovery/test_registry.py",
-    ],
-    "matrix_case_ids": [f"TW-EVID-{i:03d}" for i in range(1, 16)],
-    "created_at_utc": "2026-08-05T00:00:00Z",
-    "locked_at_utc": "2026-08-05T00:00:00Z",
-}
-
-canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
-receipt = dict(payload)
-receipt["canonical_payload_sha256"] = digest
-receipt["receipt_id"] = "sha256:" + digest
-
-text = json.dumps(receipt, sort_keys=True, indent=2, ensure_ascii=True) + "\n"
-receipt_path.write_text(text, encoding="utf-8")
-artifact_path.write_text(text, encoding="utf-8")
-"@
-
-if (Get-Command python -ErrorAction SilentlyContinue) {
-    & python -c $ReceiptPython $ReceiptPath $ArtifactPath
-} elseif (Get-Command py -ErrorAction SilentlyContinue) {
-    & py -3 -c $ReceiptPython $ReceiptPath $ArtifactPath
-} else {
-    throw "Python is required to generate deterministic canonical receipt."
-}
-
-& $VerifierPath
-
-Write-Host "PASS Slice 1.43 installed and verified."
-Write-Host "Freeze:  $FreezePath"
-Write-Host "Review:  $ReviewPath"
-Write-Host "Receipt: $ReceiptPath"
-Write-Host "Mirror:  $ArtifactPath"
-Write-Host "Verify:  $VerifierPath"
+& pwsh -NoProfile -ExecutionPolicy Bypass -File $VerifierPath

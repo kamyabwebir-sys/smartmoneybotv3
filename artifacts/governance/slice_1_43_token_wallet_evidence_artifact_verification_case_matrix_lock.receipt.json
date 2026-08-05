@@ -1,37 +1,28 @@
 {
-  "canonical_payload_sha256": "0990d5eb67c7c4750814721fc7b6284b47d72007bbbd6189615e008320b5c6bc",
-  "created_at_utc": "2026-08-05T00:00:00Z",
-  "governance_only": true,
-  "implementation_authority": "NO",
-  "locked_at_utc": "2026-08-05T00:00:00Z",
-  "matrix_case_ids": [
-    "TW-EVID-001",
-    "TW-EVID-002",
-    "TW-EVID-003",
-    "TW-EVID-004",
-    "TW-EVID-005",
-    "TW-EVID-006",
-    "TW-EVID-007",
-    "TW-EVID-008",
-    "TW-EVID-009",
-    "TW-EVID-010",
-    "TW-EVID-011",
-    "TW-EVID-012",
-    "TW-EVID-013",
-    "TW-EVID-014",
-    "TW-EVID-015"
-  ],
-  "ml_decision_authority": "NO",
-  "protected_files": [
-    "src/smart_money/discovery/registry.py",
-    "tests/discovery/test_registry.py"
-  ],
-  "receipt_id": "sha256:0990d5eb67c7c4750814721fc7b6284b47d72007bbbd6189615e008320b5c6bc",
-  "reporting_authority": "NO",
-  "risk_authority": "NO",
-  "runtime_authority": "NO",
-  "slice_id": "1.43",
-  "slice_name": "Token and Wallet Evidence Artifact Verification Case Matrix Lock",
-  "status": "LOCKED",
-  "trading_authority": "NO"
+  "slice_id": "slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock",
+  "status": "PASS",
+  "reason": "SLICE_1_43_VERIFICATION_CASE_MATRIX_LOCK_VERIFIED",
+  "verifier_mode": "fail-closed",
+  "generated_by": "scripts/verify_slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock.ps1",
+  "details": {
+    "review": "docs/reviews/slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock_review.md",
+    "protected_paths": [
+      "src/smart_money/discovery/registry.py",
+      "tests/discovery/test_registry.py"
+    ],
+    "freeze_pack": "docs/freeze_packs/slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock.md",
+    "verifier": "scripts/verify_slice_1_43_token_wallet_evidence_artifact_verification_case_matrix_lock.ps1",
+    "case_ids": [
+      "TW-EA-001",
+      "TW-EA-002",
+      "TW-EA-003",
+      "TW-EA-004",
+      "TW-EA-005",
+      "TW-EA-006",
+      "TW-EA-007",
+      "TW-EA-008",
+      "TW-EA-009",
+      "TW-EA-010"
+    ]
+  }
 }
