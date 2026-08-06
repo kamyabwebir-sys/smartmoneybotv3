@@ -1,0 +1,23 @@
+{
+  "schema_version": "1",
+  "receipt_type": "canonical_governance_artifact_verification",
+  "slice": "1.44",
+  "title": "Canonical Governance Artifact Verification Closure",
+  "upstream_slice": "1.43",
+  "implementation_authority": "NONE",
+  "promotion_authority": "LOCKED",
+  "verification_result": "PASS",
+  "execution_authority": "NONE",
+  "trading_authority": "NONE",
+  "risk_authority": "NONE",
+  "ml_decisioning_authority": "NONE",
+  "reporting_authority": "NONE",
+  "verified_artifacts": [
+    "docs/freeze_packs/slice_1_43_freeze_pack.md",
+    "docs/proposals/slice_1_43_governance_grounding_proposal.md"
+  ],
+  "upstream_artifact_sha256": {
+    "freeze_pack": "4ef84304188e5c57bd3a0be758f41074f56cd36f4db1c06441a5e94ae71a8edb",
+    "proposal": "d4b72aeba5d5f75f7841652428da08ad10e1541f10d3355a8cd557e71a89137d"
+  }
+}
