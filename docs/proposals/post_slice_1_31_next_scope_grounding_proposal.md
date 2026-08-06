@@ -1,15 +1,15 @@
 # Post Slice 1.31 Next Scope Grounding Proposal
 
-Status: PROPOSAL_ONLY  
-Authority: NON_AUTHORITATIVE  
-Implementation/Promotion Authority: NO  
-Promotion Gate: LOCKED  
-Mode: INVENTORY_ONLY / READ_ONLY  
-Lane: FAST_LANE_CANDIDATE_ONLY  
-Slice Creation: NO_NUMBERED_SLICE_CREATED  
-Installer: NOT_INCLUDED  
-Verifier: NOT_INCLUDED  
-Receipt: NOT_INCLUDED  
+Status: PROPOSAL_ONLY
+Authority: NON_AUTHORITATIVE
+Implementation/Promotion Authority: NO
+Promotion Gate: LOCKED
+Mode: INVENTORY_ONLY / READ_ONLY
+Lane: FAST_LANE_CANDIDATE_ONLY
+Slice Creation: NO_NUMBERED_SLICE_CREATED
+Installer: NOT_INCLUDED
+Verifier: NOT_INCLUDED
+Receipt: NOT_INCLUDED
 
 ---
 
@@ -65,7 +65,7 @@ For this proposal, the safe interpretation is:
 
 If there is any conflict between backlog readiness language and explicit authority language, the explicit authority language wins:
 
-> Implementation/Promotion Authority: NO  
+> Implementation/Promotion Authority: NO
 > Promotion Gate: LOCKED
 
 This document therefore remains fail-closed with respect to implementation.

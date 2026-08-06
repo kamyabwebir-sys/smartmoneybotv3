@@ -8,8 +8,8 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
 }
 
 $ReviewDir = Join-Path $RepoRoot "docs/governance/reviews"
-$ProposalPath = Join-Path $ReviewDir "post_slice_1_31_next_scope_grounding_proposal.md"
-
+$ProposalDir = Join-Path $RepoRoot "docs/proposals"
+$ProposalPath = Join-Path $ProposalDir "post_slice_1_31_next_scope_grounding_proposal.md"
 # Hard guardrails: do not touch protected implementation areas
 $ProtectedRoots = @(
     (Join-Path $RepoRoot "src"),
@@ -24,6 +24,9 @@ foreach ($protected in $ProtectedRoots) {
 
 if (-not (Test-Path -LiteralPath $ReviewDir)) {
     New-Item -ItemType Directory -Force -Path $ReviewDir | Out-Null
+}
+if (-not (Test-Path -LiteralPath $ProposalDir)) {
+    New-Item -ItemType Directory -Force -Path $ProposalDir | Out-Null
 }
 
 $Content = @"
