@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, Iterable
 
 from .ids import deterministic_id
+from .serialization import canonical_json
 from .time import ensure_utc_datetime
 
 
@@ -51,18 +53,40 @@ class ReplayManifest:
     notes: str | None = None
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "manifest_id", _require_non_empty_text(self.manifest_id, "manifest_id"))
-        object.__setattr__(self, "pipeline_version", _require_non_empty_text(self.pipeline_version, "pipeline_version"))
-        object.__setattr__(self, "input_dataset_hash", _require_non_empty_text(self.input_dataset_hash, "input_dataset_hash"))
-        object.__setattr__(self, "config_hash", _require_non_empty_text(self.config_hash, "config_hash"))
+        object.__setattr__(
+            self,
+            "manifest_id",
+            _require_non_empty_text(self.manifest_id, "manifest_id"),
+        )
+        object.__setattr__(
+            self,
+            "pipeline_version",
+            _require_non_empty_text(self.pipeline_version, "pipeline_version"),
+        )
+        object.__setattr__(
+            self,
+            "input_dataset_hash",
+            _require_non_empty_text(self.input_dataset_hash, "input_dataset_hash"),
+        )
+        object.__setattr__(
+            self,
+            "config_hash",
+            _require_non_empty_text(self.config_hash, "config_hash"),
+        )
 
-        object.__setattr__(self, "symbol", _require_optional_text(self.symbol, "symbol"))
+        object.__setattr__(
+            self, "symbol", _require_optional_text(self.symbol, "symbol")
+        )
         object.__setattr__(self, "venue", _require_optional_text(self.venue, "venue"))
-        object.__setattr__(self, "timeframe", _require_optional_text(self.timeframe, "timeframe"))
+        object.__setattr__(
+            self, "timeframe", _require_optional_text(self.timeframe, "timeframe")
+        )
         object.__setattr__(self, "notes", _require_optional_text(self.notes, "notes"))
 
         if self.range_start is not None:
-            object.__setattr__(self, "range_start", ensure_utc_datetime(self.range_start))
+            object.__setattr__(
+                self, "range_start", ensure_utc_datetime(self.range_start)
+            )
         if self.range_end is not None:
             object.__setattr__(self, "range_end", ensure_utc_datetime(self.range_end))
 
@@ -70,9 +94,13 @@ class ReplayManifest:
             if self.range_start > self.range_end:
                 raise ValueError("range_start must be less than or equal to range_end")
 
-        object.__setattr__(self, "subject_ids", _normalize_subject_ids(self.subject_ids))
+        object.__setattr__(
+            self, "subject_ids", _normalize_subject_ids(self.subject_ids)
+        )
 
-        expected_manifest_id = deterministic_id("replay_manifest", self.identity_payload())
+        expected_manifest_id = deterministic_id(
+            "replay_manifest", self.identity_payload()
+        )
         if self.manifest_id != expected_manifest_id:
             raise ValueError("manifest_id does not match deterministic payload")
 
@@ -110,12 +138,20 @@ def make_replay_manifest(
     subject_ids: tuple[str, ...] = (),
     notes: str | None = None,
 ) -> ReplayManifest:
-    normalized_range_start = ensure_utc_datetime(range_start) if range_start is not None else None
-    normalized_range_end = ensure_utc_datetime(range_end) if range_end is not None else None
+    normalized_range_start = (
+        ensure_utc_datetime(range_start) if range_start is not None else None
+    )
+    normalized_range_end = (
+        ensure_utc_datetime(range_end) if range_end is not None else None
+    )
 
     payload = {
-        "pipeline_version": _require_non_empty_text(pipeline_version, "pipeline_version"),
-        "input_dataset_hash": _require_non_empty_text(input_dataset_hash, "input_dataset_hash"),
+        "pipeline_version": _require_non_empty_text(
+            pipeline_version, "pipeline_version"
+        ),
+        "input_dataset_hash": _require_non_empty_text(
+            input_dataset_hash, "input_dataset_hash"
+        ),
         "config_hash": _require_non_empty_text(config_hash, "config_hash"),
         "symbol": _require_optional_text(symbol, "symbol"),
         "venue": _require_optional_text(venue, "venue"),
@@ -143,87 +179,188 @@ def make_replay_manifest(
     )
 
 
-# ---------------------------------------------------------------------------
-# Slice 0.8 - Golden Replay Fixtures / Baseline Replay Pack (appended)
-# ---------------------------------------------------------------------------
-from dataclasses import dataclass as _s08_dataclass
-from datetime import datetime as _s08_datetime
-from typing import Iterable as _S08Iterable, Union as _S08Union
+def _validate_canonical_json_text(value: str) -> str:
+    text = _require_non_empty_text(value, "metadata_json")
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ValueError("metadata_json must be valid JSON") from exc
+    if canonical_json(parsed) != text:
+        raise ValueError("metadata_json must be canonical JSON")
+    return text
 
-from smart_money.core.ids import deterministic_id as _s08_deterministic_id
-from smart_money.core.serialization import canonical_json as _s08_canonical_json
-from smart_money.core.time import ensure_utc_datetime as _s08_ensure_utc_datetime
+
+def _normalize_fixture_ids(value: tuple[str, ...]) -> tuple[str, ...]:
+    if not isinstance(value, tuple):
+        raise TypeError("fixtures must be a tuple")
+
+    normalized = tuple(_require_non_empty_text(item, "fixtures") for item in value)
+    if len(set(normalized)) != len(normalized):
+        raise ValueError("duplicate fixture_id values are not allowed")
+    return tuple(sorted(normalized))
 
 
-@_s08_dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True)
 class GoldenReplayFixture:
     fixture_id: str
     replay_manifest_id: str
-    timestamp: _s08_datetime
+    timestamp: datetime
     data_hash: str
     metadata_json: str
 
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "fixture_id",
+            _require_non_empty_text(self.fixture_id, "fixture_id"),
+        )
+        object.__setattr__(
+            self,
+            "replay_manifest_id",
+            _require_non_empty_text(
+                self.replay_manifest_id,
+                "replay_manifest_id",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "data_hash",
+            _require_non_empty_text(self.data_hash, "data_hash"),
+        )
+        object.__setattr__(
+            self,
+            "metadata_json",
+            _validate_canonical_json_text(self.metadata_json),
+        )
+        object.__setattr__(self, "timestamp", ensure_utc_datetime(self.timestamp))
 
-@_s08_dataclass(frozen=True, slots=True)
+        expected_id = deterministic_id("golden_replay_fixture", self.identity_payload())
+        if self.fixture_id != expected_id:
+            raise ValueError("fixture_id does not match deterministic payload")
+
+    def identity_payload(self) -> dict[str, Any]:
+        return {
+            "replay_manifest_id": self.replay_manifest_id,
+            "timestamp": self.timestamp,
+            "data_hash": self.data_hash,
+            "metadata_json": self.metadata_json,
+        }
+
+    def canonical_dict(self) -> dict[str, Any]:
+        return {"fixture_id": self.fixture_id, **self.identity_payload()}
+
+
+@dataclass(frozen=True, slots=True)
 class BaselineReplayPack:
     pack_id: str
     pipeline_version: str
     config_hash: str
     fixtures: tuple[str, ...]
-    creation_timestamp: _s08_datetime
+    creation_timestamp: datetime
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "pack_id",
+            _require_non_empty_text(self.pack_id, "pack_id"),
+        )
+        object.__setattr__(
+            self,
+            "pipeline_version",
+            _require_non_empty_text(self.pipeline_version, "pipeline_version"),
+        )
+        object.__setattr__(
+            self,
+            "config_hash",
+            _require_non_empty_text(self.config_hash, "config_hash"),
+        )
+        object.__setattr__(self, "fixtures", _normalize_fixture_ids(self.fixtures))
+        object.__setattr__(
+            self,
+            "creation_timestamp",
+            ensure_utc_datetime(self.creation_timestamp),
+        )
+
+        expected_id = deterministic_id("baseline_replay_pack", self.identity_payload())
+        if self.pack_id != expected_id:
+            raise ValueError("pack_id does not match deterministic payload")
+
+    def identity_payload(self) -> dict[str, Any]:
+        return {
+            "pipeline_version": self.pipeline_version,
+            "config_hash": self.config_hash,
+            "fixtures": self.fixtures,
+        }
+
+    def canonical_dict(self) -> dict[str, Any]:
+        return {
+            "pack_id": self.pack_id,
+            **self.identity_payload(),
+            "creation_timestamp": self.creation_timestamp,
+        }
 
 
 def create_golden_replay_fixture(
     replay_manifest_id: str,
-    timestamp: _s08_datetime,
+    timestamp: datetime,
     data_hash: str,
-    metadata: dict,
+    metadata: dict[str, Any],
 ) -> GoldenReplayFixture:
-    utc_ts = _s08_ensure_utc_datetime(timestamp)
-    meta_json = _s08_canonical_json(metadata)
-    fid = _s08_deterministic_id(
+    normalized_manifest_id = _require_non_empty_text(
+        replay_manifest_id,
+        "replay_manifest_id",
+    )
+    normalized_data_hash = _require_non_empty_text(data_hash, "data_hash")
+    normalized_timestamp = ensure_utc_datetime(timestamp)
+    metadata_json = canonical_json(metadata)
+    fixture_id = deterministic_id(
         "golden_replay_fixture",
         {
-            "replay_manifest_id": replay_manifest_id,
-            "timestamp": utc_ts.isoformat(),
-            "data_hash": data_hash,
-            "metadata_json": meta_json,
+            "replay_manifest_id": normalized_manifest_id,
+            "timestamp": normalized_timestamp,
+            "data_hash": normalized_data_hash,
+            "metadata_json": metadata_json,
         },
     )
     return GoldenReplayFixture(
-        fixture_id=fid,
-        replay_manifest_id=replay_manifest_id,
-        timestamp=utc_ts,
-        data_hash=data_hash,
-        metadata_json=meta_json,
+        fixture_id=fixture_id,
+        replay_manifest_id=normalized_manifest_id,
+        timestamp=normalized_timestamp,
+        data_hash=normalized_data_hash,
+        metadata_json=metadata_json,
     )
 
 
 def create_baseline_replay_pack(
     pipeline_version: str,
     config_hash: str,
-    fixtures: "_S08Iterable[_S08Union[GoldenReplayFixture, str]]",
-    creation_timestamp: _s08_datetime,
+    fixtures: Iterable[GoldenReplayFixture | str],
+    creation_timestamp: datetime,
 ) -> BaselineReplayPack:
-    ids = [
-        f.fixture_id if isinstance(f, GoldenReplayFixture) else f
-        for f in fixtures
-    ]
-    if len(set(ids)) != len(ids):
-        raise ValueError("duplicate fixture_id values are not allowed")
-    sorted_ids = tuple(sorted(ids))
-    pid = _s08_deterministic_id(
+    pipeline = _require_non_empty_text(pipeline_version, "pipeline_version")
+    config = _require_non_empty_text(config_hash, "config_hash")
+    fixture_ids: list[str] = []
+    for fixture in fixtures:
+        if isinstance(fixture, GoldenReplayFixture):
+            fixture_ids.append(fixture.fixture_id)
+        elif isinstance(fixture, str):
+            fixture_ids.append(_require_non_empty_text(fixture, "fixtures"))
+        else:
+            raise TypeError("fixtures items must be GoldenReplayFixture or string")
+
+    normalized_fixture_ids = _normalize_fixture_ids(tuple(fixture_ids))
+    pack_id = deterministic_id(
         "baseline_replay_pack",
         {
-            "pipeline_version": pipeline_version,
-            "config_hash": config_hash,
-            "fixtures": list(sorted_ids),
+            "pipeline_version": pipeline,
+            "config_hash": config,
+            "fixtures": normalized_fixture_ids,
         },
     )
     return BaselineReplayPack(
-        pack_id=pid,
-        pipeline_version=pipeline_version,
-        config_hash=config_hash,
-        fixtures=sorted_ids,
-        creation_timestamp=_s08_ensure_utc_datetime(creation_timestamp),
+        pack_id=pack_id,
+        pipeline_version=pipeline,
+        config_hash=config,
+        fixtures=normalized_fixture_ids,
+        creation_timestamp=ensure_utc_datetime(creation_timestamp),
     )
