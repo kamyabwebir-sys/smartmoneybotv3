@@ -1,7 +1,6 @@
-import pytest
-from smart_money.ingestion.provider import EvidenceIngestionProvider
 from smart_money.ingestion.contracts import EvidencePayload
 from smart_money.ingestion.ledger import EvidenceGroundingLedger
+from smart_money.ingestion.provider import EvidenceIngestionProvider
 
 
 def test_ledger_records_accepted_evidence():

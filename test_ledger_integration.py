@@ -1,7 +1,6 @@
-import pytest
-from provider import EvidenceIngestionProvider
-from ledger import EvidenceGroundingLedger
 from contracts import EvidencePayload
+from ledger import EvidenceGroundingLedger
+from provider import EvidenceIngestionProvider
 
 
 def test_ledger_grounding_on_ingest():

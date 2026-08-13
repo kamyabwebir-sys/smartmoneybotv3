@@ -1,0 +1,11 @@
+{
+  "governance_baseline": "Slice 1.49",
+  "verification_script": "scripts/verify_slice_1_49_closure.ps1",
+  "review_document": "docs/reviews/slice_1_49_closure_review.md",
+  "predecessor": "Slice 1.48 read-only consumer compliance contract lock",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "jurisdiction": "SmartMoneyBotV3.Discovery",
+  "timestamp_jalali": "1405-05-20",
+  "authoritative_grounding_file": "docs/freeze_packs/slice_1_49_post_1_48_next_scope_grounding.md"
+}

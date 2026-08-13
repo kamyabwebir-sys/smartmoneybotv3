@@ -9,7 +9,6 @@ from typing import Any
 from contracts import EvidencePayload, GroundedEntry
 from smart_money.core.serialization import canonicalize
 
-
 _SCHEMA_VERSION = "evidence_ledger.v1"
 
 

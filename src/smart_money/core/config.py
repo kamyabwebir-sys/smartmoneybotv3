@@ -9,7 +9,6 @@ from typing import Any
 from smart_money.core.ids import deterministic_id
 from smart_money.core.serialization import canonical_json
 
-
 _NAMESPACE = "deterministic_config"
 _VERSION_PATTERN = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
 _SHA256_HEX_PATTERN = re.compile(r"^[0-9a-f]{64}$")

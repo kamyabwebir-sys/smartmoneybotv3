@@ -5,7 +5,6 @@ from decimal import Decimal
 
 from contracts import EvidencePayload, ScoreReport
 
-
 _DIRECTION_SCORES = {
     "bullish": Decimal("0.5"),
     "bearish": Decimal("-0.5"),

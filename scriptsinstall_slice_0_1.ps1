@@ -245,4 +245,3 @@ Write-Step "Slice 0.1 installation complete"
 Write-Host ""
 Write-Host "Next commands:" -ForegroundColor White
 Write-Host "  python -m pytest" -ForegroundColor Green
-'@

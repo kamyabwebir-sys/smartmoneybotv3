@@ -1,8 +1,10 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+
+from smart_money.ingestion.contracts import IngestionCandle
 from smart_money.ingestion.pipeline import IngestionPipeline
 from smart_money.ingestion.provider import BaseDataProvider
-from smart_money.ingestion.contracts import IngestionCandle
 
 
 @pytest.mark.asyncio

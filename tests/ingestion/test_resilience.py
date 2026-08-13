@@ -1,7 +1,8 @@
 import pytest
+
 from smart_money.ingestion.binance_provider import BinanceProvider
-from smart_money.ingestion.pipeline import IngestionPipeline
 from smart_money.ingestion.errors import IngestionError
+from smart_money.ingestion.pipeline import IngestionPipeline
 
 
 @pytest.mark.asyncio

@@ -8,7 +8,6 @@ from typing import Any
 from .ids import deterministic_id
 from .time import ensure_utc_datetime
 
-
 _ALLOWED_DIRECTIONS = frozenset({"bullish", "bearish", "neutral"})
 
 
@@ -56,7 +55,11 @@ class Candle:
     schema_version: str = "candle.v1"
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "schema_version", _require_non_empty_text(self.schema_version, "schema_version"))
+        object.__setattr__(
+            self,
+            "schema_version",
+            _require_non_empty_text(self.schema_version, "schema_version"),
+        )
         object.__setattr__(self, "symbol", _require_non_empty_text(self.symbol, "symbol"))
         object.__setattr__(self, "timeframe", _require_non_empty_text(self.timeframe, "timeframe"))
         object.__setattr__(self, "source", _require_non_empty_text(self.source, "source"))
@@ -124,13 +127,29 @@ class StructureEvent:
     schema_version: str = "structure_event.v1"
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "schema_version", _require_non_empty_text(self.schema_version, "schema_version"))
-        object.__setattr__(self, "event_type", _require_non_empty_text(self.event_type, "event_type"))
+        object.__setattr__(
+            self,
+            "schema_version",
+            _require_non_empty_text(self.schema_version, "schema_version"),
+        )
+        object.__setattr__(
+            self,
+            "event_type",
+            _require_non_empty_text(self.event_type, "event_type"),
+        )
         object.__setattr__(self, "symbol", _require_non_empty_text(self.symbol, "symbol"))
         object.__setattr__(self, "timeframe", _require_non_empty_text(self.timeframe, "timeframe"))
-        object.__setattr__(self, "source_candle_id", _require_non_empty_text(self.source_candle_id, "source_candle_id"))
+        object.__setattr__(
+            self,
+            "source_candle_id",
+            _require_non_empty_text(self.source_candle_id, "source_candle_id"),
+        )
         object.__setattr__(self, "rule_id", _require_non_empty_text(self.rule_id, "rule_id"))
-        object.__setattr__(self, "rule_version", _require_non_empty_text(self.rule_version, "rule_version"))
+        object.__setattr__(
+            self,
+            "rule_version",
+            _require_non_empty_text(self.rule_version, "rule_version"),
+        )
 
         object.__setattr__(self, "event_time", ensure_utc_datetime(self.event_time))
         _require_decimal(self.price, "price")

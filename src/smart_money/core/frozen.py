@@ -7,7 +7,6 @@ from enum import Enum
 from types import MappingProxyType
 from typing import Any
 
-
 _IMMUTABLE_SCALARS = (str, int, bool, Decimal, datetime, Enum, type(None))
 
 

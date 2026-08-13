@@ -1,7 +1,8 @@
 import pytest
-from smart_money.ingestion.provider import EvidenceIngestionProvider
+
 from smart_money.ingestion.contracts import EvidencePayload
 from smart_money.ingestion.errors import InvalidPayloadError
+from smart_money.ingestion.provider import EvidenceIngestionProvider
 
 
 def test_deterministic_ingestion():

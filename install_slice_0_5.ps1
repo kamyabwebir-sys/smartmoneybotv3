@@ -378,4 +378,3 @@ Write-Host ""
 Write-Host "Next commands:" -ForegroundColor White
 Write-Host "  $env:PYTHONPATH = 'src'"
 Write-Host "  python -m pytest" -ForegroundColor Green
-'@

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from collections.abc import Mapping, Sequence
 from typing import Any
 
 from .time import datetime_to_canonical

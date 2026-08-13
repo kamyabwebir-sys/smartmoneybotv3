@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import Any
 
 from .ids import deterministic_id
-from .serialization import canonical_json, canonicalize
+from .serialization import canonical_json
 
 
 def _require_non_empty_text(value: str, field_name: str) -> str:
@@ -42,7 +42,10 @@ def _require_optional_decimal(value: Decimal | None, field_name: str) -> Decimal
     return value
 
 
-def _normalize_evidence_refs(value: tuple["EvidenceRef", ...], field_name: str) -> tuple["EvidenceRef", ...]:
+def _normalize_evidence_refs(
+    value: tuple["EvidenceRef", ...],
+    field_name: str,
+) -> tuple["EvidenceRef", ...]:
     if not isinstance(value, tuple):
         raise TypeError(f"{field_name} must be a tuple")
 
@@ -143,7 +146,11 @@ class DecisionTrace:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "trace_id", _require_non_empty_text(self.trace_id, "trace_id"))
-        object.__setattr__(self, "subject_id", _require_non_empty_text(self.subject_id, "subject_id"))
+        object.__setattr__(
+            self,
+            "subject_id",
+            _require_non_empty_text(self.subject_id, "subject_id"),
+        )
         object.__setattr__(self, "stage", _require_non_empty_text(self.stage, "stage"))
 
         if not isinstance(self.hits, tuple):
@@ -206,8 +213,14 @@ def make_decision_trace(
     payload = {
         "subject_id": _require_non_empty_text(subject_id, "subject_id"),
         "stage": _require_non_empty_text(stage, "stage"),
-        "hits": tuple(item.canonical_dict() for item in sorted(hits, key=lambda x: canonical_json(x.canonical_dict()))),
-        "rejects": tuple(item.canonical_dict() for item in sorted(rejects, key=lambda x: canonical_json(x.canonical_dict()))),
+        "hits": tuple(
+            item.canonical_dict()
+            for item in sorted(hits, key=lambda x: canonical_json(x.canonical_dict()))
+        ),
+        "rejects": tuple(
+            item.canonical_dict()
+            for item in sorted(rejects, key=lambda x: canonical_json(x.canonical_dict()))
+        ),
         "context_refs": tuple(
             item.canonical_dict()
             for item in sorted(context_refs, key=lambda x: canonical_json(x.canonical_dict()))

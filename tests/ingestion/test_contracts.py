@@ -1,7 +1,9 @@
-import pytest
+from dataclasses import FrozenInstanceError
 from datetime import datetime
 from decimal import Decimal
-from dataclasses import FrozenInstanceError
+
+import pytest
+
 from smart_money.ingestion.contracts import IngestionCandle
 
 

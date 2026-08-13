@@ -8,7 +8,6 @@ from typing import Any
 
 from smart_money.core.frozen import deep_freeze, deep_thaw
 
-
 _SCHEMA_VERSION = "consumer_evidence_projection.v1"
 _CONSUMER_VERSION = "slice-1.32"
 

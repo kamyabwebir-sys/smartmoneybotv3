@@ -1,0 +1,22 @@
+{
+  "slice": "1.48",
+  "artifact_type": "non_authoritative_batch_governance_proposal",
+  "status": "PARTIAL",
+  "approval_status": "NOT_APPROVED",
+  "promotion_gate": "LOCKED",
+  "implementation_authority": "NONE",
+  "authority": "NON_AUTHORITATIVE",
+  "scope": "documentation_only",
+  "deterministic": true,
+  "replayable": true,
+  "protected_files_unchanged": true,
+  "registry_changes_introduced": false,
+  "execution_logic_introduced": false,
+  "risk_logic_introduced": false,
+  "opaque_ml_decisioning_introduced": false,
+  "receipt_constraints": {
+    "timestamp": "omitted",
+    "absolute_path": "omitted",
+    "machine_specific_value": "omitted"
+  }
+}

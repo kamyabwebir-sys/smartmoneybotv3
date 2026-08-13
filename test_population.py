@@ -1,7 +1,6 @@
-import pytest
+from contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
 from population import EvidencePopulator
-from contracts import EvidencePayload, GroundedEntry
 
 
 def test_full_flow_ingest_to_population():

@@ -1,6 +1,5 @@
-import pytest
-from smart_money.ingestion.provider import EvidenceIngestionProvider
 from smart_money.ingestion.contracts import EvidencePayload
+from smart_money.ingestion.provider import EvidenceIngestionProvider
 
 
 class MockRegistry:

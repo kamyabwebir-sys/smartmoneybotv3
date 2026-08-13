@@ -1,4 +1,3 @@
-import pytest
 from smart_money.ingestion.binance_provider import BinanceProvider
 from smart_money.ingestion.contracts import IngestionCandle
 

@@ -1,10 +1,52 @@
-__pycache__/
-*.pyc
-
-# Python bytecode
+# Python bytecode and caches
 __pycache__/
 *.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
 
-# Python bytecode
-__pycache__/
-*.py[cod]
+# Python build and package metadata
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+
+# Editors and local agent state
+.vscode/
+.cursor/
+.freebuff/
+smartmoneybotv3/.freebuff/
+
+# Local audit/recovery outputs
+audit-output-*/
+*.bak.*
+_local_untracked_recovery/
+_offline_dev_pack/
+
+# Local archives and temporary files
+*.zip
+*.tmp
+*.log
+
+# Local-only helper/configuration files
+test_gapgpt.py
+governance_context_*.txt
+audit-smartmoneybotv3new2.ps1
+upload-smart-money.ps1
+
+# Superseded root-level governance drafts/installers retained locally
+/slice_1_49_governance_freeze_pack.md
+/slice_1_49_governance_freeze_pack.receipt.json
+/slice_1_50_evidence_ingestion_scaffold.md
+/slice_1_50_ingestion_scaffold.md
+/install_slice_1_49.ps1
+/verify_slice_1_47_governance_consistency.ps1
+/install_post_slice_1_48_non_authoritative_batch_governance_proposal.ps1
+/install_slice_1_48.ps1
+/install_slice_1_50_ingestion_scaffold.ps1
+/install_slice_1_51_1_52_ingestion_envelope.ps1

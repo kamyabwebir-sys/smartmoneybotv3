@@ -4,10 +4,9 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
+from smart_money.core.config import ConfigVersionLock, DeterministicConfig
 from smart_money.core.ids import deterministic_id
 from smart_money.core.serialization import canonical_json
-from smart_money.core.config import DeterministicConfig, ConfigVersionLock
-
 
 NAMESPACE = "deterministic_config"
 
