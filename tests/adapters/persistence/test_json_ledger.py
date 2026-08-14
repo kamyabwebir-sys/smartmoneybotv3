@@ -184,3 +184,75 @@ def test_duplicate_and_identity_mismatch_are_rejected(tmp_path):
     file_path.write_text(json.dumps(mismatch_document), encoding="utf-8")
     with pytest.raises(ValueError, match="identity mismatch"):
         EvidenceGroundingLedger().load_from_disk(file_path)
+
+
+def test_valid_orphaned_temporary_file_is_recovered_atomically(tmp_path):
+    payload = EvidencePayload("SRC-1", "market_structure", 100, {"price": 10})
+    ledger = EvidenceGroundingLedger()
+    ledger.record(payload)
+    file_path = tmp_path / "recoverable.json"
+    temporary_path = tmp_path / "recoverable.json.tmp"
+    ledger.save_to_disk(file_path)
+    file_path.replace(temporary_path)
+
+    assert not file_path.exists()
+    assert temporary_path.exists()
+
+    recovered = EvidenceGroundingLedger()
+    recovered.load_from_disk(file_path)
+
+    assert file_path.exists()
+    assert not temporary_path.exists()
+    assert recovered.get(payload.get_canonical_id()) == payload
+    assert recovered.content_hash == ledger.content_hash
+
+
+def test_invalid_orphaned_temporary_file_fails_closed_and_is_retained(tmp_path):
+    file_path = tmp_path / "invalid-recovery.json"
+    temporary_path = tmp_path / "invalid-recovery.json.tmp"
+    temporary_path.write_text("{not-json", encoding="utf-8")
+
+    ledger = EvidenceGroundingLedger()
+    retained = EvidencePayload("ACTIVE", "market_structure", 200, {"price": 20})
+    ledger.record(retained)
+
+    with pytest.raises(ValueError, match="temporary ledger recovery failed"):
+        ledger.load_from_disk(file_path)
+
+    assert not file_path.exists()
+    assert temporary_path.exists()
+    assert ledger.get(retained.get_canonical_id()) == retained
+
+
+def test_primary_ledger_remains_authoritative_when_temporary_file_exists(tmp_path):
+    primary_payload = EvidencePayload(
+        "PRIMARY",
+        "market_structure",
+        100,
+        {"price": 10},
+    )
+    temporary_payload = EvidencePayload(
+        "TEMPORARY",
+        "market_structure",
+        200,
+        {"price": 20},
+    )
+    file_path = tmp_path / "authoritative.json"
+    temporary_path = tmp_path / "authoritative.json.tmp"
+
+    primary = EvidenceGroundingLedger()
+    primary.record(primary_payload)
+    primary.save_to_disk(file_path)
+
+    temporary = EvidenceGroundingLedger()
+    temporary.record(temporary_payload)
+    temporary_source = tmp_path / "temporary-source.json"
+    temporary.save_to_disk(temporary_source)
+    temporary_path.write_bytes(temporary_source.read_bytes())
+
+    loaded = EvidenceGroundingLedger()
+    loaded.load_from_disk(file_path)
+
+    assert loaded.get(primary_payload.get_canonical_id()) == primary_payload
+    assert loaded.get(temporary_payload.get_canonical_id()) is None
+    assert temporary_path.exists()

@@ -90,15 +90,42 @@ class EvidenceGroundingLedger:
         }
         serialized = self._canonical_json(document)
 
-        temporary_path = path.with_name(f"{path.name}.tmp")
-        temporary_path.write_text(serialized, encoding="utf-8")
+        temporary_path = self._temporary_path(path)
+        with temporary_path.open("w", encoding="utf-8", newline="\n") as stream:
+            stream.write(serialized)
+            stream.flush()
+            os.fsync(stream.fileno())
         os.replace(temporary_path, path)
 
     def load_from_disk(self, file_path: str | os.PathLike[str]) -> None:
         path = Path(file_path)
-        if not path.exists():
+        temporary_path = self._temporary_path(path)
+        recovering_temporary_file = False
+
+        if path.exists():
+            source_path = path
+        elif temporary_path.exists():
+            source_path = temporary_path
+            recovering_temporary_file = True
+        else:
             return
 
+        try:
+            loaded = self._load_entries_from_path(source_path)
+        except ValueError as exc:
+            if recovering_temporary_file:
+                raise ValueError(
+                    f"temporary ledger recovery failed: {temporary_path}"
+                ) from exc
+            raise
+
+        if recovering_temporary_file:
+            os.replace(temporary_path, path)
+
+        self._entries = loaded
+        self._processed_ids.clear()
+
+    def _load_entries_from_path(self, path: Path) -> dict[str, GroundedEntry]:
         try:
             document = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeError, json.JSONDecodeError) as exc:
@@ -114,8 +141,7 @@ class EvidenceGroundingLedger:
                 )
             loaded[entry.canonical_id] = entry
 
-        self._entries = loaded
-        self._processed_ids.clear()
+        return loaded
 
     def _extract_entries(self, document: Any) -> list[dict[str, Any]]:
         if not isinstance(document, dict):
@@ -223,6 +249,10 @@ class EvidenceGroundingLedger:
         }
         encoded = cls._canonical_json(hash_material).encode("utf-8")
         return hashlib.sha256(encoded).hexdigest()
+
+    @staticmethod
+    def _temporary_path(path: Path) -> Path:
+        return path.with_name(f"{path.name}.tmp")
 
     def _deserialize_entry(self, raw_entry: dict[str, Any]) -> GroundedEntry:
         canonical_id = raw_entry.get("canonical_id")
