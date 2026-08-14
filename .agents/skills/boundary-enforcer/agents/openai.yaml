@@ -1,0 +1,4 @@
+interface:
+  display_name: "Boundary Enforcer"
+  short_description: "Enforce deterministic architecture boundaries"
+  default_prompt: "Use $boundary-enforcer to verify that replay and analytics changes remain deterministic and side-effect free."
