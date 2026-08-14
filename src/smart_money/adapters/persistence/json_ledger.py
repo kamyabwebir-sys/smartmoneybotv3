@@ -34,6 +34,9 @@ class EvidenceGroundingLedger:
         self._entries: dict[str, GroundedEntry] = {}
         self._processed_ids: set[str] = set()
 
+    def append(self, payload: EvidencePayload) -> str:
+        return self.record(payload)
+
     def record(self, payload: EvidencePayload) -> str:
         if not isinstance(payload, EvidencePayload):
             raise TypeError("payload must be an EvidencePayload")
@@ -48,6 +51,17 @@ class EvidenceGroundingLedger:
 
     def contains(self, canonical_id: str) -> bool:
         return canonical_id in self._entries
+
+    def get(self, canonical_id: str) -> EvidencePayload | None:
+        entry = self._entries.get(canonical_id)
+        return None if entry is None else entry.payload
+
+    def iter_payloads(self) -> Iterator[EvidencePayload]:
+        return iter(tuple(entry.payload for entry in self._entries.values()))
+
+    @property
+    def entry_count(self) -> int:
+        return len(self._entries)
 
     def save_to_disk(self, file_path: str | os.PathLike[str]) -> None:
         path = Path(file_path)
@@ -168,7 +182,7 @@ class EvidenceGroundingLedger:
 
     @property
     def count(self) -> int:
-        return len(self._entries)
+        return self.entry_count
 
 
 __all__ = ["EvidenceGroundingLedger", "GroundedEntry"]
