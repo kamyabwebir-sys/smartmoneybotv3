@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import os
 from collections.abc import Iterator
@@ -10,7 +12,8 @@ from typing import Any
 from smart_money.core.serialization import canonicalize
 from smart_money.ingestion.contracts import EvidencePayload
 
-_SCHEMA_VERSION = "evidence_ledger.v1"
+_SCHEMA_VERSION = "evidence_ledger.v2"
+_LEGACY_SCHEMA_VERSION = "evidence_ledger.v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,27 +66,22 @@ class EvidenceGroundingLedger:
     def entry_count(self) -> int:
         return len(self._entries)
 
+    @property
+    def content_hash(self) -> str:
+        return self._compute_content_hash(self._serialize_entries())
+
     def save_to_disk(self, file_path: str | os.PathLike[str]) -> None:
         path = Path(file_path)
         if path.parent != Path("."):
             path.parent.mkdir(parents=True, exist_ok=True)
 
+        entries = self._serialize_entries()
         document = {
             "schema_version": _SCHEMA_VERSION,
-            "entries": [
-                {
-                    "canonical_id": entry.canonical_id,
-                    "payload": canonicalize(entry.payload.canonical_dict()),
-                }
-                for entry in self._entries.values()
-            ],
+            "content_hash": self._compute_content_hash(entries),
+            "entries": entries,
         }
-        serialized = json.dumps(
-            document,
-            ensure_ascii=True,
-            separators=(",", ":"),
-            sort_keys=True,
-        )
+        serialized = self._canonical_json(document)
 
         temporary_path = path.with_name(f"{path.name}.tmp")
         temporary_path.write_text(serialized, encoding="utf-8")
@@ -113,15 +111,23 @@ class EvidenceGroundingLedger:
         self._processed_ids.clear()
 
     def _extract_entries(self, document: Any) -> list[dict[str, Any]]:
-        if (
-            isinstance(document, dict)
-            and document.get("schema_version") == _SCHEMA_VERSION
-        ):
+        if isinstance(document, dict) and document.get("schema_version") in {
+            _SCHEMA_VERSION,
+            _LEGACY_SCHEMA_VERSION,
+        }:
             entries = document.get("entries")
             if not isinstance(entries, list):
                 raise ValueError("ledger entries must be a list")
             if not all(isinstance(entry, dict) for entry in entries):
                 raise ValueError("each ledger entry must be an object")
+
+            if document["schema_version"] == _SCHEMA_VERSION:
+                content_hash = document.get("content_hash")
+                if not isinstance(content_hash, str):
+                    raise ValueError("ledger content_hash must be a string")
+                expected_hash = self._compute_content_hash(entries)
+                if not hmac.compare_digest(content_hash, expected_hash):
+                    raise ValueError("ledger content hash mismatch")
             return entries
 
         if isinstance(document, dict):
@@ -138,6 +144,33 @@ class EvidenceGroundingLedger:
             return legacy_entries
 
         raise ValueError("ledger root must be an object")
+
+    def _serialize_entries(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "canonical_id": entry.canonical_id,
+                "payload": canonicalize(entry.payload.canonical_dict()),
+            }
+            for entry in self._entries.values()
+        ]
+
+    @staticmethod
+    def _canonical_json(value: Any) -> str:
+        return json.dumps(
+            value,
+            ensure_ascii=True,
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+
+    @classmethod
+    def _compute_content_hash(cls, entries: list[dict[str, Any]]) -> str:
+        hash_material = {
+            "schema_version": _SCHEMA_VERSION,
+            "entries": entries,
+        }
+        encoded = cls._canonical_json(hash_material).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
 
     def _deserialize_entry(self, raw_entry: dict[str, Any]) -> GroundedEntry:
         canonical_id = raw_entry.get("canonical_id")
