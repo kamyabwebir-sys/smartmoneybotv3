@@ -1,272 +1,200 @@
 # Project Roadmap
-## smartmoneybotv3
 
 Status: Active
-Mode: Deterministic, replayable, greenfield
-Core policy: strict core, no execution, no risk engine, no ML decisioning
-Primary pipeline: Candles -> Structure -> Setup -> Decision -> Alert
 
----
+## Current verified baseline
+
+Implemented and tested:
+
+- deterministic Core contracts and helpers
+- audit traces and replay manifests
+- golden replay fixture contracts
+- protected discovery registry
+- read-only discovery consumer projection
+- immutable ingestion contracts and envelope
+- ingestion provider/pipeline scaffolds
+- in-memory evidence ledger and idempotency
+- root-level persisted ledger and replay engine
+- deterministic evidence scoring and analytics orchestration
+- governance artifacts and verifiers through the ingestion envelope stage
+
+Known gaps:
+
+- root-level persistence/replay/scoring modules are not yet in the canonical
+  package
+- two ledger implementations expose different APIs and persistence behavior
+- market-structure discovery algorithms are not implemented
+- Setup, Decision, and Alert stages are not implemented
+- Solana, Base, and Robinhood L2 adapters are not implemented
+- reporting and alert transports are not implemented
+- no real production ledger artifact is present
 
 ## Delivery principles
 
-The roadmap is intentionally ordered to protect deterministic behavior before feature breadth.
-
-Guiding rules:
 - contracts before engines
 - replayability before intelligence
-- canonical serialization before integration
-- immutable models before orchestration
-- freeze packs before slice implementation
+- canonical serialization before persistence/integration
+- tests before implementation
+- one deterministic behavior change per slice
+- compatibility adapters before removing legacy imports
+- evidence before completion claims
 
-This means the project does not move into higher-order market logic until the contract and replay foundations are stable.
+## Phase A — Repository convergence
 
----
+### A1: Package and import convergence
 
-## Scope guardrails
+Move root modules into `src/smart_money`:
 
-In scope for the current roadmap:
-- deterministic domain contracts
-- canonical serialization
-- replay-safe identifiers
-- structure/context/setup/decision pipeline contracts
-- alert payload contracts
-- deterministic regression fixtures
-- Persian reporting as a downstream representation layer
-- AI-assisted slice delivery with explicit freeze boundaries
+- persistence ledger -> `adapters/persistence/json_ledger.py`
+- replay engine -> `application/replay.py`
+- evidence population -> `application/population.py`
+- scorer -> `analytics/scoring.py`
+- orchestrator -> `application/analytics.py`
 
-Out of scope unless explicitly approved later:
-- execution
-- order routing
-- broker automation
-- risk engine
-- portfolio management
-- ML decisioning
-- discretionary operator tooling inside core
-- non-deterministic runtime behavior
-- hidden mutable state in core domain objects
+Keep temporary compatibility imports for one release, then remove them.
 
----
+Acceptance:
 
-## Phase model
+- no production Python module remains at repository root
+- all tests live under `tests/`
+- one canonical package is built
+- same replay and score outputs before and after migration
 
-### Phase 0 — Foundation
-Purpose:
-Lock the domain primitives, validation rules, canonical serialization rules, and replay/audit contracts needed for later slices.
+### A2: Ledger contract convergence
 
-#### Slice 0.1 — Governance and documentation baseline
-Status: Done
+Define one ledger port and explicit implementations:
 
-Delivered:
-- build plan
-- scope guardrails
-- domain glossary
-- core contract direction
-- slice-based delivery discipline
+- append/contains/read/count
+- deterministic iteration order
+- canonical JSON schema and version
+- atomic persistence
+- corruption and identity mismatch failures
+- processed-state semantics
 
-#### Slice 0.5 — Contract skeletons
-Status: Done
+Acceptance:
 
-Delivered:
-- early contract surfaces
-- immutable-model direction
-- boundary placeholders for future slices
+- a single contract test suite runs against in-memory and JSON ledgers
+- persisted round trips are byte-stable
+- malformed or mismatched ledgers fail closed
 
-#### Slice 0.6 — Validation and canonical boundaries
-Status: Done
+## Phase B — Canonical market data
 
-Delivered:
-- canonical serialization discipline
-- deterministic helper assumptions
-- validation boundaries for immutable contracts
-- compatibility expectations for lower-level helpers
+### B1: Candle normalization
 
-#### Slice 0.7 — Audit and replay foundation
-Status: Done / Frozen
+- symbol and venue identity
+- timeframe vocabulary
+- timestamp semantics
+- Decimal-only OHLCV
+- source/provenance metadata
+- duplicate and out-of-order rules
 
-Delivered:
-- `EvidenceRef`
-- `RejectReason`
-- `RuleHit`
-- `DecisionTrace`
-- `ReplayManifest`
-- deterministic trace/manfiest construction helpers
+### B2: Dataset and replay slices
 
-Locked behaviors:
-- content-derived deterministic IDs
-- tuple-only immutable collections
-- frozen dataclass behavior
-- canonical serialization compatibility
-- canonical JSON validation for embedded metadata
-- Decimal-only score acceptance
-- float rejection in score-bearing contracts
-- UTC-aware replay datetime normalization
-- identity stability under normalized ordering
+- canonical candle batches
+- gap/overlap detection
+- replay cursors and checkpoints
+- baseline fixture packs for Solana, Base, and generic L2 data
 
-Validation at freeze point:
-- `tests/test_audit_contracts.py` green
-- `tests/test_replay_manifest.py` green
-- repository test run: `62 passed`
+## Phase C — Structure discovery
 
-Architectural effect:
-Slice 0.7 freezes the audit/replay contract layer without introducing structure logic, setup logic, decision policy, adapters, alert transport, or execution concerns.
+Deliver in this order:
 
-## Slice 0.8 - Golden Replay Fixtures and Baseline Replay Packs
+1. swing/pivot contracts and deterministic detector
+2. structure-leg construction
+3. BOS candidate and confirmation rules
+4. CHOCH candidate and confirmation rules
+5. liquidity sweep facts
+6. displacement facts
+7. imbalance/FVG facts
+8. context-state reducer
 
-Status: Ready for approval
+Every detector must provide:
 
-Purpose:
-Slice 0.8 prepares the documentation contract for golden replay fixtures and baseline replay packs.
-It defines the intended governance boundary for deterministic replay examples without implementing replay execution,
-fixture validation, persistence, adapters, CLI behavior, market logic, risk logic, or ML decisioning.
+- immutable output
+- source candle references
+- rule ID and version
+- rejection reasons
+- replay fixture coverage
+- stable output ordering
 
-Scope:
-- Define the documentation-level purpose of `GoldenReplayFixture`.
-- Define the documentation-level purpose of `BaselineReplayPack`.
-- Establish deterministic replay fixture invariants at a governance level.
-- Keep exact field types, serialization rules, ID/hash algorithms, ordering behavior, storage format, and fixture payload shape unresolved until approved.
-- Preserve strict separation between core contracts and reporting/UI behavior.
+## Phase D — Setup discovery
 
-Canonical freeze pack:
-- `docs/freeze_packs/slice_0_8.md`
-
-Out of scope:
-- Replay execution.
-- Generating replay data.
-- Validating live or historical outputs against golden fixtures.
-- Persistence or file storage implementation.
-- Adapters, external integrations, market logic, execution, risk, or ML decisioning.
-- CLI commands or operational workflows.
-
-
-## Phase 1 — Structure foundation
-Purpose:
-Introduce deterministic market-structure primitives only after replay contracts and fixtures are locked.
-
-Planned slices in this phase may include:
-- structure event taxonomy
-- swing and pivot contracts
-- BOS / CHOCH candidate contracts
-- trend/context state contracts
-- deterministic structure fixture packs
-
-Constraints:
-- no venue integration
-- no alerts transport
-- no execution
-- no policy-side decision heuristics beyond frozen contracts
-
----
-
-## Phase 2 — Setup foundation
-Purpose:
-Formalize setup detection contracts and deterministic setup classification.
-
-Planned slices in this phase may include:
-- setup candidate contracts
-- confluence representation
-- invalidation semantics
-- evidence binding to structure/context
+- setup taxonomy
+- setup evidence binding
+- confluence components
+- invalidation facts
+- setup state machine
 - deterministic setup fixture packs
 
-Constraints:
-- no runtime automation
-- no broker/exchange integration
-- no discretionary override logic in core
+Setups describe evidence-backed candidates only. They do not size or execute
+positions.
 
----
+## Phase E — Decision records
 
-## Phase 3 — Decision foundation
-Purpose:
-Transform deterministic setup/context into deterministic decision artifacts.
+- rule-based accept/reject/defer classification
+- reason-code taxonomy
+- deterministic decision traces
+- evidence completeness gates
+- replay-linked decision fixtures
 
-Planned slices in this phase may include:
-- decision classification contracts
-- accept/reject reason expansion
-- rule taxonomy stabilization
-- decision fixture packs
-- replay-linked decision audit enrichment
+Decision records are analytical outputs, not broker instructions.
 
-Constraints:
-- no order execution
-- no risk sizing engine
-- no portfolio orchestration
+## Phase F — Analytics
 
----
+- score component contracts
+- evidence quality/completeness metrics
+- deterministic ranking for discovery views
+- cross-replay comparison
+- anomaly evidence for token/wallet activity
 
-## Phase 4 — Alert foundation
-Purpose:
-Produce deterministic alert outputs while keeping core logic separated from reporting and delivery channels.
+All score components must be explainable and individually serializable.
 
-Planned slices in this phase may include:
-- alert payload contract
-- alert rendering contract
-- downstream reporting projection
-- Persian reporting templates
-- transport-agnostic alert publication interfaces
+## Phase G — External adapters
 
-Constraints:
-- no broker action
-- no execution side effects
-- no coupled UI logic inside core
+Implement only after canonical contracts stabilize:
 
----
+1. provider-agnostic adapter test kit
+2. Solana read-only adapter
+3. Base read-only adapter
+4. Robinhood L2 adapter after protocol/API validation
+5. optional exchange candle adapters
 
-## Architectural sequencing rules
+Adapters must support recorded-response replay and must not leak provider
+objects into Domain.
 
-The intended order is strict:
+## Phase H — Alerts and reporting
 
-1. foundation contracts
-2. validation and canonical serialization
-3. audit/replay contracts
-4. golden replay fixtures
-5. structure contracts and fixtures
-6. setup contracts and fixtures
-7. decision contracts and fixtures
-8. alert contracts and reporting projections
+- immutable alert record
+- Persian report projection
+- Telegram transport adapter
+- dashboard read model
+- replay/audit report
+- delivery idempotency
 
-No slice should skip this ordering without an explicit freeze update.
+Rendering and transport stay downstream from deterministic truth.
 
----
+## Phase I — Operational hardening
 
-## Stable assumptions currently in force
+- dependency lock strategy
+- schema migrations
+- property-based tests
+- mutation testing for critical rules
+- performance benchmarks on fixed datasets
+- structured logs and observability
+- security and supply-chain review
+- Linux deployment packaging
+- backup/restore and ledger integrity procedures
 
-The roadmap currently assumes these repository primitives remain authoritative:
-- `canonical_json`
-- `deterministic_id`
-- `ensure_utc_datetime`
+## Definition of done for every slice
 
-Future slices may consume these helpers, but should not redefine their semantics unless a dedicated lower-layer freeze explicitly changes the contract.
-
----
-
-## Current architectural boundary
-
-Stable today:
-- deterministic contract discipline
-- immutable models
-- replay-safe audit primitives
-- canonical serialization expectations
-
-Not yet stable:
-- market structure taxonomy
-- setup semantics
-- decision taxonomy
-- alert payload shape
-- reporting projections
-- adapter boundaries for Solana, Robinhood, Base
-
-These areas remain intentionally unfrozen until later slices lock them.
-
----
-
-## Delivery notes
-
-Implementation should continue with freeze-pack-first discipline.
-
-The recommended next step is:
-- Slice 0.8 (Golden Replay Fixtures): Freeze Pack approved; verdict APPROVE; implementation permission YES; implementation may now begin under the approved freeze pack.
-- Slice 0.8: Golden Replay Fixtures - approved for implementation.
-- then move into structure-oriented slices
-
-This ordering preserves regression confidence before market logic complexity increases.
+- scoped contract or freeze note
+- failing test observed before implementation
+- deterministic/replay test
+- negative/fail-closed cases
+- Ruff clean
+- full Pytest clean
+- PowerShell parser clean
+- protected baseline unchanged
+- migration/compatibility note when public imports change
+- commit contains no cache, installer output, credentials, or dummy production
+  evidence

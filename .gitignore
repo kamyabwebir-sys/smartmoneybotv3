@@ -21,6 +21,7 @@ venv/
 .cursor/
 .freebuff/
 smartmoneybotv3/.freebuff/
+/smartmoneybotv3/
 
 # Local audit/recovery outputs
 audit-output-*/
@@ -50,3 +51,4 @@ upload-smart-money.ps1
 /install_slice_1_48.ps1
 /install_slice_1_50_ingestion_scaffold.ps1
 /install_slice_1_51_1_52_ingestion_envelope.ps1
+/prepare_offline_dev_pack.ps1

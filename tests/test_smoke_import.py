@@ -1,4 +1,4 @@
-from smartmoneybot import __version__
+from smart_money import __version__
 
 
 def test_package_version_is_defined() -> None:

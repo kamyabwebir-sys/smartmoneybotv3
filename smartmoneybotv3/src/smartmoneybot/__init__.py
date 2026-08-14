@@ -1,1 +1,0 @@
-"""smartmoneybotv3 package."""

@@ -21,13 +21,10 @@ def test_expected_package_dirs_exist() -> None:
     root = Path(__file__).resolve().parents[1]
 
     expected_dirs = [
-        root / "src" / "smartmoneybot",
-        root / "src" / "smartmoneybot" / "governance",
-        root / "src" / "smartmoneybot" / "core",
-        root / "src" / "smartmoneybot" / "discovery",
-        root / "src" / "smartmoneybot" / "adapters",
-        root / "src" / "smartmoneybot" / "reporting",
-        root / "src" / "smartmoneybot" / "ai",
+        root / "src" / "smart_money",
+        root / "src" / "smart_money" / "core",
+        root / "src" / "smart_money" / "discovery",
+        root / "src" / "smart_money" / "ingestion",
         root / "tests",
         root / "fixtures",
         root / "scripts",
