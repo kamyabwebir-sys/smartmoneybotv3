@@ -25,5 +25,10 @@ class ReplayEngine:
     def entry_count(self) -> int:
         return self._ledger.entry_count
 
+    @property
+    def content_hash(self) -> str:
+        """Return the validated canonical hash of the loaded ledger."""
+        return self._ledger.content_hash
+
 
 __all__ = ["ReplayEngine"]
