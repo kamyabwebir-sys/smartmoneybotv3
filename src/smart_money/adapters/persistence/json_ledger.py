@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +15,12 @@ from smart_money.ingestion.contracts import EvidencePayload
 
 _SCHEMA_VERSION = "evidence_ledger.v2"
 _LEGACY_SCHEMA_VERSION = "evidence_ledger.v1"
+_V2_DOCUMENT_KEYS = frozenset({"schema_version", "content_hash", "entries"})
+_V1_DOCUMENT_KEYS = frozenset({"schema_version", "entries"})
+_ENTRY_KEYS = frozenset({"canonical_id", "payload"})
+_PAYLOAD_KEYS = frozenset(
+    {"source_id", "evidence_type", "timestamp", "data", "metadata"}
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,39 +118,84 @@ class EvidenceGroundingLedger:
         self._processed_ids.clear()
 
     def _extract_entries(self, document: Any) -> list[dict[str, Any]]:
-        if isinstance(document, dict) and document.get("schema_version") in {
-            _SCHEMA_VERSION,
-            _LEGACY_SCHEMA_VERSION,
-        }:
+        if not isinstance(document, dict):
+            raise ValueError("ledger root must be an object")
+
+        if "schema_version" in document:
+            schema_version = document["schema_version"]
+            if schema_version not in {_SCHEMA_VERSION, _LEGACY_SCHEMA_VERSION}:
+                raise ValueError(f"unsupported ledger schema_version: {schema_version}")
+
+            expected_keys = (
+                _V2_DOCUMENT_KEYS
+                if schema_version == _SCHEMA_VERSION
+                else _V1_DOCUMENT_KEYS
+            )
+            if set(document) != expected_keys:
+                raise ValueError(
+                    f"{schema_version} ledger document keys do not match schema"
+                )
+
             entries = document.get("entries")
             if not isinstance(entries, list):
                 raise ValueError("ledger entries must be a list")
-            if not all(isinstance(entry, dict) for entry in entries):
-                raise ValueError("each ledger entry must be an object")
+            self._validate_entries(
+                entries,
+                require_metadata=schema_version == _SCHEMA_VERSION,
+            )
 
-            if document["schema_version"] == _SCHEMA_VERSION:
+            if schema_version == _SCHEMA_VERSION:
                 content_hash = document.get("content_hash")
-                if not isinstance(content_hash, str):
-                    raise ValueError("ledger content_hash must be a string")
+                if not isinstance(content_hash, str) or re.fullmatch(
+                    r"[0-9a-f]{64}",
+                    content_hash,
+                ) is None:
+                    raise ValueError(
+                        "ledger content_hash must be a lowercase SHA-256 hex digest"
+                    )
                 expected_hash = self._compute_content_hash(entries)
                 if not hmac.compare_digest(content_hash, expected_hash):
                     raise ValueError("ledger content hash mismatch")
             return entries
 
-        if isinstance(document, dict):
-            legacy_entries: list[dict[str, Any]] = []
-            for canonical_id, payload in document.items():
-                if not isinstance(payload, dict):
-                    raise ValueError("legacy ledger payloads must be objects")
-                legacy_entries.append(
-                    {
-                        "canonical_id": canonical_id,
-                        "payload": payload,
-                    }
-                )
-            return legacy_entries
+        legacy_entries: list[dict[str, Any]] = []
+        for canonical_id, payload in document.items():
+            if not isinstance(payload, dict):
+                raise ValueError("legacy ledger payloads must be objects")
+            legacy_entries.append(
+                {
+                    "canonical_id": canonical_id,
+                    "payload": payload,
+                }
+            )
+        return legacy_entries
 
-        raise ValueError("ledger root must be an object")
+    @staticmethod
+    def _validate_entries(
+        entries: list[Any],
+        *,
+        require_metadata: bool,
+    ) -> None:
+        for raw_entry in entries:
+            if not isinstance(raw_entry, dict):
+                raise ValueError("each ledger entry must be an object")
+            if set(raw_entry) != _ENTRY_KEYS:
+                raise ValueError("ledger entry keys do not match schema")
+
+            payload = raw_entry["payload"]
+            if not isinstance(payload, dict):
+                raise ValueError("ledger entry payload must be an object")
+
+            payload_keys = set(payload)
+            required_keys = (
+                _PAYLOAD_KEYS
+                if require_metadata
+                else _PAYLOAD_KEYS - {"metadata"}
+            )
+            if not required_keys.issubset(payload_keys) or not payload_keys.issubset(
+                _PAYLOAD_KEYS
+            ):
+                raise ValueError("ledger payload keys do not match schema")
 
     def _serialize_entries(self) -> list[dict[str, Any]]:
         return [

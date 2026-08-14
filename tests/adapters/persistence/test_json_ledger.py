@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from smart_money.adapters.persistence.json_ledger import EvidenceGroundingLedger
 from smart_money.ingestion.contracts import EvidencePayload
 
@@ -78,3 +80,107 @@ def test_v1_ledger_is_loaded_and_rewritten_as_v2(tmp_path):
     migrated = json.loads(file_path.read_text(encoding="utf-8"))
     assert migrated["schema_version"] == "evidence_ledger.v2"
     assert migrated["content_hash"] == ledger.content_hash
+
+
+def test_unknown_schema_version_fails_closed(tmp_path):
+    file_path = tmp_path / "unknown-schema.json"
+    file_path.write_text(
+        json.dumps({"schema_version": "evidence_ledger.v99", "entries": []}),
+        encoding="utf-8",
+    )
+
+    ledger = EvidenceGroundingLedger()
+    with pytest.raises(ValueError, match="unsupported ledger schema_version"):
+        ledger.load_from_disk(file_path)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (lambda document: document.pop("content_hash"), "document keys"),
+        (lambda document: document.update({"extra": True}), "document keys"),
+        (
+            lambda document: document.update({"content_hash": "not-a-hash"}),
+            "lowercase SHA-256",
+        ),
+        (
+            lambda document: document["entries"][0].update({"extra": True}),
+            "entry keys",
+        ),
+        (
+            lambda document: document["entries"][0]["payload"].pop("metadata"),
+            "payload keys",
+        ),
+    ],
+    ids=[
+        "missing-content-hash",
+        "extra-document-key",
+        "malformed-content-hash",
+        "extra-entry-key",
+        "missing-payload-key",
+    ],
+)
+def test_v2_schema_shape_is_strict(tmp_path, mutation, message):
+    ledger = EvidenceGroundingLedger()
+    ledger.record(EvidencePayload("SRC-1", "market_structure", 100, {"price": 10}))
+    file_path = tmp_path / "strict-schema.json"
+    ledger.save_to_disk(file_path)
+    document = json.loads(file_path.read_text(encoding="utf-8"))
+    mutation(document)
+    file_path.write_text(json.dumps(document), encoding="utf-8")
+
+    with pytest.raises(ValueError, match=message):
+        EvidenceGroundingLedger().load_from_disk(file_path)
+
+
+def test_content_tampering_is_detected_without_replacing_existing_state(tmp_path):
+    persisted = EvidenceGroundingLedger()
+    persisted.record(
+        EvidencePayload("SRC-1", "market_structure", 100, {"price": 10})
+    )
+    file_path = tmp_path / "tampered.json"
+    persisted.save_to_disk(file_path)
+
+    document = json.loads(file_path.read_text(encoding="utf-8"))
+    document["entries"][0]["payload"]["data"]["price"] = 999
+    file_path.write_text(json.dumps(document), encoding="utf-8")
+
+    active = EvidenceGroundingLedger()
+    retained = EvidencePayload("ACTIVE", "market_structure", 200, {"price": 20})
+    active.record(retained)
+
+    with pytest.raises(ValueError, match="content hash mismatch"):
+        active.load_from_disk(file_path)
+
+    assert active.entry_count == 1
+    assert active.get(retained.get_canonical_id()) == retained
+
+
+def test_duplicate_and_identity_mismatch_are_rejected(tmp_path):
+    ledger = EvidenceGroundingLedger()
+    payload = EvidencePayload("SRC-1", "market_structure", 100, {"price": 10})
+    ledger.record(payload)
+    file_path = tmp_path / "invalid-identities.json"
+    ledger.save_to_disk(file_path)
+    document = json.loads(file_path.read_text(encoding="utf-8"))
+
+    duplicate_document = {
+        **document,
+        "entries": [document["entries"][0], document["entries"][0]],
+    }
+    duplicate_entries = duplicate_document["entries"]
+    duplicate_document["content_hash"] = ledger._compute_content_hash(
+        duplicate_entries
+    )
+    file_path.write_text(json.dumps(duplicate_document), encoding="utf-8")
+    with pytest.raises(ValueError, match="duplicate canonical_id"):
+        EvidenceGroundingLedger().load_from_disk(file_path)
+
+    mismatch_document = document
+    mismatch_document["entries"][0]["canonical_id"] = "wrong-id"
+    mismatch_document["content_hash"] = ledger._compute_content_hash(
+        mismatch_document["entries"]
+    )
+    file_path.write_text(json.dumps(mismatch_document), encoding="utf-8")
+    with pytest.raises(ValueError, match="identity mismatch"):
+        EvidenceGroundingLedger().load_from_disk(file_path)
