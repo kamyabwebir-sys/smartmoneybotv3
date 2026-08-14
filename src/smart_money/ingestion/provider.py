@@ -4,9 +4,10 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Sequence
 from typing import Any
 
+from smart_money.application.ports.evidence_ledger import EvidenceLedger
+
 from .contracts import EvidencePayload, IngestionCandle, IngestionResult, MarketSnapshot
 from .errors import InvalidPayloadError
-from .ledger import EvidenceLedger
 
 
 class BaseDataProvider(ABC):

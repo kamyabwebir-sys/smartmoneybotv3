@@ -2,35 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from types import MappingProxyType
-from typing import Any, Mapping, Protocol, runtime_checkable
+from typing import Any, Mapping
+
+from smart_money.application.ports.evidence_ledger import EvidenceLedger
 
 from .contracts import EvidencePayload
-
-
-@runtime_checkable
-class EvidenceLedger(Protocol):
-    """Provider-neutral append-only evidence ledger contract."""
-
-    def append(self, payload: EvidencePayload) -> str:
-        """Store payload idempotently and return its canonical identity."""
-        ...
-
-    def contains(self, canonical_id: str) -> bool:
-        """Return whether canonical identity is present."""
-        ...
-
-    def get(self, canonical_id: str) -> EvidencePayload | None:
-        """Return the immutable payload for an identity, if present."""
-        ...
-
-    def iter_payloads(self) -> Iterator[EvidencePayload]:
-        """Iterate payloads in deterministic insertion order."""
-        ...
-
-    @property
-    def entry_count(self) -> int:
-        """Return the number of unique ledger entries."""
-        ...
 
 
 class EvidenceGroundingLedger:
