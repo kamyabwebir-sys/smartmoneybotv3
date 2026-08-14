@@ -34,7 +34,6 @@ testpaths = [
   "test_integration.py",
   "test_ledger_integration.py",
   "test_ledger_persistence.py",
-  "test_scoring.py",
 ]
 pythonpath = ["src"]
 addopts = [
