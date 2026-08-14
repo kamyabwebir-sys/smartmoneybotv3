@@ -1,3 +1,5 @@
+"""Compatibility facade for canonical evidence and analytics contracts."""
+
 from __future__ import annotations
 
 from smart_money.adapters.persistence.json_ledger import GroundedEntry
