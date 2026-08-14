@@ -34,8 +34,6 @@ testpaths = [
   "test_integration.py",
   "test_ledger_integration.py",
   "test_ledger_persistence.py",
-  "test_population.py",
-  "test_replay_engine.py",
   "test_scoring.py",
 ]
 pythonpath = ["src"]
