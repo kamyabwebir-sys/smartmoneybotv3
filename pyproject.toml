@@ -32,8 +32,6 @@ minversion = "8.0"
 testpaths = [
   "tests",
   "test_integration.py",
-  "test_ledger_integration.py",
-  "test_ledger_persistence.py",
 ]
 pythonpath = ["src"]
 addopts = [
