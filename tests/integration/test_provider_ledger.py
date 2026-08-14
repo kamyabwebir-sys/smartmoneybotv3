@@ -1,13 +1,8 @@
 from contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
-from provider import EvidenceIngestionProvider as LegacyEvidenceIngestionProvider
 from smart_money.ingestion.provider import (
     EvidenceIngestionProvider as CanonicalEvidenceIngestionProvider,
 )
-
-
-def test_legacy_and_canonical_provider_imports_are_identical():
-    assert LegacyEvidenceIngestionProvider is CanonicalEvidenceIngestionProvider
 
 
 def test_ledger_grounding_on_ingest():

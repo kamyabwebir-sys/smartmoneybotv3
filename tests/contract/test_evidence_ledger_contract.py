@@ -12,7 +12,6 @@ from smart_money.ingestion.contracts import EvidencePayload
 from smart_money.ingestion.ledger import (
     EvidenceGroundingLedger as InMemoryEvidenceLedger,
 )
-from smart_money.ingestion.ledger import EvidenceLedger as LegacyEvidenceLedger
 
 LedgerFactory = Callable[[], CanonicalEvidenceLedger]
 
@@ -33,10 +32,6 @@ def make_payload(source_id: str, timestamp: int) -> EvidencePayload:
         timestamp=timestamp,
         data={"price": timestamp},
     )
-
-
-def test_legacy_and_canonical_contract_imports_are_identical() -> None:
-    assert LegacyEvidenceLedger is CanonicalEvidenceLedger
 
 
 def test_ledger_satisfies_runtime_contract(

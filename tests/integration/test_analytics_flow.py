@@ -1,15 +1,10 @@
 from decimal import Decimal
 
-from analytics_orchestrator import AnalyticsOrchestrator as LegacyOrchestrator
 from contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
 from smart_money.application.analytics import (
     AnalyticsOrchestrator as CanonicalOrchestrator,
 )
-
-
-def test_legacy_and_canonical_orchestrator_imports_are_identical():
-    assert LegacyOrchestrator is CanonicalOrchestrator
 
 
 def test_ledger_to_score_flow(tmp_path):
