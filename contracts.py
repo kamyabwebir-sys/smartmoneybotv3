@@ -3,21 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
+from smart_money.adapters.persistence.json_ledger import GroundedEntry
 from smart_money.ingestion.contracts import EvidencePayload, IngestionResult
-
-
-@dataclass(frozen=True, slots=True)
-class GroundedEntry:
-    canonical_id: str
-    payload: EvidencePayload
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.canonical_id, str) or not self.canonical_id.strip():
-            raise ValueError("canonical_id must be a non-empty string")
-        if not isinstance(self.payload, EvidencePayload):
-            raise TypeError("payload must be an EvidencePayload")
-        if self.canonical_id != self.payload.get_canonical_id():
-            raise ValueError("canonical_id does not match payload content")
 
 
 @dataclass(frozen=True, slots=True)
