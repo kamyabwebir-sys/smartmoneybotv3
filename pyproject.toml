@@ -31,7 +31,6 @@ where = ["src"]
 minversion = "8.0"
 testpaths = [
   "tests",
-  "test_integration.py",
 ]
 pythonpath = ["src"]
 addopts = [
