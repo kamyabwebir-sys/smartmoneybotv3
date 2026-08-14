@@ -1,8 +1,15 @@
-import os
+from pathlib import Path
+
+import pytest
 
 from contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
-from replay_engine import ReplayEngine
+from replay_engine import ReplayEngine as LegacyReplayEngine
+from smart_money.application.replay import ReplayEngine as CanonicalReplayEngine
+
+
+def test_legacy_and_canonical_imports_are_identical():
+    assert LegacyReplayEngine is CanonicalReplayEngine
 
 
 def test_replay_engine_emits_persisted_data(tmp_path):
@@ -13,11 +20,11 @@ def test_replay_engine_emits_persisted_data(tmp_path):
     ledger.record(p1)
     ledger.record(p2)
 
-    file_path = os.path.join(tmp_path, "test_ledger.json")
+    file_path = tmp_path / "test_ledger.json"
     ledger.save_to_disk(file_path)
 
     # 2. Initialize Replay Engine
-    engine = ReplayEngine(file_path)
+    engine = CanonicalReplayEngine(file_path)
 
     # 3. Verify
     assert engine.entry_count == 2
@@ -27,3 +34,10 @@ def test_replay_engine_emits_persisted_data(tmp_path):
     assert emitted[0].timestamp == 100
     assert emitted[1].timestamp == 101
     assert emitted[0].data["price"] == 10
+
+
+def test_replay_engine_fails_closed_without_persisted_ledger(tmp_path: Path):
+    missing_path = tmp_path / "missing-ledger.json"
+
+    with pytest.raises(FileNotFoundError, match="persisted ledger not found"):
+        CanonicalReplayEngine(missing_path)
