@@ -4,15 +4,7 @@ from types import MappingProxyType
 import pytest
 
 from contracts import EvidencePayload
-from contracts import ScoreReport as LegacyScoreReport
-from scorer import MarketScorer as LegacyMarketScorer
 from smart_money.analytics.scoring import MarketScorer as CanonicalMarketScorer
-from smart_money.analytics.scoring import ScoreReport as CanonicalScoreReport
-
-
-def test_legacy_and_canonical_imports_are_identical():
-    assert LegacyMarketScorer is CanonicalMarketScorer
-    assert LegacyScoreReport is CanonicalScoreReport
 
 
 def test_scorer_bullish_logic():

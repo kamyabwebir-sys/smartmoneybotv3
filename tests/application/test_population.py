@@ -4,14 +4,9 @@ import pytest
 
 from contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
-from population import EvidencePopulator as LegacyEvidencePopulator
 from smart_money.application.population import (
     EvidencePopulator as CanonicalEvidencePopulator,
 )
-
-
-def test_legacy_and_canonical_imports_are_identical():
-    assert LegacyEvidencePopulator is CanonicalEvidencePopulator
 
 
 def test_full_flow_ingest_to_population():

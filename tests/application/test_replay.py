@@ -4,12 +4,7 @@ import pytest
 
 from contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
-from replay_engine import ReplayEngine as LegacyReplayEngine
 from smart_money.application.replay import ReplayEngine as CanonicalReplayEngine
-
-
-def test_legacy_and_canonical_imports_are_identical():
-    assert LegacyReplayEngine is CanonicalReplayEngine
 
 
 def test_replay_engine_emits_persisted_data(tmp_path):
