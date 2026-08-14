@@ -6,7 +6,7 @@ from typing import Any
 
 from .contracts import EvidencePayload, IngestionCandle, IngestionResult, MarketSnapshot
 from .errors import InvalidPayloadError
-from .ledger import EvidenceGroundingLedger
+from .ledger import EvidenceLedger
 
 
 class BaseDataProvider(ABC):
@@ -40,7 +40,7 @@ class EvidenceIngestionProvider:
     def __init__(
         self,
         registry: Any = None,
-        ledger: EvidenceGroundingLedger | None = None,
+        ledger: EvidenceLedger | None = None,
     ) -> None:
         self._seen_ids: set[str] = set()
         self._registry = registry
@@ -76,7 +76,9 @@ class EvidenceIngestionProvider:
             )
 
         if self._ledger is not None:
-            self._ledger.record(canonical_id, payload)
+            recorded_id = self._ledger.append(payload)
+            if recorded_id != canonical_id:
+                raise RuntimeError("ledger returned a mismatched canonical identity")
 
         self._seen_ids.add(canonical_id)
         return IngestionResult(accepted=True, canonical_id=canonical_id)
