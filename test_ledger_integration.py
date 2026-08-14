@@ -1,14 +1,21 @@
 from contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
-from provider import EvidenceIngestionProvider
+from provider import EvidenceIngestionProvider as LegacyEvidenceIngestionProvider
+from smart_money.ingestion.provider import (
+    EvidenceIngestionProvider as CanonicalEvidenceIngestionProvider,
+)
+
+
+def test_legacy_and_canonical_provider_imports_are_identical():
+    assert LegacyEvidenceIngestionProvider is CanonicalEvidenceIngestionProvider
 
 
 def test_ledger_grounding_on_ingest():
     ledger = EvidenceGroundingLedger()
-    prov = EvidenceIngestionProvider(ledger=ledger)
+    provider = CanonicalEvidenceIngestionProvider(ledger=ledger)
 
     payload = EvidencePayload("S1", "market_structure", 100, {"price": 50000})
-    result = prov.ingest(payload)
+    result = provider.ingest(payload)
 
     assert result.accepted is True
     assert ledger.count == 1
@@ -20,12 +27,15 @@ def test_ledger_grounding_on_ingest():
 
 def test_no_grounding_on_duplicate():
     ledger = EvidenceGroundingLedger()
-    prov = EvidenceIngestionProvider(ledger=ledger)
+    provider = CanonicalEvidenceIngestionProvider(ledger=ledger)
 
     payload = EvidencePayload("S1", "market_structure", 100, {"price": 50000})
-    prov.ingest(payload)
+    first = provider.ingest(payload)
     assert ledger.count == 1
 
     # Ingest same again
-    prov.ingest(payload)
+    duplicate = provider.ingest(payload)
     assert ledger.count == 1  # Should not increase
+    assert first.accepted is True
+    assert duplicate.accepted is False
+    assert duplicate.canonical_id == first.canonical_id
