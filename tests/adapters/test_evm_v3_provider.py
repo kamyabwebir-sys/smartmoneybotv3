@@ -21,7 +21,11 @@ from smart_money.domain.market_identity import (
     PairId,
     VenueId,
 )
-from smart_money.domain.market_state import MarketStateCursor
+from smart_money.domain.market_state import (
+    MarketStateCheckpoint,
+    MarketStateCursor,
+    make_market_state_checkpoint,
+)
 
 _POOL_ADDRESS = f"0x{'1' * 40}"
 _TOKEN0_ADDRESS = f"0x{'a' * 40}"
@@ -107,6 +111,282 @@ async def test_provider_sorts_deduplicates_and_replays_stably() -> None:
     assert tuple(item.ordering_key[:2] for item in first) == ((100, 2), (101, 0))
     assert first == second
     assert len(calls) == 2
+
+
+@pytest.mark.asyncio
+async def test_windowed_provider_emits_before_live_source_completion() -> None:
+    normalizer = _normalizer()
+    source_progress: list[int] = []
+
+    async def live_source():
+        for event in (
+            _event(101, 0, transaction_marker="b"),
+            _event(100, 2, transaction_marker="a"),
+            _event(102, 0, transaction_marker="c"),
+            _event(103, 0, transaction_marker="d"),
+        ):
+            source_progress.append(event.block_number)
+            yield event
+
+    provider = EvmV3ShadowProvider(
+        normalizer,
+        live_source,
+        reorder_window_blocks=1,
+    )
+    stream = provider.stream_state_changes(normalizer.market)
+
+    first = await anext(stream)
+
+    assert first.ordering_key[:2] == (100, 2)
+    assert source_progress == [101, 100, 102]
+    await stream.aclose()
+
+
+@pytest.mark.asyncio
+async def test_windowed_provider_rejects_event_behind_watermark() -> None:
+    normalizer = _normalizer()
+    provider = EvmV3ShadowProvider(
+        normalizer,
+        _factory(
+            (
+                _event(100, 0, transaction_marker="a"),
+                _event(102, 0, transaction_marker="b"),
+                _event(100, 1, transaction_marker="c"),
+            )
+        ),
+        reorder_window_blocks=1,
+    )
+
+    with pytest.raises(ValueError, match="committed watermark"):
+        await _collect(provider, normalizer.market)
+
+
+@pytest.mark.asyncio
+async def test_windowed_provider_fails_closed_at_buffer_capacity() -> None:
+    normalizer = _normalizer()
+    provider = EvmV3ShadowProvider(
+        normalizer,
+        _factory(
+            (
+                _event(100, 0, transaction_marker="a"),
+                _event(100, 1, transaction_marker="b"),
+                _event(100, 2, transaction_marker="c"),
+            )
+        ),
+        reorder_window_blocks=1,
+        max_buffered_events=2,
+    )
+
+    with pytest.raises(BufferError, match="capacity"):
+        await _collect(provider, normalizer.market)
+
+
+@pytest.mark.asyncio
+async def test_end_of_stream_flushes_open_window_in_canonical_order() -> None:
+    normalizer = _normalizer()
+    provider = EvmV3ShadowProvider(
+        normalizer,
+        _factory(
+            (
+                _event(101, 2, transaction_marker="c"),
+                _event(101, 0, transaction_marker="a"),
+                _event(100, 5, transaction_marker="b"),
+            )
+        ),
+        reorder_window_blocks=10,
+    )
+
+    changes = await _collect(provider, normalizer.market)
+
+    assert tuple(change.ordering_key[:2] for change in changes) == (
+        (100, 5),
+        (101, 0),
+        (101, 2),
+    )
+
+
+@pytest.mark.asyncio
+async def test_checkpoint_resumes_after_last_consumed_position() -> None:
+    normalizer = _normalizer()
+    events = (
+        _event(100, 0, transaction_marker="a"),
+        _event(100, 1, transaction_marker="b"),
+        _event(101, 0, transaction_marker="c"),
+    )
+    provider = EvmV3ShadowProvider(
+        normalizer,
+        _factory(events),
+        reorder_window_blocks=2,
+    )
+    first_run = await _collect(provider, normalizer.market)
+
+    checkpoint = provider.checkpoint_for(first_run[1])
+    resumed = tuple(
+        [
+            change
+            async for change in provider.stream_from_checkpoint(checkpoint)
+        ]
+    )
+
+    assert checkpoint.cursor.ordering_key == (100, 1)
+    assert checkpoint.source_watermark == 99
+    assert resumed == (first_run[2],)
+
+
+@pytest.mark.asyncio
+async def test_checkpoint_passes_safe_watermark_to_resumable_source() -> None:
+    normalizer = _normalizer()
+    events = (
+        _event(100, 0, transaction_marker="a"),
+        _event(100, 1, transaction_marker="b"),
+        _event(101, 0, transaction_marker="c"),
+    )
+    watermarks: list[int | None] = []
+
+    def resumable_source(source_watermark: int | None):
+        watermarks.append(source_watermark)
+        start = -1 if source_watermark is None else source_watermark
+
+        async def stream():
+            for event in events:
+                if event.block_number >= start:
+                    yield event
+
+        return stream()
+
+    provider = EvmV3ShadowProvider(
+        normalizer=normalizer,
+        event_source_factory=_factory(events),
+        reorder_window_blocks=2,
+        resumable_event_source_factory=resumable_source,
+    )
+    checkpoint = provider.checkpoint_for(normalizer.normalize(events[1]))
+
+    resumed = tuple(
+        [
+            change
+            async for change in provider.stream_from_checkpoint(checkpoint)
+        ]
+    )
+
+    assert watermarks == [99]
+    assert tuple(change.ordering_key[:2] for change in resumed) == ((101, 0),)
+
+
+def test_checkpoint_is_content_addressed_frozen_and_slotted() -> None:
+    normalizer = _normalizer()
+    provider = EvmV3ShadowProvider(
+        normalizer,
+        _factory(()),
+        reorder_window_blocks=2,
+    )
+    change = normalizer.normalize(_event(100, 1))
+
+    first = provider.checkpoint_for(change)
+    second = provider.checkpoint_for(change)
+
+    assert first == second
+    assert first.checkpoint_id == second.checkpoint_id
+    assert first.canonical_dict()["checkpoint_id"] == first.checkpoint_id
+    assert not hasattr(first, "__dict__")
+    with pytest.raises(FrozenInstanceError):
+        first.source_watermark = 100  # type: ignore[misc]
+
+
+def test_checkpoint_at_genesis_uses_no_source_watermark() -> None:
+    normalizer = _normalizer()
+    provider = EvmV3ShadowProvider(normalizer, _factory(()))
+    change = normalizer.normalize(_event(0, 0))
+
+    checkpoint = provider.checkpoint_for(change)
+
+    assert checkpoint.source_watermark is None
+    assert checkpoint.cursor.ordering_key == (0, 0)
+
+
+@pytest.mark.parametrize(
+    ("mismatch", "message"),
+    [
+        ("provider", "provider_id"),
+        ("chain", "chain"),
+        ("market", "market"),
+        ("window", "reorder window"),
+    ],
+)
+def test_provider_rejects_incompatible_checkpoint(
+    mismatch: str,
+    message: str,
+) -> None:
+    normalizer = _normalizer()
+    provider = EvmV3ShadowProvider(
+        normalizer,
+        _factory(()),
+        reorder_window_blocks=2,
+    )
+    valid = provider.checkpoint_for(normalizer.normalize(_event(100, 1)))
+    checkpoint_provider = valid.provider_id
+    checkpoint_chain = valid.chain
+    checkpoint_market = valid.market
+    checkpoint_window = valid.reorder_window_blocks
+    if mismatch == "provider":
+        checkpoint_provider = "other.provider"
+    elif mismatch == "chain":
+        robinhood = _normalizer(ChainId("eip155", "4663"))
+        checkpoint_chain = robinhood.chain
+        checkpoint_market = robinhood.market
+    elif mismatch == "market":
+        checkpoint_market = MarketId(
+            VenueId("other-v3"),
+            normalizer.market.pair,
+        )
+    else:
+        checkpoint_window = 3
+    incompatible = make_market_state_checkpoint(
+        provider_id=checkpoint_provider,
+        chain=checkpoint_chain,
+        market=checkpoint_market,
+        cursor=MarketStateCursor(
+            checkpoint_provider,
+            checkpoint_chain,
+            100,
+            1,
+        ),
+        reorder_window_blocks=checkpoint_window,
+    )
+
+    with pytest.raises(ValueError, match=message):
+        provider.stream_from_checkpoint(incompatible)
+
+
+def test_checkpoint_rejects_forged_identity_and_unsafe_watermark() -> None:
+    normalizer = _normalizer()
+    cursor = MarketStateCursor(
+        "evm.shadow.v3",
+        normalizer.chain,
+        100,
+        1,
+    )
+    valid = make_market_state_checkpoint(
+        provider_id="evm.shadow.v3",
+        chain=normalizer.chain,
+        market=normalizer.market,
+        cursor=cursor,
+        reorder_window_blocks=2,
+    )
+    values = {
+        "checkpoint_id": valid.checkpoint_id,
+        "provider_id": valid.provider_id,
+        "chain": valid.chain,
+        "market": valid.market,
+        "cursor": valid.cursor,
+        "source_watermark": valid.source_watermark,
+        "reorder_window_blocks": valid.reorder_window_blocks,
+    }
+
+    with pytest.raises(ValueError, match="checkpoint_id"):
+        MarketStateCheckpoint(**{**values, "checkpoint_id": "forged"})
+    with pytest.raises(ValueError, match="cursor-safe"):
+        MarketStateCheckpoint(**{**values, "source_watermark": 100})
 
 
 @pytest.mark.asyncio
@@ -212,6 +492,31 @@ def test_provider_is_frozen_and_slotted() -> None:
     assert not hasattr(provider, "__dict__")
     with pytest.raises(FrozenInstanceError):
         provider.normalizer = normalizer  # type: ignore[misc]
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("reorder_window_blocks", -1, "non-negative"),
+        ("reorder_window_blocks", True, "integer"),
+        ("max_buffered_events", 0, "positive"),
+        ("max_buffered_events", 1.5, "integer"),
+    ],
+)
+def test_provider_rejects_invalid_window_configuration(
+    field: str,
+    value: object,
+    message: str,
+) -> None:
+    normalizer = _normalizer()
+    values = {
+        "normalizer": normalizer,
+        "event_source_factory": _factory(()),
+        field: value,
+    }
+
+    with pytest.raises((TypeError, ValueError), match=message):
+        EvmV3ShadowProvider(**values)  # type: ignore[arg-type]
 
 
 @pytest.mark.asyncio

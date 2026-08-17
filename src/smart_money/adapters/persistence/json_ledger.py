@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from smart_money.adapters.persistence.atomic_file import atomic_replace
 from smart_money.core.serialization import canonicalize
 from smart_money.ingestion.contracts import EvidencePayload
 
@@ -95,7 +96,7 @@ class EvidenceGroundingLedger:
             stream.write(serialized)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary_path, path)
+        atomic_replace(temporary_path, path)
 
     def load_from_disk(self, file_path: str | os.PathLike[str]) -> None:
         path = Path(file_path)
@@ -120,7 +121,7 @@ class EvidenceGroundingLedger:
             raise
 
         if recovering_temporary_file:
-            os.replace(temporary_path, path)
+            atomic_replace(temporary_path, path)
 
         self._entries = loaded
         self._processed_ids.clear()

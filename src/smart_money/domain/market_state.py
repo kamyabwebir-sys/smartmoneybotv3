@@ -102,6 +102,126 @@ class MarketStateCursor:
 
 
 @dataclass(frozen=True, slots=True)
+class MarketStateCheckpoint:
+    """Content-addressed resume point for deterministic market-state replay."""
+
+    checkpoint_id: str
+    provider_id: str
+    chain: ChainId
+    market: MarketId
+    cursor: MarketStateCursor
+    source_watermark: int | None
+    reorder_window_blocks: int
+    schema_version: str = "market_state_checkpoint.v1"
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "provider_id",
+            _normalize_source_id(self.provider_id),
+        )
+        if not isinstance(self.chain, ChainId):
+            raise TypeError("chain must be a ChainId")
+        if not isinstance(self.market, MarketId):
+            raise TypeError("market must be a MarketId")
+        if not isinstance(self.cursor, MarketStateCursor):
+            raise TypeError("cursor must be a MarketStateCursor")
+        if self.source_watermark is not None:
+            object.__setattr__(
+                self,
+                "source_watermark",
+                _require_non_negative_integer(
+                    self.source_watermark,
+                    "source_watermark",
+                ),
+            )
+        object.__setattr__(
+            self,
+            "reorder_window_blocks",
+            _require_non_negative_integer(
+                self.reorder_window_blocks,
+                "reorder_window_blocks",
+            ),
+        )
+        if self.schema_version != "market_state_checkpoint.v1":
+            raise ValueError("unsupported MarketStateCheckpoint schema_version")
+        self._validate_binding()
+        expected_id = deterministic_id(
+            "market_state_checkpoint",
+            self.identity_payload(),
+        )
+        if self.checkpoint_id != expected_id:
+            raise ValueError("checkpoint_id does not match deterministic payload")
+
+    def _validate_binding(self) -> None:
+        if self.cursor.provider_id != self.provider_id:
+            raise ValueError("checkpoint cursor provider_id does not match")
+        if self.cursor.chain.canonical_id != self.chain.canonical_id:
+            raise ValueError("checkpoint cursor chain does not match")
+        for asset in (self.market.pair.base, self.market.pair.quote):
+            if asset.chain is None:
+                raise ValueError("checkpoint market assets require chain identity")
+            if asset.chain.canonical_id != self.chain.canonical_id:
+                raise ValueError("checkpoint market chain does not match")
+        expected_watermark = (
+            None
+            if self.cursor.chain_sequence == 0
+            else self.cursor.chain_sequence - 1
+        )
+        if self.source_watermark != expected_watermark:
+            raise ValueError("source_watermark is not cursor-safe")
+
+    def identity_payload(self) -> dict[str, Any]:
+        return {
+            "chain": self.chain.canonical_dict(),
+            "cursor": self.cursor.canonical_dict(),
+            "market": self.market.canonical_dict(),
+            "provider_id": self.provider_id,
+            "reorder_window_blocks": self.reorder_window_blocks,
+            "schema_version": self.schema_version,
+            "source_watermark": self.source_watermark,
+        }
+
+    def canonical_dict(self) -> dict[str, Any]:
+        return {"checkpoint_id": self.checkpoint_id, **self.identity_payload()}
+
+
+def make_market_state_checkpoint(
+    *,
+    provider_id: str,
+    chain: ChainId,
+    market: MarketId,
+    cursor: MarketStateCursor,
+    reorder_window_blocks: int,
+) -> MarketStateCheckpoint:
+    normalized_provider = _normalize_source_id(provider_id)
+    source_watermark = (
+        None if cursor.chain_sequence == 0 else cursor.chain_sequence - 1
+    )
+    payload = {
+        "chain": chain.canonical_dict(),
+        "cursor": cursor.canonical_dict(),
+        "market": market.canonical_dict(),
+        "provider_id": normalized_provider,
+        "reorder_window_blocks": _require_non_negative_integer(
+            reorder_window_blocks,
+            "reorder_window_blocks",
+        ),
+        "schema_version": "market_state_checkpoint.v1",
+        "source_watermark": source_watermark,
+    }
+    return MarketStateCheckpoint(
+        checkpoint_id=deterministic_id("market_state_checkpoint", payload),
+        provider_id=normalized_provider,
+        chain=chain,
+        market=market,
+        cursor=cursor,
+        source_watermark=source_watermark,
+        reorder_window_blocks=reorder_window_blocks,
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class MarketStateChange:
     """Finalized onchain fact with signed deltas from the pool's perspective."""
 
@@ -270,8 +390,10 @@ def make_market_state_change(
 
 
 __all__ = [
+    "MarketStateCheckpoint",
     "MarketStateChange",
     "MarketStateChangeType",
     "MarketStateCursor",
+    "make_market_state_checkpoint",
     "make_market_state_change",
 ]
