@@ -18,7 +18,10 @@ _DEFAULT_MANIFEST = Path(
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    content = path.read_bytes()
+    if path.suffix.lower() in {".json", ".lock", ".toml"}:
+        content = content.replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()
 
 
 def _version_tuple(value: str) -> tuple[int, ...]:

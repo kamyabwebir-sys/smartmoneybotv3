@@ -7,29 +7,29 @@
   "scopes": {
     "configuration": {
       "count": 4,
-      "digest": "b4f595bd76b10531fab12fa034f1eac5b012753f119640761d0ce04c44baac78"
+      "digest": "b839cbb0af70ce6027f280ca84835d7d65d2e28a162b2c928ac8a508fc3c3dc3"
     },
     "documentation": {
       "count": 111,
-      "digest": "c1f8af0a600f68e60b963671481ec3815cf14ce8ce3260f9fecb2f8f4da3d352"
+      "digest": "1be17d1af72c14b74b6ea9998ccd7f5ed520eda6d6c9f7392cff4c08ac825149"
     },
     "governance": {
       "count": 310,
-      "digest": "0db77239ce4148000c14bba28de9c911700f8e8429043110c895e5cb13232dad"
+      "digest": "ef05b9a5120e4714a0b9a9ada51022e0dce6ec62fb4ea87a5e1b4da54909c98f"
     },
     "scripts": {
       "count": 38,
-      "digest": "a1957075f1c78baf7a091fe04cf871dfb81ea62806028e8e8b93858b8957c177"
+      "digest": "62c19abe397b3461e4bf4a35400a2dc786ace6848c735501de83286e388d3e34"
     },
     "source": {
-      "count": 413,
-      "digest": "5a60d767844d9919ad3fb918be1e8cc5f99f8877b3c97a6676de764dcb6cc1d7"
+      "count": 408,
+      "digest": "b466090ab4d0fffab919f638e81a2f63b45b08a553def46b6dca2475e9897f8a"
     },
     "tests": {
       "count": 385,
-      "digest": "50f92c1346c8ddeec562adf801c0bfbb63945a756424f26cc2a1b098dc840116"
+      "digest": "2044ec1071215ce63a4908b8279dd279d1285b417a1406e2d240ba7056853b79"
     }
   },
   "slice": "P0.4",
-  "total_files": 1261
+  "total_files": 1256
 }

@@ -17,15 +17,33 @@ $ExcludedRelativePaths = @(
     "artifacts/governance/p0_6_release_bundle_manifest.json",
     "artifacts/governance/p0_6_release_bundle_offline_gate.receipt.json",
     "scripts/verify_p0_6_release_bundle_offline.py",
-    "tests/scripts/test_p0_6_release_bundle_offline.py"
+    "tests/scripts/test_p0_6_release_bundle_offline.py",
+    "artifacts/governance/p1_clean_machine_reproduction.receipt.json"
 )
 
 function Get-TextDigest {
-    param([Parameter(Mandatory)][string]$Text)
+    param([Parameter(Mandatory)][AllowEmptyString()][string]$Text)
 
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($Text)
     $digest = [System.Security.Cryptography.SHA256]::HashData($bytes)
     return [Convert]::ToHexString($digest).ToLowerInvariant()
+}
+
+function Get-PortableFileHash {
+    param([Parameter(Mandatory)][System.IO.FileInfo]$File)
+
+    $textExtensions = @(
+        ".json", ".lock", ".md", ".ps1", ".py", ".toml", ".txt", ".yaml", ".yml"
+    )
+    if (
+        $File.Extension.ToLowerInvariant() -in $textExtensions -or
+        -not $File.Extension -or
+        $File.Name -eq ".gitignore"
+    ) {
+        $text = [System.IO.File]::ReadAllText($File.FullName).Replace("`r`n", "`n")
+        return Get-TextDigest -Text $text
+    }
+    return (Get-FileHash -LiteralPath $File.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
 function Get-ScopeSnapshot {
@@ -54,14 +72,15 @@ function Get-ScopeSnapshot {
             $excluded = (
                 ($relativePath -in $ExcludedRelativePaths) -or
                 ($relativePath -match "(^|/)__pycache__/") -or
+                ($relativePath -match "(^|/)[^/]+\.egg-info/") -or
                 ($relativePath -match "\.py[co]$") -or
                 ($relativePath -match "\.bak(\.|$)")
             )
             if ($excluded) {
                 continue
             }
-            $fileHash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash
-            "$relativePath`t$($fileHash.ToLowerInvariant())"
+            $fileHash = Get-PortableFileHash -File $file
+            "$relativePath`t$fileHash"
         }
     }
 

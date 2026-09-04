@@ -12,15 +12,16 @@
     ],
     "dev": [
       "pytest",
+      "pytest-asyncio",
       "ruff"
     ]
   },
   "files": {
     "pyproject.toml": {
-      "sha256": "67cb2be8394e3a3699f92cfbea17f03e7d15cb05f757c8c4f281a752fd69e0b3"
+      "sha256": "f17f8672faf83f8cb166e4ca60ef8442a7e7d065acd29cb6c995e392ddbab9ff"
     },
     "uv.lock": {
-      "sha256": "7648d21b68b4d4f1a8be7bcdf37efa8677ad071d0a5de6114ff816c5049d4d00"
+      "sha256": "de99905fce638b2e8527d5d14c833c1659e8df8ab548e28cf71cbada5599df95"
     }
   },
   "lock_command": "uv lock --check",

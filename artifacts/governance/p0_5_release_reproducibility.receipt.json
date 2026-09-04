@@ -22,7 +22,7 @@
   },
   "p0_4_inventory": {
     "status": "PASS",
-    "total_files": 1261
+    "total_files": 1256
   },
   "protected_discovery_files_changed": false,
   "pytest": {

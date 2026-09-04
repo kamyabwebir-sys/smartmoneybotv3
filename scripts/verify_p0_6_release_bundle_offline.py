@@ -15,7 +15,10 @@ _DEFAULT_MANIFEST = Path("artifacts/governance/p0_6_release_bundle_manifest.json
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    content = path.read_bytes()
+    if path.suffix.lower() in {".json", ".ps1", ".py"}:
+        content = content.replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()
 
 
 def verify_bundle_hashes(repository_root: Path, manifest: dict[str, Any]) -> int:

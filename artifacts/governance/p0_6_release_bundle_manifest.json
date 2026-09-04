@@ -3,13 +3,13 @@
   "bundle_inputs": {
     "artifacts/governance/p0_3_release_baseline_integrity.receipt.json": "165f1ec7b6ba6a9b160ce3ce937e046765ff93ae3503389e38b147363d14c7ea",
     "artifacts/governance/p0_3_release_baseline_integrity_manifest.json": "dcefd83e5990a9477cdc66244aaf6d3471e3d4cbbd8a163787d5a492697117bc",
-    "artifacts/governance/p0_4_release_artifact_inventory.receipt.json": "0cd3cae1bbed4d592e072f1db1287471861b8f2ef0aa0f9d80101552fcc4c676",
-    "artifacts/governance/p0_4_release_artifact_inventory.json": "da7601e098fc22c274d283b1eee59f32ec4ab41a65a7f1c9547e543f84bfd9f4",
-    "artifacts/governance/p0_5_release_reproducibility.receipt.json": "9cbc559eb18edb5fe701ce740ded530e0a7372d210815d07bf0df656b1d32d92",
-    "artifacts/governance/p0_5_release_reproducibility_manifest.json": "808ab99ec1d20dc3038254ddba3bbc6b4522574015d4e001333b2e94bd8c28de",
+    "artifacts/governance/p0_4_release_artifact_inventory.receipt.json": "5faa51b160fb32ac5d3de3041a47e73a5c5855d365e7919f40925ba9b5074b04",
+    "artifacts/governance/p0_4_release_artifact_inventory.json": "2ab1b02b7436a8c38064dc926e8adf6bd22b47b549fcc0f8da75d2fe1d15608f",
+    "artifacts/governance/p0_5_release_reproducibility.receipt.json": "3885f83939d3db0eea8948f384c28ba911671fcd8a2551654e317e62d058c94a",
+    "artifacts/governance/p0_5_release_reproducibility_manifest.json": "e3882e23d7c23f8061513ebe703969d06bd04c293394911729c9ffb4075cae9a",
     "scripts/verify_p0_3_release_baseline_integrity.ps1": "4c1a96cf8f3060669981a24772d75d3eea45733ac8639639bf78d32bbb1c63c6",
-    "scripts/verify_p0_4_release_artifact_inventory.ps1": "72582567f6416cfbb311d1b0294b22dca01305e7ec94e54696c862f458745df8",
-    "scripts/verify_p0_5_release_reproducibility.py": "857d7e88e1edfee2f66845dea18bb1df0192fdc06eeb7a5f22b6adf93353abeb"
+    "scripts/verify_p0_4_release_artifact_inventory.ps1": "a510b51c2d47b09b3b9319ba93f8335b9d31ed3cb61a7e56e0a9e477f6b0184a",
+    "scripts/verify_p0_5_release_reproducibility.py": "a662518689d8340bb6e3ccee20e25df744f1b47d4b17a64ac77f63f363929e37"
   },
   "offline_policy": {
     "dependency_resolution_network": false,
@@ -18,7 +18,7 @@
   },
   "release_inventory": {
     "scopes": 6,
-    "total_files": 1261
+    "total_files": 1256
   },
   "schema_version": "p0_6_release_bundle_manifest.v1",
   "slice": "P0.6"
