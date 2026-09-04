@@ -1,0 +1,20 @@
+{
+  "baseline_commit": "94490a3acf0734ab872e7e058db091e743bcc490",
+  "baseline_tree": "24b04924f3cf184971a930abae8b1a335ff48afb",
+  "files": {
+    "artifacts/governance/p0_2_full_repository_verification_clean_release_baseline.receipt.json": "dcbbd09d729972b969bef88e95ffd94d1c67ff32",
+    "pyproject.toml": "d9d97f30b85a3b809ec2484b99c3d112aeba46d8",
+    "src/smart_money/discovery/registry.py": "e63fba259ecf99656449bed3d8d009858625ec01",
+    "tests/discovery/test_registry.py": "adf72ac1bb137db55de4541b6a0db4df59e26ea5",
+    "uv.lock": "55499b77b8f8f3571d54d17f2e0023f15a13af70"
+  },
+  "generated_on": "2026-09-04",
+  "policy": {
+    "allow_descendant_head": true,
+    "require_baseline_ancestor": true,
+    "verify_git_objects": true,
+    "verify_worktree_content": false
+  },
+  "schema_version": "p0_3_release_baseline_integrity_manifest.v1",
+  "slice": "P0.3"
+}

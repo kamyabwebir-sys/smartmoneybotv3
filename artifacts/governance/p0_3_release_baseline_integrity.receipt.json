@@ -1,0 +1,28 @@
+{
+  "baseline_commit": "94490a3acf0734ab872e7e058db091e743bcc490",
+  "baseline_tree": "24b04924f3cf184971a930abae8b1a335ff48afb",
+  "boundary_enforcer": {
+    "checked_files": 311,
+    "status": "PASS"
+  },
+  "changed_files": [
+    "artifacts/governance/p0_3_release_baseline_integrity_manifest.json",
+    "scripts/verify_p0_3_release_baseline_integrity.ps1",
+    "artifacts/governance/p0_3_release_baseline_integrity.receipt.json"
+  ],
+  "contract_integrity": "PASS",
+  "manifest_verification": {
+    "checked_files": 5,
+    "status": "PASS"
+  },
+  "protected_discovery_files_changed": false,
+  "pytest": {
+    "failed": 0,
+    "passed": 1212,
+    "status": "PASS"
+  },
+  "schema_version": "p0_3_release_baseline_integrity_receipt.v1",
+  "slice": "P0.3",
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-04"
+}

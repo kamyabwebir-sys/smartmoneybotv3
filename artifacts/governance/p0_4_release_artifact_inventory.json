@@ -1,0 +1,35 @@
+{
+  "baseline_commit": "94490a3acf0734ab872e7e058db091e743bcc490",
+  "generated_on": "2026-09-04",
+  "hash_algorithm": "sha256",
+  "record_format": "relative_path<TAB>sha256<LF>",
+  "schema_version": "p0_4_release_artifact_inventory.v1",
+  "scopes": {
+    "configuration": {
+      "count": 4,
+      "digest": "b4f595bd76b10531fab12fa034f1eac5b012753f119640761d0ce04c44baac78"
+    },
+    "documentation": {
+      "count": 111,
+      "digest": "c1f8af0a600f68e60b963671481ec3815cf14ce8ce3260f9fecb2f8f4da3d352"
+    },
+    "governance": {
+      "count": 310,
+      "digest": "0db77239ce4148000c14bba28de9c911700f8e8429043110c895e5cb13232dad"
+    },
+    "scripts": {
+      "count": 38,
+      "digest": "a1957075f1c78baf7a091fe04cf871dfb81ea62806028e8e8b93858b8957c177"
+    },
+    "source": {
+      "count": 413,
+      "digest": "5a60d767844d9919ad3fb918be1e8cc5f99f8877b3c97a6676de764dcb6cc1d7"
+    },
+    "tests": {
+      "count": 385,
+      "digest": "50f92c1346c8ddeec562adf801c0bfbb63945a756424f26cc2a1b098dc840116"
+    }
+  },
+  "slice": "P0.4",
+  "total_files": 1261
+}

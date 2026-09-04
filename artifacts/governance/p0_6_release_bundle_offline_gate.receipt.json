@@ -1,0 +1,40 @@
+{
+  "boundary_enforcer": {
+    "checked_files": 311,
+    "status": "PASS"
+  },
+  "bundle": {
+    "checked_inputs": 9,
+    "inventory_files": 1261,
+    "inventory_scopes": 6
+  },
+  "changed_files": [
+    "artifacts/governance/p0_6_release_bundle_manifest.json",
+    "scripts/verify_p0_6_release_bundle_offline.py",
+    "tests/scripts/test_p0_6_release_bundle_offline.py",
+    "artifacts/governance/p0_6_release_bundle_offline_gate.receipt.json",
+    "scripts/verify_p0_4_release_artifact_inventory.ps1"
+  ],
+  "contract_integrity": "PASS",
+  "offline_gate": {
+    "full_tests": "PASS",
+    "status": "PASS",
+    "uv_offline": true,
+    "verified_gates": [
+      "P0.3",
+      "P0.4",
+      "P0.5"
+    ]
+  },
+  "protected_discovery_files_changed": false,
+  "pytest": {
+    "failed": 0,
+    "passed": 1217,
+    "status": "PASS"
+  },
+  "ruff": "PASS",
+  "schema_version": "p0_6_release_bundle_offline_gate_receipt.v1",
+  "slice": "P0.6",
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-04"
+}

@@ -1,0 +1,29 @@
+{
+  "environment": {
+    "python_max_exclusive": "3.13",
+    "python_min": "3.11",
+    "uv_min": "0.12.0"
+  },
+  "expected_optional_dependencies": {
+    "analytics": [
+      "duckdb",
+      "networkx",
+      "polars"
+    ],
+    "dev": [
+      "pytest",
+      "ruff"
+    ]
+  },
+  "files": {
+    "pyproject.toml": {
+      "sha256": "67cb2be8394e3a3699f92cfbea17f03e7d15cb05f757c8c4f281a752fd69e0b3"
+    },
+    "uv.lock": {
+      "sha256": "7648d21b68b4d4f1a8be7bcdf37efa8677ad071d0a5de6114ff816c5049d4d00"
+    }
+  },
+  "lock_command": "uv lock --check",
+  "schema_version": "p0_5_release_reproducibility_manifest.v1",
+  "slice": "P0.5"
+}
