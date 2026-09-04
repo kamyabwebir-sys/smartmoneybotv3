@@ -1,0 +1,43 @@
+{
+  "slice": "M71.4",
+  "title": "Session Final Recovery Gate Audit Session Integration Mapping Chain-Level Receipt Persistence",
+  "verified_on": "2026-08-23",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/adapters/persistence/dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_store.py",
+    "tests/adapters/persistence/test_dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_store.py",
+    "artifacts/governance/m71_4_chain_level_store.receipt.json"
+  ],
+  "behavior": [
+    "Atomic JSON persistence with temporary-file recovery.",
+    "Canonical persistence records preserve nested binding and persistence receipts.",
+    "SHA-256 content hash detects corruption.",
+    "Append is idempotent for the same audit_id.",
+    "Reload reconstructs immutable nested receipts without changing M71.3 public contracts."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "command": "pytest -q tests/application/test_dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_verifier.py tests/adapters/persistence/test_dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_store.py",
+      "passed": 6,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (97 files)",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

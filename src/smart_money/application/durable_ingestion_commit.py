@@ -1,9 +1,14 @@
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
+from smart_money.application._validation import (
+    require_sha256 as _require_sha256,
+)
+from smart_money.application._validation import (
+    require_text as _require_text,
+)
 from smart_money.application.checkpointed_ingestion import (
     CheckpointedIngestionResult,
 )
@@ -19,23 +24,6 @@ from smart_money.core.serialization import canonicalize
 from smart_money.domain.market_state import MarketStateChange
 
 _SCHEMA_VERSION = "durable_ingestion_commit.v1"
-_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
-
-
-def _require_text(value: object, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise TypeError(f"{field_name} must be a string")
-    normalized = value.strip()
-    if not normalized:
-        raise ValueError(f"{field_name} must be non-empty")
-    return normalized
-
-
-def _require_sha256(value: object, field_name: str) -> str:
-    digest = _require_text(value, field_name)
-    if _SHA256_PATTERN.fullmatch(digest) is None:
-        raise ValueError(f"{field_name} must be a lowercase SHA-256 hex digest")
-    return digest
 
 
 @runtime_checkable

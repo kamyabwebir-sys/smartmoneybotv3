@@ -1,0 +1,24 @@
+{
+  "slice": "E19.5-E19.7",
+  "title": "Evidence Conflict Surface, Historical Performance Surface, Persian Analyst Dashboard",
+  "verified_on": "2026-09-04",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/release_intelligence.py",
+    "tests/application/test_release_intelligence.py",
+    "artifacts/governance/e19_5_to_e19_7_release_surfaces.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 2, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "FAIL_PRE_EXISTING_BOM",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "status": "PASS_WITH_PRE_EXISTING_BOUNDARY_DEBT"
+}

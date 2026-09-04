@@ -1,0 +1,42 @@
+{
+  "slice": "M71.8",
+  "title": "Chain-Level Persistence Replay Store Verifier",
+  "verified_on": "2026-08-24",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_persistence_replay_store_verifier.py",
+    "tests/application/test_dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_persistence_replay_store_verifier.py",
+    "artifacts/governance/m71_8_chain_level_persistence_replay_store_verifier.receipt.json"
+  ],
+  "behavior": [
+    "Matches generated M71.6 replay receipts with persisted Store receipts.",
+    "Fails closed when the persisted replay receipt is missing.",
+    "Fails closed when the Store returns an invalid or mismatched receipt.",
+    "Produces an immutable deterministic audit receipt."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "M71.7 replay store and M71.8 store verifier",
+      "passed": 6,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (100 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

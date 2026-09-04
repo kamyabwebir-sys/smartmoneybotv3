@@ -1,0 +1,42 @@
+{
+  "slice": "B8.6",
+  "title": "Atomic Replace Durability",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/adapters/persistence/atomic_file.py",
+    "tests/adapters/persistence/test_atomic_file.py",
+    "artifacts/governance/b8_6_atomic_replace_durability.receipt.json"
+  ],
+  "behavior": [
+    "Performs atomic os.replace followed by parent-directory fsync on POSIX.",
+    "Uses a Windows-safe no-directory-fsync fallback without changing the public API.",
+    "Tests crash-oriented durability behavior through mocked replace/open/fsync/close calls."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B8.6 atomic replace durability",
+      "passed": 2,
+      "failed": 0,
+      "status": "PASS",
+      "execution": "offline cached pytest"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (103 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

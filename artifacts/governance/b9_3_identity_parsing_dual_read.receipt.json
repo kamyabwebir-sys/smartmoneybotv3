@@ -1,0 +1,43 @@
+{
+  "slice": "B9.3",
+  "title": "Identity Parsing and Dual-Read Compatibility",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/domain/chain_identity.py",
+    "tests/domain/test_chain_identity.py",
+    "artifacts/governance/b9_3_identity_parsing_dual_read.receipt.json"
+  ],
+  "behavior": [
+    "Parses canonical namespaces into typed chain and address components.",
+    "Supports legacy opaque identifiers in read-only dual-read mode.",
+    "Rejects malformed or non-canonical chain-aware namespaces.",
+    "Does not rewrite or mutate legacy Ledger data."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B9.3 identity parsing and dual-read compatibility",
+      "passed": 4,
+      "failed": 0,
+      "status": "PASS",
+      "execution": "offline cached pytest"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (105 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

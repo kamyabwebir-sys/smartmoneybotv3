@@ -1,0 +1,26 @@
+{
+  "slice": "F1.20",
+  "title": "Wallet Candidate Query Audit Receipt",
+  "verified_on": "2026-08-28",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/wallet_candidate_query_audit.py",
+    "tests/application/test_wallet_candidate_query_audit.py",
+    "artifacts/governance/f1_20_wallet_candidate_query_audit_receipt.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS_WITH_PRE_EXISTING_BOM",
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {"branch": "master", "head": "d1b89f3", "commit_created": false, "push_performed": false, "unrelated_worktree_changes_preserved": true},
+  "status": "PASS_WITH_PRE_EXISTING_BOUNDARY_FAILURE"
+}

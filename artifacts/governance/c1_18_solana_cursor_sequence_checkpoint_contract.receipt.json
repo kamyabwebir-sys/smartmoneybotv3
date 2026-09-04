@@ -1,0 +1,48 @@
+{
+  "slice": "C1.18",
+  "title": "Solana Cursor Sequence Checkpoint Contract",
+  "verified_on": "2026-08-26",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/domain/solana_observation.py",
+    "tests/domain/test_solana_observation.py",
+    "artifacts/governance/c1_18_solana_cursor_sequence_checkpoint_contract.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "command": "tests/domain/test_solana_observation.py",
+      "passed": 17,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS",
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "contract": {
+    "schema_version": "solana_cursor_sequence_checkpoint.v1",
+    "properties": [
+      "immutable cursor binding",
+      "sequence tail ordering-key validation",
+      "observation count binding",
+      "last observation identity binding",
+      "deterministic checkpoint id",
+      "fail-closed validation"
+    ]
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

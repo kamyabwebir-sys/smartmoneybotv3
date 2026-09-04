@@ -1,10 +1,22 @@
 from __future__ import annotations
 
 import hmac
-import re
 from dataclasses import dataclass
 from enum import Enum
 
+from smart_money.application._validation import (
+    assert_stable_collection_snapshot,
+    take_stable_collection_snapshot,
+)
+from smart_money.application._validation import (
+    require_count as _require_count,
+)
+from smart_money.application._validation import (
+    require_sha256 as _require_sha256,
+)
+from smart_money.application._validation import (
+    require_text as _require_text,
+)
 from smart_money.application.durable_ingestion_commit import (
     DurableIngestionCommitReceipt,
 )
@@ -34,33 +46,6 @@ from smart_money.core.ids import deterministic_id
 _ASSESSMENT_SCHEMA_VERSION = "durable_run_receipt_assessment.v1"
 _MANIFEST_SCHEMA_VERSION = "durable_run_receipt_audit.v1"
 _VERIFICATION_SCHEMA_VERSION = "trusted_audit_head_verification.v1"
-_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
-
-
-def _require_text(value: object, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise TypeError(f"{field_name} must be a string")
-    normalized = value.strip()
-    if not normalized:
-        raise ValueError(f"{field_name} must be non-empty")
-    return normalized
-
-
-def _require_sha256(value: object, field_name: str) -> str:
-    digest = _require_text(value, field_name)
-    if _SHA256_PATTERN.fullmatch(digest) is None:
-        raise ValueError(f"{field_name} must be a lowercase SHA-256 hex digest")
-    return digest
-
-
-def _require_count(value: object, field_name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise TypeError(f"{field_name} must be an integer")
-    if value < 0:
-        raise ValueError(f"{field_name} must be non-negative")
-    return value
-
-
 class DurableRunReceiptStatus(str, Enum):
     CURRENT = "CURRENT"
     HISTORICALLY_VALID = "HISTORICALLY_VALID"
@@ -524,69 +509,51 @@ def audit_durable_run_receipts(
     if not isinstance(checkpoint_store, MarketStateCheckpointStore):
         raise TypeError("checkpoint_store must satisfy its application port")
 
-    run_store_hash = _require_sha256(
-        run_store.content_hash,
-        "run_store.content_hash",
+    run_snapshot = take_stable_collection_snapshot(
+        name="run store",
+        get_content_hash=lambda: run_store.content_hash,
+        get_count=lambda: run_store.result_count,
+        iterate=run_store.iter_results,
+        identity=lambda result: result.run_id,
+        lookup=run_store.get,
+        item_type=RecoveryGatedIngestionResult,
     )
-    run_count = _require_count(run_store.result_count, "run_store.result_count")
-    results = tuple(run_store.iter_results())
-    if len(results) != run_count:
-        raise RuntimeError("run store count changed before audit snapshot")
-    if not all(
-        isinstance(result, RecoveryGatedIngestionResult) for result in results
-    ):
-        raise RuntimeError("run store contains an invalid result type")
-    if len({result.run_id for result in results}) != run_count:
-        raise RuntimeError("run store snapshot contains duplicate identities")
-    for result in results:
-        if run_store.get(result.run_id) != result:
-            raise RuntimeError("run store lookup disagrees with iteration")
-
-    manifest_store_hash = _require_sha256(
-        manifest_store.content_hash,
-        "manifest_store.content_hash",
+    run_store_hash, run_count, results = (
+        run_snapshot.content_hash,
+        run_snapshot.count,
+        run_snapshot.items,
     )
-    manifest_count = _require_count(
-        manifest_store.manifest_count,
-        "manifest_store.manifest_count",
+    manifest_snapshot = take_stable_collection_snapshot(
+        name="manifest store",
+        get_content_hash=lambda: manifest_store.content_hash,
+        get_count=lambda: manifest_store.manifest_count,
+        iterate=manifest_store.iter_manifests,
+        identity=lambda manifest: manifest.audit_id,
+        lookup=manifest_store.get,
     )
-    manifests = tuple(manifest_store.iter_manifests())
-    if len(manifests) != manifest_count:
-        raise RuntimeError("manifest store count changed before audit snapshot")
-    if len({manifest.audit_id for manifest in manifests}) != manifest_count:
-        raise RuntimeError(
-            "manifest store snapshot contains duplicate identities"
-        )
-    for manifest in manifests:
-        if manifest_store.get(manifest.audit_id) != manifest:
-            raise RuntimeError(
-                "manifest store lookup disagrees with iteration"
-            )
-
-    receipt_store_hash = _require_sha256(
-        receipt_store.content_hash,
-        "receipt_store.content_hash",
+    manifest_store_hash, manifest_count, manifests = (
+        manifest_snapshot.content_hash,
+        manifest_snapshot.count,
+        manifest_snapshot.items,
     )
-    receipt_count = _require_count(
-        receipt_store.receipt_count,
-        "receipt_store.receipt_count",
+    receipt_snapshot = take_stable_collection_snapshot(
+        name="receipt store",
+        get_content_hash=lambda: receipt_store.content_hash,
+        get_count=lambda: receipt_store.receipt_count,
+        iterate=receipt_store.iter_receipts,
+        identity=lambda receipt: receipt.receipt_id,
+        lookup=receipt_store.get,
+        item_type=DurableIngestionCommitReceipt,
     )
-    receipts = tuple(receipt_store.iter_receipts())
-    if len(receipts) != receipt_count:
-        raise RuntimeError("receipt store count changed before audit snapshot")
-    if len({receipt.receipt_id for receipt in receipts}) != receipt_count:
-        raise RuntimeError(
-            "receipt store snapshot contains duplicate identities"
-        )
+    receipt_store_hash, receipt_count, receipts = (
+        receipt_snapshot.content_hash,
+        receipt_snapshot.count,
+        receipt_snapshot.items,
+    )
     if len({receipt.session_id for receipt in receipts}) != receipt_count:
         raise RuntimeError(
             "receipt store contains multiple receipts for one session"
         )
-    for receipt in receipts:
-        if receipt_store.get(receipt.receipt_id) != receipt:
-            raise RuntimeError(
-                "receipt store lookup disagrees with iteration"
-            )
     receipts_by_session = {
         receipt.session_id: receipt for receipt in receipts
     }
@@ -616,27 +583,24 @@ def audit_durable_run_receipts(
         )
         for result in results
     )
-    if run_store.result_count != run_count or not hmac.compare_digest(
-        run_store.content_hash,
-        run_store_hash,
-    ):
-        raise RuntimeError("run store changed during audit sweep")
-    if (
-        manifest_store.manifest_count != manifest_count
-        or not hmac.compare_digest(
-            manifest_store.content_hash,
-            manifest_store_hash,
-        )
-    ):
-        raise RuntimeError("manifest store changed during audit sweep")
-    if (
-        receipt_store.receipt_count != receipt_count
-        or not hmac.compare_digest(
-            receipt_store.content_hash,
-            receipt_store_hash,
-        )
-    ):
-        raise RuntimeError("receipt store changed during audit sweep")
+    assert_stable_collection_snapshot(
+        run_snapshot,
+        name="run store",
+        get_content_hash=lambda: run_store.content_hash,
+        get_count=lambda: run_store.result_count,
+    )
+    assert_stable_collection_snapshot(
+        manifest_snapshot,
+        name="manifest store",
+        get_content_hash=lambda: manifest_store.content_hash,
+        get_count=lambda: manifest_store.manifest_count,
+    )
+    assert_stable_collection_snapshot(
+        receipt_snapshot,
+        name="receipt store",
+        get_content_hash=lambda: receipt_store.content_hash,
+        get_count=lambda: receipt_store.receipt_count,
+    )
     if not hmac.compare_digest(ledger.content_hash, ledger_content_hash):
         raise RuntimeError("Ledger changed during audit sweep")
     try:

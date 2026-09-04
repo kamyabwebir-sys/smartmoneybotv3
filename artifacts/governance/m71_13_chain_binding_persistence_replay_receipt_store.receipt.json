@@ -1,0 +1,42 @@
+{
+  "slice": "M71.13",
+  "title": "Chain-Binding Persistence Replay Receipt Store",
+  "verified_on": "2026-08-24",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/adapters/persistence/dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_persistence_replay_store_chain_binding_persistence_replay_store.py",
+    "tests/adapters/persistence/test_dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_persistence_replay_store_chain_binding_persistence_replay_store.py",
+    "artifacts/governance/m71_13_chain_binding_persistence_replay_receipt_store.receipt.json"
+  ],
+  "behavior": [
+    "Persists M71.12 replay audit receipts as canonical JSON.",
+    "Provides idempotent append, deterministic content hash, and strict schema validation.",
+    "Recovers interrupted temporary files and rejects content corruption.",
+    "Keeps replay receipts separate from the M71.11 persistence-audit store."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "M71.13 chain-binding persistence replay receipt store",
+      "passed": 3,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (103 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

@@ -2,38 +2,20 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from smart_money.application.canonical_market_state_observation import (
+    CanonicalMarketStateObservation,
+)
 from smart_money.application.ports.evidence_ledger import EvidenceLedger
 from smart_money.core.serialization import canonicalize
 from smart_money.domain.market_state import MarketStateChange
 from smart_money.ingestion.contracts import EvidencePayload
-
-_EVIDENCE_TYPE = "canonical_market_state_observation"
 
 
 def make_canonical_market_state_observation(
     change: MarketStateChange,
 ) -> EvidencePayload:
     """Project one canonical state change into immutable observation evidence."""
-    if not isinstance(change, MarketStateChange):
-        raise TypeError("change must be a MarketStateChange")
-    return EvidencePayload(
-        source_id=change.source_id,
-        evidence_type=_EVIDENCE_TYPE,
-        timestamp=change.occurred_at,
-        data={"market_state_change": change.canonical_dict()},
-        metadata={
-            "authority": "NONE",
-            "classification": "OBSERVATION",
-            "verification_status": "CANONICAL_SOURCE_EVENT",
-            "provenance": {
-                "chain_id": change.chain.canonical_id,
-                "market_id": change.market.canonical_id,
-                "source_event_id": change.source_event_id,
-                "source_id": change.source_id,
-                "source_schema_version": change.schema_version,
-            },
-        },
-    )
+    return CanonicalMarketStateObservation.from_change(change).payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +42,7 @@ class CanonicalMarketStateObservationConsumer:
             retained.canonical_dict()
         ) != canonicalize(payload.canonical_dict()):
             raise RuntimeError("ledger did not retain the canonical observation")
+        CanonicalMarketStateObservation.from_payload(retained)
         return change.event_id
 
 __all__ = [

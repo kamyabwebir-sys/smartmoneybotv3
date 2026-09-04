@@ -1,0 +1,42 @@
+{
+  "slice": "M71.10",
+  "title": "Chain-Level Persistence Replay Store Chain Binding Persistence Verifier",
+  "verified_on": "2026-08-24",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_persistence_replay_store_chain_binding_persistence_verifier.py",
+    "tests/application/test_dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_persistence_replay_store_chain_binding_persistence_verifier.py",
+    "artifacts/governance/m71_10_chain_binding_persistence_verifier.receipt.json"
+  ],
+  "behavior": [
+    "Verifies persistence of the M71.9 chain-binding receipt.",
+    "Matches generated and stored binding receipts by deterministic audit_id and value.",
+    "Fails closed when the binding receipt is missing or invalid.",
+    "Preserves the M71.8 -> M71.9 -> M71.10 linkage."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "M71.9 chain binding and M71.10 binding persistence verifier",
+      "passed": 3,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (102 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

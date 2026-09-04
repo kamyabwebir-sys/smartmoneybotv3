@@ -1,9 +1,24 @@
 from __future__ import annotations
 
 import hmac
-import re
 from dataclasses import dataclass
 
+from smart_money.application._validation import (
+    assert_stable_collection_snapshot,
+    take_stable_collection_snapshot,
+)
+from smart_money.application._validation import (
+    require_count as _require_count,
+)
+from smart_money.application._validation import (
+    require_sha256 as _require_sha256,
+)
+from smart_money.application._validation import (
+    require_text as _require_text,
+)
+from smart_money.application.durable_ingestion_commit import (
+    DurableIngestionCommitReceipt,
+)
 from smart_money.application.historical_commit_receipt import (
     HistoricalCommitStatus,
     HistoricalContentHashedEvidenceLedger,
@@ -19,37 +34,12 @@ from smart_money.core.ids import deterministic_id
 from smart_money.domain.market_state import MarketStateCheckpoint
 
 _SCHEMA_VERSION = "historical_receipt_audit.v1"
-_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 _ACCEPTED_STATUSES = frozenset(
     {
         HistoricalCommitStatus.CURRENT,
         HistoricalCommitStatus.HISTORICALLY_VALID,
     }
 )
-
-
-def _require_text(value: object, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise TypeError(f"{field_name} must be a string")
-    normalized = value.strip()
-    if not normalized:
-        raise ValueError(f"{field_name} must be non-empty")
-    return normalized
-
-
-def _require_sha256(value: object, field_name: str) -> str:
-    digest = _require_text(value, field_name)
-    if _SHA256_PATTERN.fullmatch(digest) is None:
-        raise ValueError(f"{field_name} must be a lowercase SHA-256 hex digest")
-    return digest
-
-
-def _require_count(value: object, field_name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise TypeError(f"{field_name} must be an integer")
-    if value < 0:
-        raise ValueError(f"{field_name} must be non-negative")
-    return value
 
 
 def _normalize_ids(
@@ -234,23 +224,22 @@ def audit_historical_receipts(
     if not isinstance(checkpoint_store, MarketStateCheckpointStore):
         raise TypeError("checkpoint_store must satisfy its application port")
 
-    receipt_store_hash = _require_sha256(
-        receipt_store.content_hash,
-        "receipt_store.content_hash",
+    receipt_snapshot = take_stable_collection_snapshot(
+        name="receipt store",
+        get_content_hash=lambda: receipt_store.content_hash,
+        get_count=lambda: receipt_store.receipt_count,
+        iterate=receipt_store.iter_receipts,
+        identity=lambda receipt: receipt.receipt_id,
+        lookup=receipt_store.get,
+        item_type=DurableIngestionCommitReceipt,
     )
+    receipt_store_hash = receipt_snapshot.content_hash
     ledger_hash = _require_sha256(
         ledger.content_hash,
         "ledger.content_hash",
     )
-    receipt_count = receipt_store.receipt_count
-    receipts = tuple(receipt_store.iter_receipts())
-    if len(receipts) != receipt_count:
-        raise RuntimeError("receipt store count changed before audit snapshot")
-    if len({receipt.receipt_id for receipt in receipts}) != receipt_count:
-        raise RuntimeError("receipt store snapshot contains duplicate identities")
-    for receipt in receipts:
-        if receipt_store.get(receipt.receipt_id) != receipt:
-            raise RuntimeError("receipt store lookup disagrees with iteration")
+    receipt_count = receipt_snapshot.count
+    receipts = receipt_snapshot.items
 
     checkpoint = _load_checkpoint(checkpoint_store) if receipts else None
     snapshot = _CheckpointSnapshot(checkpoint)
@@ -263,11 +252,12 @@ def audit_historical_receipts(
         for receipt in receipts
     )
 
-    if receipt_store.receipt_count != receipt_count or not hmac.compare_digest(
-        receipt_store.content_hash,
-        receipt_store_hash,
-    ):
-        raise RuntimeError("receipt store changed during historical audit")
+    assert_stable_collection_snapshot(
+        receipt_snapshot,
+        name="receipt store",
+        get_content_hash=lambda: receipt_store.content_hash,
+        get_count=lambda: receipt_store.receipt_count,
+    )
     if not hmac.compare_digest(ledger.content_hash, ledger_hash):
         raise RuntimeError("Ledger changed during historical audit")
     if receipts and _load_checkpoint(checkpoint_store) != checkpoint:

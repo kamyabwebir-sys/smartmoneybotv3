@@ -1,0 +1,26 @@
+{
+  "slice": "F2.1",
+  "title": "Token Lifecycle State",
+  "verified_on": "2026-08-28",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/token_lifecycle.py",
+    "tests/application/test_token_lifecycle.py",
+    "artifacts/governance/f2_1_token_lifecycle_state_receipt.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS_WITH_PRE_EXISTING_BOM",
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {"branch": "master", "head": "d1b89f3", "commit_created": false, "push_performed": false, "unrelated_worktree_changes_preserved": true},
+  "status": "PASS_WITH_PRE_EXISTING_BOUNDARY_FAILURE"
+}

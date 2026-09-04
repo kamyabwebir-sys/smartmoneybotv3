@@ -1,0 +1,43 @@
+{
+  "slice": "B9.4",
+  "title": "Identity Conflict Detection",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/domain/chain_identity.py",
+    "tests/domain/test_chain_identity.py",
+    "artifacts/governance/b9_4_identity_conflict_detection.receipt.json"
+  ],
+  "behavior": [
+    "Adds immutable IdentityConflict status objects.",
+    "Detects kind mismatch, chain mismatch, address collision and legacy identity mismatch.",
+    "Returns no conflict only when both parsed identities are equivalent.",
+    "Does not rewrite, merge or automatically repair conflicting identities."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B9.4 identity conflict detection",
+      "passed": 5,
+      "failed": 0,
+      "status": "PASS",
+      "execution": "offline cached pytest"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (105 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

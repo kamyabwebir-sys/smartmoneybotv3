@@ -1,0 +1,28 @@
+{
+  "slice": "E2.13+AnalyticsToolingBoundary",
+  "title": "Funding Cluster Replay Integration and Analytics Tooling Boundary",
+  "verified_on": "2026-08-27",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/funding_cluster_replay_integration.py",
+    "src/smart_money/analytics/tooling_boundary.py",
+    "pyproject.toml",
+    "tests/application/test_funding_cluster_replay_integration.py",
+    "tests/analytics/test_tooling_boundary.py",
+    "artifacts/governance/e2_13_and_analytics_tooling_boundary.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 2, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "FAIL_PRE_EXISTING_BOM_IN_CORE_ERRORS_EVENTS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "status": "PASS_WITH_PRE_EXISTING_BOUNDARY_FAILURE"
+}

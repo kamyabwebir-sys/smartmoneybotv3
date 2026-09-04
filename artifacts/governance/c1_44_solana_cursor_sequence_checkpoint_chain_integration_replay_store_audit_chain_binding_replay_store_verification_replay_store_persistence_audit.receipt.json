@@ -1,0 +1,36 @@
+{
+  "slice": "C1.44",
+  "title": "Solana Cursor Sequence Checkpoint Chain Integration Replay Store Audit Chain Binding Replay Store Verification Replay Store Persistence Audit",
+  "verified_on": "2026-08-27",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/solana_cursor_sequence_checkpoint_chain_integration_replay_store_audit_chain_binding_replay_store_verification_replay_store_audit.py",
+    "tests/application/test_solana_verification_replay_store_persistence_audit.py",
+    "artifacts/governance/c1_44_solana_cursor_sequence_checkpoint_chain_integration_replay_store_audit_chain_binding_replay_store_verification_replay_store_persistence_audit.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 1, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "audit": {
+    "schema_version": "solana_verification_replay_store_persistence_audit.v1",
+    "file_existence_recorded": true,
+    "persisted_identity_recorded": true,
+    "canonical_match_recorded": true,
+    "fail_closed": true
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

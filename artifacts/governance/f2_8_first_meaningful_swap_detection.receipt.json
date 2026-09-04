@@ -1,0 +1,1 @@
+{"slice":"F2.8","title":"First Meaningful Swap Detection","verified_on":"2026-08-28","lifecycle_state":"CLOSED_LOCKED","enforcement":"FAIL_CLOSED","verification":{"targeted_pytest":"PASS","compileall":"PASS","ruff":"PASS","contract_integrity":"PASS","boundary_enforcer":"PASS_WITH_PRE_EXISTING_BOM"},"status":"PASS_WITH_PRE_EXISTING_BOUNDARY_FAILURE"}

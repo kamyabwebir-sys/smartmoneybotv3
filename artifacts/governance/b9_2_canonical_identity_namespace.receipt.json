@@ -1,0 +1,43 @@
+{
+  "slice": "B9.2",
+  "title": "Canonical Identity Namespace",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/domain/chain_identity.py",
+    "tests/domain/test_chain_identity.py",
+    "artifacts/governance/b9_2_canonical_identity_namespace.receipt.json"
+  ],
+  "behavior": [
+    "Adds canonical chain namespace serialization such as evm:base and solana:mainnet-beta.",
+    "Adds chain-aware human-readable namespaces for WalletId, TokenId and PoolId.",
+    "Preserves deterministic hashed canonical_id values and existing constructor APIs.",
+    "Prevents same-address collisions across EVM and Solana namespaces."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B9.2 canonical identity namespace",
+      "passed": 3,
+      "failed": 0,
+      "status": "PASS",
+      "execution": "offline cached pytest"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (105 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

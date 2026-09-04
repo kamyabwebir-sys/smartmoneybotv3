@@ -1,0 +1,41 @@
+{
+  "slice": "C1.25",
+  "title": "Solana Cursor Sequence Checkpoint Binding Chain Integration",
+  "verified_on": "2026-08-26",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/solana_cursor_sequence_checkpoint_chain_integration.py",
+    "tests/application/test_solana_cursor_sequence_checkpoint_chain_integration.py",
+    "artifacts/governance/c1_25_solana_cursor_sequence_checkpoint_binding_chain_integration.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 2, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS",
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "integration": {
+    "schema_version": "solana_cursor_sequence_checkpoint_chain_integration.v1",
+    "sequence_verified": true,
+    "checkpoint_verified": true,
+    "binding_receipt_verified": true,
+    "cursor_verified": true,
+    "deterministic_receipt": true,
+    "fail_closed_on_mismatch": true
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

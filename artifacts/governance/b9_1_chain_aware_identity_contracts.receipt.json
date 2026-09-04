@@ -1,0 +1,43 @@
+{
+  "slice": "B9.1",
+  "title": "Chain-Aware Identity Contracts",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/domain/chain_identity.py",
+    "tests/domain/test_chain_identity.py",
+    "artifacts/governance/b9_1_chain_aware_identity_contracts.receipt.json"
+  ],
+  "behavior": [
+    "Adds immutable WalletId, TokenId and PoolId contracts bound to ChainId.",
+    "Normalizes EVM addresses case-insensitively while preserving Solana address case.",
+    "Generates deterministic canonical IDs from chain-aware canonical dictionaries.",
+    "Rejects whitespace-containing addresses, cross-chain pool tokens and duplicate pool tokens."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B9.1 chain-aware identity contracts",
+      "passed": 2,
+      "failed": 0,
+      "status": "PASS",
+      "execution": "offline cached pytest"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (105 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

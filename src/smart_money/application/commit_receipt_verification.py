@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import hmac
-import re
-from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
 
+from smart_money.application._validation import (
+    require_sha256 as _require_sha256,
+)
+from smart_money.application._validation import (
+    require_text as _require_text,
+)
+from smart_money.application.canonical_market_state_observation import (
+    CanonicalMarketStateObservation,
+)
 from smart_money.application.durable_ingestion_commit import (
     ContentHashedEvidenceLedger,
     DurableIngestionCommitReceipt,
@@ -16,7 +22,6 @@ from smart_money.application.ports.market_state_checkpoint_store import (
 from smart_money.core.ids import deterministic_id
 
 _SCHEMA_VERSION = "commit_receipt_verification.v1"
-_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 _MISMATCH_ORDER = (
     "ledger_content_hash",
     "evidence_missing",
@@ -35,22 +40,6 @@ _MISMATCH_ORDER = (
 _MISMATCH_INDEX = {
     field_name: index for index, field_name in enumerate(_MISMATCH_ORDER)
 }
-
-
-def _require_text(value: object, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise TypeError(f"{field_name} must be a string")
-    normalized = value.strip()
-    if not normalized:
-        raise ValueError(f"{field_name} must be non-empty")
-    return normalized
-
-
-def _require_sha256(value: object, field_name: str) -> str:
-    digest = _require_text(value, field_name)
-    if _SHA256_PATTERN.fullmatch(digest) is None:
-        raise ValueError(f"{field_name} must be a lowercase SHA-256 hex digest")
-    return digest
 
 
 @dataclass(frozen=True, slots=True)
@@ -169,36 +158,22 @@ def revalidate_commit_receipt(
         mismatches.append("ledger_content_hash")
 
     evidence = ledger.get(receipt.evidence_id)
-    state_change: Mapping[str, Any] | None = None
+    evidence_ordering_key: tuple[int, int] | None = None
     if evidence is None:
         mismatches.append("evidence_missing")
     else:
-        if evidence.evidence_type != "canonical_market_state_observation":
-            mismatches.append("evidence_type")
-        raw_state_change = evidence.data.get("market_state_change")
-        if not isinstance(raw_state_change, Mapping):
-            mismatches.append("evidence_payload")
-        else:
-            state_change = raw_state_change
-            if state_change.get("event_id") != receipt.event_id:
-                mismatches.append("evidence_event_id")
-            if (
-                state_change.get("source_event_id")
-                != receipt.source_event_id
-            ):
-                mismatches.append("evidence_source_event_id")
-        provenance = evidence.metadata.get("provenance")
-        if evidence.source_id != receipt.provider_id:
-            mismatches.append("evidence_provider_id")
-        if not isinstance(provenance, Mapping):
-            mismatches.append("evidence_payload")
-        else:
-            if provenance.get("source_id") != receipt.provider_id:
-                mismatches.append("evidence_provider_id")
-            if provenance.get("source_event_id") != receipt.source_event_id:
-                mismatches.append("evidence_source_event_id")
-            if provenance.get("market_id") != receipt.market_id:
-                mismatches.append("evidence_market_id")
+        mismatches.extend(
+            CanonicalMarketStateObservation.receipt_mismatches(
+                evidence,
+                provider_id=receipt.provider_id,
+                event_id=receipt.event_id,
+                source_event_id=receipt.source_event_id,
+                market_id=receipt.market_id,
+            )
+        )
+        evidence_ordering_key = CanonicalMarketStateObservation.ordering_key(
+            evidence
+        )
 
     try:
         checkpoint = checkpoint_store.load()
@@ -215,12 +190,8 @@ def revalidate_commit_receipt(
             mismatches.append("checkpoint_provider_id")
         if checkpoint.market.canonical_id != receipt.market_id:
             mismatches.append("checkpoint_market_id")
-        if state_change is not None:
-            expected_cursor = (
-                state_change.get("chain_sequence"),
-                state_change.get("event_index"),
-            )
-            if checkpoint.cursor.ordering_key != expected_cursor:
+        if evidence_ordering_key is not None:
+            if checkpoint.cursor.ordering_key != evidence_ordering_key:
                 mismatches.append("checkpoint_cursor")
 
     normalized_fields = tuple(

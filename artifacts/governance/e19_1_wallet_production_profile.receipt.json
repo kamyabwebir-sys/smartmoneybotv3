@@ -1,0 +1,24 @@
+{
+  "slice": "E19.1",
+  "title": "Wallet Intelligence Production Profile",
+  "verified_on": "2026-09-04",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/production_profiles.py",
+    "tests/application/test_production_profiles.py",
+    "artifacts/governance/e19_1_wallet_production_profile.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 1, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "FAIL_PRE_EXISTING_BOM",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "status": "PASS_WITH_PRE_EXISTING_BOUNDARY_DEBT"
+}

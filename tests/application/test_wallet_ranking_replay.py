@@ -1,0 +1,28 @@
+from smart_money.application.wallet_candidate_evidence import build_wallet_candidate_evidence
+from smart_money.application.wallet_candidate_feature import WalletCandidateFeature
+from smart_money.application.wallet_ranking import rank_wallet_candidates
+from smart_money.application.wallet_ranking_replay import replay_verify_wallet_ranking
+from smart_money.core.ids import deterministic_id
+
+
+def test_wallet_ranking_replay_verification() -> None:
+    identity = {
+        "activity_count": 3,
+        "buy_ratio_bps": 6000,
+        "cohort_count": 1,
+        "data_completeness_bps": 9000,
+        "early_entry_consistency_bps": 7000,
+        "profile_id": "profile-a",
+        "relationship_count": 2,
+        "schema_version": "wallet_candidate_feature.v1",
+        "wallet": "wallet-a",
+    }
+    feature = WalletCandidateFeature(
+        **identity,
+        feature_id=deterministic_id("wallet_candidate_feature", identity),
+    )
+    evidence = build_wallet_candidate_evidence(feature, provenance={"source": "test"})
+    expected = rank_wallet_candidates((evidence,))
+    replay = replay_verify_wallet_ranking((evidence,), expected)
+    assert replay.matches is True
+    assert replay.ranking_id == expected.ranking_id

@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import hmac
 import re
-from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol, runtime_checkable
 
+from smart_money.application.canonical_market_state_observation import (
+    CanonicalMarketStateObservation,
+)
 from smart_money.application.commit_receipt_verification import (
     revalidate_commit_receipt,
 )
@@ -271,29 +273,15 @@ def assess_historical_commit_receipt(
             current_checkpoint_id=checkpoint.checkpoint_id,
         )
 
-    state_change = evidence.data.get("market_state_change")
-    provenance = evidence.metadata.get("provenance")
-    evidence_corrupted = (
-        evidence.evidence_type != "canonical_market_state_observation"
-        or evidence.source_id != receipt.provider_id
-        or not isinstance(state_change, Mapping)
-        or not isinstance(provenance, Mapping)
+    evidence_mismatches = CanonicalMarketStateObservation.receipt_mismatches(
+        evidence,
+        provider_id=receipt.provider_id,
+        event_id=receipt.event_id,
+        source_event_id=receipt.source_event_id,
+        market_id=receipt.market_id,
     )
-    if not evidence_corrupted:
-        chain_sequence = state_change.get("chain_sequence")
-        event_index = state_change.get("event_index")
-        evidence_corrupted = (
-            isinstance(chain_sequence, bool)
-            or not isinstance(chain_sequence, int)
-            or isinstance(event_index, bool)
-            or not isinstance(event_index, int)
-            or state_change.get("event_id") != receipt.event_id
-            or state_change.get("source_event_id") != receipt.source_event_id
-            or provenance.get("source_id") != receipt.provider_id
-            or provenance.get("source_event_id") != receipt.source_event_id
-            or provenance.get("market_id") != receipt.market_id
-        )
-    if evidence_corrupted:
+    ordering_key = CanonicalMarketStateObservation.ordering_key(evidence)
+    if evidence_mismatches or ordering_key is None:
         return _make_assessment(
             receipt=receipt,
             status=HistoricalCommitStatus.CORRUPTED,
@@ -304,11 +292,7 @@ def assess_historical_commit_receipt(
             current_checkpoint_id=checkpoint.checkpoint_id,
         )
 
-    assert isinstance(state_change, Mapping)
-    chain_sequence = state_change["chain_sequence"]
-    event_index = state_change["event_index"]
-    assert isinstance(chain_sequence, int)
-    assert isinstance(event_index, int)
+    chain_sequence, event_index = ordering_key
     historical_cursor = MarketStateCursor(
         provider_id=receipt.provider_id,
         chain=checkpoint.chain,

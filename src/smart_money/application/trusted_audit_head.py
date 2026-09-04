@@ -1,11 +1,24 @@
 from __future__ import annotations
 
 import hmac
-import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol, runtime_checkable
 
+from smart_money.application._validation import (
+    StableCollectionSnapshot,
+    assert_stable_collection_snapshot,
+    take_stable_collection_snapshot,
+)
+from smart_money.application._validation import (
+    require_count as _require_count,
+)
+from smart_money.application._validation import (
+    require_sha256 as _require_sha256,
+)
+from smart_money.application._validation import (
+    require_text as _require_text,
+)
 from smart_money.application.ports.historical_audit_manifest_store import (
     HistoricalAuditManifestStore,
 )
@@ -13,31 +26,6 @@ from smart_money.core.ids import deterministic_id
 
 _HEAD_SCHEMA_VERSION = "trusted_audit_head.v1"
 _VERIFICATION_SCHEMA_VERSION = "trusted_audit_head_verification.v1"
-_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
-
-
-def _require_text(value: object, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise TypeError(f"{field_name} must be a string")
-    normalized = value.strip()
-    if not normalized:
-        raise ValueError(f"{field_name} must be non-empty")
-    return normalized
-
-
-def _require_sha256(value: object, field_name: str) -> str:
-    digest = _require_text(value, field_name)
-    if _SHA256_PATTERN.fullmatch(digest) is None:
-        raise ValueError(f"{field_name} must be a lowercase SHA-256 hex digest")
-    return digest
-
-
-def _require_count(value: object, field_name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise TypeError(f"{field_name} must be an integer")
-    if value < 0:
-        raise ValueError(f"{field_name} must be non-negative")
-    return value
 
 
 class TrustedAuditHeadStatus(str, Enum):
@@ -232,30 +220,23 @@ class TrustedAuditHeadVerificationError(RuntimeError):
 def _snapshot_store(
     manifest_store: PrefixVerifiableHistoricalAuditStore,
 ) -> tuple[str, int, str | None]:
-    store_hash = _require_sha256(
-        manifest_store.content_hash,
-        "manifest_store.content_hash",
+    snapshot = take_stable_collection_snapshot(
+        name="manifest store",
+        get_content_hash=lambda: manifest_store.content_hash,
+        get_count=lambda: manifest_store.manifest_count,
+        iterate=manifest_store.iter_manifests,
+        identity=lambda manifest: manifest.audit_id,
+        lookup=manifest_store.get,
     )
-    manifest_count = manifest_store.manifest_count
-    manifests = tuple(manifest_store.iter_manifests())
-    if len(manifests) != manifest_count:
-        raise RuntimeError("manifest store count changed during snapshot")
-    if len({manifest.audit_id for manifest in manifests}) != manifest_count:
-        raise RuntimeError("manifest store contains duplicate identities")
-    for manifest in manifests:
-        if manifest_store.get(manifest.audit_id) != manifest:
-            raise RuntimeError("manifest store lookup disagrees with iteration")
+    for manifest in snapshot.items:
         if manifest.rejected_count:
             raise ValueError(
                 "trusted audit head cannot anchor a rejected manifest"
             )
-    if (
-        manifest_store.manifest_count != manifest_count
-        or not hmac.compare_digest(manifest_store.content_hash, store_hash)
-    ):
-        raise RuntimeError("manifest store changed during snapshot")
-    latest_audit_id = None if not manifests else manifests[-1].audit_id
-    return store_hash, manifest_count, latest_audit_id
+    latest_audit_id = (
+        None if not snapshot.items else snapshot.items[-1].audit_id
+    )
+    return snapshot.content_hash, snapshot.count, latest_audit_id
 
 
 def verify_trusted_audit_head(
@@ -275,11 +256,16 @@ def verify_trusted_audit_head(
         head.manifest_store_hash,
         head.manifest_count,
     )
-    if (
-        manifest_store.manifest_count != manifest_count
-        or not hmac.compare_digest(manifest_store.content_hash, store_hash)
-    ):
-        raise RuntimeError("manifest store changed during prefix verification")
+    assert_stable_collection_snapshot(
+        StableCollectionSnapshot(
+            content_hash=store_hash,
+            count=manifest_count,
+            items=(),
+        ),
+        name="manifest store",
+        get_content_hash=lambda: manifest_store.content_hash,
+        get_count=lambda: manifest_store.manifest_count,
+    )
 
     if manifest_count < head.manifest_count:
         status = TrustedAuditHeadStatus.ROLLBACK

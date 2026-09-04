@@ -1,0 +1,31 @@
+{
+  "slice": "C1.6",
+  "title": "Solana Observation Store Replay Verification",
+  "verified_on": "2026-08-26",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/adapters/persistence/solana_observation_store.py",
+    "tests/adapters/persistence/test_solana_observation_store.py",
+    "artifacts/governance/c1_6_solana_observation_store_replay_verification.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 4, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

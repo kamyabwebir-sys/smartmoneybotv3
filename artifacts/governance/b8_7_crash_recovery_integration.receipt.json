@@ -1,0 +1,42 @@
+{
+  "slice": "B8.7",
+  "title": "Crash-Recovery Integration Tests",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "tests/adapters/persistence/test_crash_recovery_integration.py",
+    "artifacts/governance/b8_7_crash_recovery_integration.receipt.json"
+  ],
+  "behavior": [
+    "Exercises end-to-end temporary-file recovery for persistence and replay receipt JSON stores.",
+    "Verifies receipt equality, count preservation, content-hash preservation and temporary-file cleanup.",
+    "Rejects tampered temporary content before replacement through content-hash validation.",
+    "Keeps production APIs and persistence implementations unchanged."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B8.7 crash-recovery integration tests",
+      "passed": 2,
+      "failed": 0,
+      "status": "PASS",
+      "execution": "offline cached pytest"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (103 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

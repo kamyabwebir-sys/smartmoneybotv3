@@ -1,11 +1,19 @@
 from __future__ import annotations
 
-import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import TypeVar
 
+from smart_money.application._validation import (
+    require_count as _require_count,
+)
+from smart_money.application._validation import (
+    require_sha256 as _require_sha256,
+)
+from smart_money.application._validation import (
+    require_text as _require_text,
+)
 from smart_money.application.trusted_audit_head import (
     PrefixVerifiableHistoricalAuditStore,
     TrustedAuditHead,
@@ -19,32 +27,7 @@ from smart_money.application.trusted_audit_head import (
 from smart_money.core.ids import deterministic_id
 
 _SCHEMA_VERSION = "audit_recovery_gate.v1"
-_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 _ResultT = TypeVar("_ResultT")
-
-
-def _require_text(value: object, field_name: str) -> str:
-    if not isinstance(value, str):
-        raise TypeError(f"{field_name} must be a string")
-    normalized = value.strip()
-    if not normalized:
-        raise ValueError(f"{field_name} must be non-empty")
-    return normalized
-
-
-def _require_sha256(value: object, field_name: str) -> str:
-    digest = _require_text(value, field_name)
-    if _SHA256_PATTERN.fullmatch(digest) is None:
-        raise ValueError(f"{field_name} must be a lowercase SHA-256 hex digest")
-    return digest
-
-
-def _require_count(value: object, field_name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise TypeError(f"{field_name} must be an integer")
-    if value < 0:
-        raise ValueError(f"{field_name} must be non-negative")
-    return value
 
 
 class AuditRecoveryGateStatus(str, Enum):

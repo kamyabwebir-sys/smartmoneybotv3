@@ -1,0 +1,57 @@
+{
+  "baseline_commit_before": "7cdbfc3",
+  "boundary_enforcer": {
+    "checked_files": 311,
+    "status": "PASS"
+  },
+  "contract_integrity": {
+    "deterministic_id": "evidence_d0551bdd2c1d7db6d88e39ba1a561cc9",
+    "status": "PASS",
+    "verifier": "contract-integrity.v1"
+  },
+  "protected_files": {
+    "edited_by_p0_2": false,
+    "paths": [
+      "src/smart_money/discovery/registry.py",
+      "tests/discovery/test_registry.py"
+    ]
+  },
+  "python_compile": {
+    "scope": [
+      "src",
+      "tests",
+      "setup_project.py"
+    ],
+    "status": "PASS"
+  },
+  "pytest": {
+    "failed": 0,
+    "passed": 1212,
+    "status": "PASS"
+  },
+  "release_baseline": {
+    "decision": "READY",
+    "reason_code": "FULL_REPOSITORY_VERIFICATION_PASSED"
+  },
+  "ruff": {
+    "policy": [
+      "E4",
+      "E7",
+      "E9",
+      "F"
+    ],
+    "scope": [
+      "tracked Python files",
+      "src",
+      "tests"
+    ],
+    "status": "PASS"
+  },
+  "schema_version": "p0_2_full_repository_verification_clean_release_baseline.v1",
+  "slice": "P0.2",
+  "timestamp": "2026-09-04",
+  "powershell_parse": {
+    "status": "PASS",
+    "tracked_files": 30
+  }
+}
