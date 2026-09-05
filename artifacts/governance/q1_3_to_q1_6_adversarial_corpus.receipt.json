@@ -1,0 +1,23 @@
+{
+  "baseline_commit": "d50e4aa",
+  "corpora": {
+    "ledger_corruption": 4,
+    "replay_permutations": 24,
+    "duplicate_storm": {"unique_payloads": 20, "repetitions": 100},
+    "malformed_solana_transactions": 5
+  },
+  "verification": {
+    "corpus_tests": "PASS (8 passed)",
+    "full_suite": "PASS",
+    "release_gate": "PASS",
+    "ruff": "PASS",
+    "boundary_enforcer": "PASS",
+    "contract_integrity": "PASS"
+  },
+  "full_suite": "PASS",
+  "protected_discovery_files_changed": false,
+  "schema_version": "q1_3_to_q1_6_adversarial_corpus_receipt.v1",
+  "slices": ["Q1.3", "Q1.4", "Q1.5", "Q1.6"],
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-05"
+}

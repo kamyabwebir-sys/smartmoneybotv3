@@ -14,7 +14,7 @@
     "enforcement": "FAIL_CLOSED",
     "scopes": 6,
     "status": "PASS",
-    "total_files": 1259
+    "total_files": 1261
   },
   "protected_discovery_files_changed": false,
   "schema_version": "p0_4_release_artifact_inventory_receipt.v1",
