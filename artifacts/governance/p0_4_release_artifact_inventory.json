@@ -14,22 +14,22 @@
       "digest": "1be17d1af72c14b74b6ea9998ccd7f5ed520eda6d6c9f7392cff4c08ac825149"
     },
     "governance": {
-      "count": 312,
-      "digest": "cb7662135f5fec4c94f37a167e5650229197ad6bfcf53eae4ee04556496e56e2"
+      "count": 313,
+      "digest": "aacd844c5b96776ceb792ae32aef0f639afd530029ffd3cd01a3a4b76f07c70b"
     },
     "scripts": {
-      "count": 38,
-      "digest": "62c19abe397b3461e4bf4a35400a2dc786ace6848c735501de83286e388d3e34"
+      "count": 41,
+      "digest": "cc21f9ef06d0fa7402246f97f962d79f3d16006a2f2157b098a70a0f7f446abd"
     },
     "source": {
       "count": 408,
       "digest": "b466090ab4d0fffab919f638e81a2f63b45b08a553def46b6dca2475e9897f8a"
     },
     "tests": {
-      "count": 388,
-      "digest": "a7fc7e782806de5bd8bbb912bf27b4eda452cfde7f329913b2566c8eec764a6b"
+      "count": 389,
+      "digest": "d3ab2d3f8a3b3a98ed02d45e7f1ff8fe72974a1956e2033d0b3cb2ac815f6571"
     }
   },
   "slice": "P0.4",
-  "total_files": 1261
+  "total_files": 1270
 }
