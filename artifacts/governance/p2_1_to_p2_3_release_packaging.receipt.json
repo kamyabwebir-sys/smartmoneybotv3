@@ -1,0 +1,35 @@
+{
+  "baseline_commit": "f5629c8",
+  "build_verification": {
+    "sdist": "PASS",
+    "wheel": "PASS"
+  },
+  "changed_files": [
+    "scripts/verify_p2_release_packaging.py",
+    "artifacts/governance/p2_release_packaging_manifest.json",
+    "artifacts/governance/p2_1_to_p2_3_release_packaging.receipt.json"
+  ],
+  "offline_install": {
+    "imports": [
+      "smart_money",
+      "smart_money.core.ids"
+    ],
+    "network": false,
+    "status": "PASS"
+  },
+  "protected_discovery_files_changed": false,
+  "schema_version": "p2_1_to_p2_3_release_packaging_receipt.v1",
+  "slices": [
+    "P2.1",
+    "P2.2",
+    "P2.3"
+  ],
+  "source_bundle": {
+    "file_count": 1295,
+    "path": "artifacts/release/smartmoneybotv3-source.zip",
+    "sha256": "89aace353facb0b3776418cbc6b306c59cdf92a5f3bbbf758631e626dbd41624",
+    "status": "PASS"
+  },
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-04"
+}
