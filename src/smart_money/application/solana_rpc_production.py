@@ -140,6 +140,8 @@ def normalize_rpc_response(response: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("RPC response must contain result")
     if "error" in response and response["error"] is not None:
         raise ValueError("RPC response contains error")
+    if not isinstance(response["result"], Mapping):
+        raise ValueError("RPC result must be a mapping")
     return {
         "result": response["result"],
         "id": response.get("id", 1),
