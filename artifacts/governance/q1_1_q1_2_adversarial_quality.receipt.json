@@ -1,0 +1,32 @@
+{
+  "baseline_commit": "a3a8617",
+  "property_fuzzing": {
+    "engine": "hypothesis",
+    "properties": [
+      "mapping_order_invariance",
+      "list_tuple_equivalence",
+      "float_rejection",
+      "decimal_idempotence"
+    ]
+  },
+  "persistence_attacks": [
+    "crash_before_atomic_replace",
+    "json_truncation",
+    "content_hash_forgery",
+    "canonical_identity_tampering",
+    "duplicate_entry_injection"
+  ],
+  "protected_discovery_files_changed": false,
+  "schema_version": "q1_1_q1_2_adversarial_quality_receipt.v1",
+  "slices": ["Q1.1", "Q1.2"],
+  "verification": {
+    "adversarial_tests": 9,
+    "full_suite": "PASS",
+    "property_tests": "PASS",
+    "ruff": "PASS",
+    "boundary_enforcer": "PASS",
+    "contract_integrity": "PASS"
+  },
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-05"
+}

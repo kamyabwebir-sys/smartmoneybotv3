@@ -7,15 +7,15 @@
   "scopes": {
     "configuration": {
       "count": 4,
-      "digest": "b839cbb0af70ce6027f280ca84835d7d65d2e28a162b2c928ac8a508fc3c3dc3"
+      "digest": "0c8f255346f630182c01b17d644aa440360358944b9df28a8a69b2fcadda6cd5"
     },
     "documentation": {
       "count": 111,
       "digest": "1be17d1af72c14b74b6ea9998ccd7f5ed520eda6d6c9f7392cff4c08ac825149"
     },
     "governance": {
-      "count": 310,
-      "digest": "ef05b9a5120e4714a0b9a9ada51022e0dce6ec62fb4ea87a5e1b4da54909c98f"
+      "count": 311,
+      "digest": "dcdffbd3b0c2173b2af3bba6b317674c042c467a76ee5016d24f8e970e86a2a9"
     },
     "scripts": {
       "count": 38,
@@ -26,10 +26,10 @@
       "digest": "b466090ab4d0fffab919f638e81a2f63b45b08a553def46b6dca2475e9897f8a"
     },
     "tests": {
-      "count": 385,
-      "digest": "2044ec1071215ce63a4908b8279dd279d1285b417a1406e2d240ba7056853b79"
+      "count": 387,
+      "digest": "c5bae67f97a0c2f1623a339c25409c03ede0eafc7a10309edda0f913b77fdd0b"
     }
   },
   "slice": "P0.4",
-  "total_files": 1256
+  "total_files": 1259
 }
