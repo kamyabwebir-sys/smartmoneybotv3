@@ -25,9 +25,9 @@
     "P2.3"
   ],
   "source_bundle": {
-    "file_count": 1295,
+    "file_count": 582,
     "path": "artifacts/release/smartmoneybotv3-source.zip",
-    "sha256": "89aace353facb0b3776418cbc6b306c59cdf92a5f3bbbf758631e626dbd41624",
+    "sha256": "021f26b7b227d16366e77a890e14cb6017a76323d4c0d9b6c6da9e2b26a8744b",
     "status": "PASS"
   },
   "status": "CLOSED_LOCKED",

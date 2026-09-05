@@ -18,7 +18,13 @@ $ExcludedRelativePaths = @(
     "artifacts/governance/p0_6_release_bundle_offline_gate.receipt.json",
     "scripts/verify_p0_6_release_bundle_offline.py",
     "tests/scripts/test_p0_6_release_bundle_offline.py",
-    "artifacts/governance/p1_clean_machine_reproduction.receipt.json"
+    "artifacts/governance/p1_clean_machine_reproduction.receipt.json",
+    "artifacts/governance/p2_release_packaging_manifest.json",
+    "artifacts/governance/p2_1_to_p2_3_release_packaging.receipt.json",
+    "artifacts/governance/p2_release_artifact_signatures.json",
+    "artifacts/governance/p2_4_to_p2_6_final_distribution.receipt.json",
+    "scripts/verify_p2_release_packaging.py",
+    "scripts/verify_p2_distribution_gate.py"
 )
 
 function Get-TextDigest {

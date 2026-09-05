@@ -8,7 +8,7 @@
     "artifacts/governance/p0_5_release_reproducibility.receipt.json": "3885f83939d3db0eea8948f384c28ba911671fcd8a2551654e317e62d058c94a",
     "artifacts/governance/p0_5_release_reproducibility_manifest.json": "e3882e23d7c23f8061513ebe703969d06bd04c293394911729c9ffb4075cae9a",
     "scripts/verify_p0_3_release_baseline_integrity.ps1": "4c1a96cf8f3060669981a24772d75d3eea45733ac8639639bf78d32bbb1c63c6",
-    "scripts/verify_p0_4_release_artifact_inventory.ps1": "a510b51c2d47b09b3b9319ba93f8335b9d31ed3cb61a7e56e0a9e477f6b0184a",
+    "scripts/verify_p0_4_release_artifact_inventory.ps1": "b738cf14e3883330db5f95bab6957e0632f76b56cbc43c4efa7e1ecd1a8dbd5b",
     "scripts/verify_p0_5_release_reproducibility.py": "a662518689d8340bb6e3ccee20e25df744f1b47d4b17a64ac77f63f363929e37"
   },
   "offline_policy": {

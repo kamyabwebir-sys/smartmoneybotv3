@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import zipfile
@@ -13,6 +14,16 @@ import zipfile
 SCHEMA = "p2_release_packaging_verification.v1"
 EXCLUDED_DIRS = {".git", ".venv", "build", "tests", ".pytest_cache", "release"}
 EXCLUDED_NAMES = {".p1-reproduction-path"}
+ALLOWED_ROOTS = {
+    ".gitignore",
+    "README.md",
+    "docs",
+    "pyproject.toml",
+    "scripts",
+    "src",
+    "uv.lock",
+    "verify_contract_integrity.ps1",
+}
 
 
 def sha256(path: Path) -> str:
@@ -25,6 +36,8 @@ def source_files(root: Path) -> list[Path]:
         if not path.is_file():
             continue
         rel = path.relative_to(root)
+        if rel.parts[0] not in ALLOWED_ROOTS:
+            continue
         if any(
             part in EXCLUDED_DIRS
             or part.startswith(("dist-p2", ".uv-task-cache", ".pytest"))
@@ -56,11 +69,15 @@ def run(command: list[str], cwd: Path, env: dict[str, str] | None = None) -> Non
     subprocess.run(command, cwd=cwd, check=True, capture_output=True, text=True, env=env)
 
 
-def verify_build_and_install(root: Path, work: Path) -> dict[str, object]:
+def verify_build_and_install(root: Path, work: Path, output: Path) -> dict[str, object]:
     build_dir = work / "build"
     env = dict(os.environ)
-    env["UV_CACHE_DIR"] = str(work / "uv-cache")
-    run(["uv", "build", "--out-dir", str(build_dir), "--no-sources", str(root)], root, env)
+    env["UV_CACHE_DIR"] = str(root / ".uv-task-cache-p2")
+    run(
+        ["uv", "build", "--offline", "--out-dir", str(build_dir), "--no-sources", str(root)],
+        root,
+        env,
+    )
     artifacts = sorted(
         item for item in build_dir.iterdir()
         if item.is_file() and item.name.startswith("smartmoneybotv3-0.1.0")
@@ -80,9 +97,12 @@ def verify_build_and_install(root: Path, work: Path) -> dict[str, object]:
     python = venv / "Scripts" / "python.exe"
     run(["uv", "pip", "install", "--offline", "--no-deps", "--python", str(python), str(wheel)], root, env)
     run([str(python), "-c", "import smart_money; import smart_money.core.ids"], root, env)
+    output.mkdir(parents=True, exist_ok=True)
+    published_wheel = Path(shutil.copy2(wheel, output / wheel.name))
+    published_sdist = Path(shutil.copy2(sdist, output / sdist.name))
     return {
-        "wheel": {"name": wheel.name, "sha256": sha256(wheel), "bytes": wheel.stat().st_size},
-        "sdist": {"name": sdist.name, "sha256": sha256(sdist), "bytes": sdist.stat().st_size},
+        "wheel": {"name": published_wheel.name, "sha256": sha256(published_wheel), "bytes": published_wheel.stat().st_size},
+        "sdist": {"name": published_sdist.name, "sha256": sha256(published_sdist), "bytes": published_sdist.stat().st_size},
         "offline_install": "PASS",
     }
 
@@ -95,7 +115,7 @@ def main() -> int:
     args.output.mkdir(parents=True, exist_ok=True)
     first = build_source_bundle(root, args.output / "smartmoneybotv3-source.zip")
     with tempfile.TemporaryDirectory(prefix="p2-packaging-") as temp:
-        build = verify_build_and_install(root, Path(temp))
+        build = verify_build_and_install(root, Path(temp), args.output)
     result = {"source_bundle": first, "build": build, "schema_version": SCHEMA, "status": "PASS"}
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0

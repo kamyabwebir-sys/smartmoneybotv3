@@ -1,0 +1,31 @@
+{
+  "adversarial_checks": {
+    "artifact_byte_flip": "DETECTED",
+    "fail_closed": true
+  },
+  "baseline_commit": "be593da",
+  "consumer_smoke_test": {
+    "distribution": "wheel",
+    "imports": [
+      "smart_money",
+      "smart_money.core.ids"
+    ],
+    "installed_version": "0.1.0",
+    "network": false,
+    "status": "PASS"
+  },
+  "final_gate": {
+    "artifacts_verified": 3,
+    "offline": true,
+    "status": "PASS"
+  },
+  "protected_discovery_files_changed": false,
+  "schema_version": "p2_4_to_p2_6_final_distribution_receipt.v1",
+  "slices": [
+    "P2.4",
+    "P2.5",
+    "P2.6"
+  ],
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-05"
+}
