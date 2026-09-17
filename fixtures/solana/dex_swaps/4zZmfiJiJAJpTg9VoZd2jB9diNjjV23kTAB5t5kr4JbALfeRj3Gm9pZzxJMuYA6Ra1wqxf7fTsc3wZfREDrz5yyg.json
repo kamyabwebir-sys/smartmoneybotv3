@@ -1,0 +1,42 @@
+{
+  "schema_version": "solana_dex_swap_fixture.v1",
+  "signature": "4zZmfiJiJAJpTg9VoZd2jB9diNjjV23kTAB5t5kr4JbALfeRj3Gm9pZzxJMuYA6Ra1wqxf7fTsc3wZfREDrz5yyg",
+  "slot": 446539632,
+  "block_time": 1789251013,
+  "wallet": "67LwNGrukVFFcA1XZQ9U8ddZGCBuPvPHgMxw81AeRtQ7",
+  "venue": "pump_fun",
+  "direction": "BUY",
+  "token_in_mint": "So11111111111111111111111111111111111111112",
+  "token_out_mint": "BAmCRZUsiYhaHxGEyxmDrwqLHXrc8YP5fqCiaWkR8uwS",
+  "amount_in": 0.09160884,
+  "amount_out": 1759021.749265,
+  "sol_delta_lamports": -91608840,
+  "fee_lamports": 95000,
+  "token_deltas": {
+    "BAmCRZUsiYhaHxGEyxmDrwqLHXrc8YP5fqCiaWkR8uwS": 1759021.749265
+  },
+  "program_accounts": [
+    "67LwNGrukVFFcA1XZQ9U8ddZGCBuPvPHgMxw81AeRtQ7",
+    "HsK8aT9zhqNTJh7eYabRCztRWFgfSSer7hePoh9AQX2W",
+    "9rPYyANsfQZw3DnDmKE3YCQF5E8oD89UXoHn9JFEhJUz",
+    "HXp5BdBojvh1FoJi4dqL1tpXnJFs5gKRKq392X4Dn63B",
+    "CqYLb8VUsJbE5X1wBbtHKmXdBZ9LhuBeKuPfmdcTLUfc",
+    "6boXaKNvZFrt9fLKeoaQwGKM4rkEgGd2rSZ4nP15GNcB",
+    "J5nGXYPvD6mAZrUPrpKQnPosJExNfBZWpmXPHosH8GH4",
+    "GXPFM2caqTtQYC2cJ5yJRi9VDkpsYZXzYdwYpGnLmtDL",
+    "ComputeBudget111111111111111111111111111111",
+    "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+    "BAmCRZUsiYhaHxGEyxmDrwqLHXrc8YP5fqCiaWkR8uwS",
+    "11111111111111111111111111111111",
+    "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+    "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
+    "4wTV1YmiEkRvAtNtsSGPtUrqRYQMe5SKy2uB4Jjaxnjf",
+    "Ce6TQqeHC9p8KetsN6JsjHK7UTZk7nasjjnr7XxXp9F1",
+    "Hq2wp8uJ9jCPsYgNHex8RtqdvMPfVGoYwjvF1ATiwn2Y",
+    "8Wf5TiAheLUqBrKXeYg2JtAFFMWtKdG2BSFgqUcPVwTt",
+    "pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ",
+    "13uDf2c6AmmVspfGbh69qeahAZroXH3hDiU3qJKXtkdc"
+  ],
+  "attribution_complete": true,
+  "evidence": "direct_dex_program_harvest"
+}

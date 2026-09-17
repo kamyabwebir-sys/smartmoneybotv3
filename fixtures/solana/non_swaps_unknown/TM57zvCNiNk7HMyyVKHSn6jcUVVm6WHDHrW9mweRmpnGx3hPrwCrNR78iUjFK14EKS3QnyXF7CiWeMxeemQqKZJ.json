@@ -1,0 +1,25 @@
+{
+  "schema_version": "solana_dex_swap_fixture.v1",
+  "signature": "TM57zvCNiNk7HMyyVKHSn6jcUVVm6WHDHrW9mweRmpnGx3hPrwCrNR78iUjFK14EKS3QnyXF7CiWeMxeemQqKZJ",
+  "slot": 446204271,
+  "block_time": 1789144709,
+  "wallet": "Cr3X28Gui146oB3Hv7Lk8TMQMH9Lqo12PRdq4e8JfiqN",
+  "venue": "unknown",
+  "direction": "UNKNOWN",
+  "token_in_mint": null,
+  "token_out_mint": null,
+  "amount_in": null,
+  "amount_out": null,
+  "sol_delta_lamports": -11329024,
+  "fee_lamports": 5620,
+  "token_deltas": {
+    "4Q9wqU7KXXHUrkAtvyiRWxVeZhNHRyJo5Z285AP4pump": -60.0
+  },
+  "program_accounts": [],
+  "program_venues": [],
+  "transaction_error": null,
+  "evidence": "wallet_balance_delta",
+  "attribution_complete": false,
+  "source": "rpc",
+  "candidate_evidence": "json_rpc:wallet_1_signatures.json"
+}

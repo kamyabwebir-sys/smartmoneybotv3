@@ -15,9 +15,12 @@ SCHEMA = "p2_release_packaging_verification.v1"
 EXCLUDED_DIRS = {".git", ".venv", "build", "tests", ".pytest_cache", "release"}
 EXCLUDED_NAMES = {".p1-reproduction-path"}
 ALLOWED_ROOTS = {
+    ".github",
     ".gitignore",
     "README.md",
+    "api",
     "docs",
+    "fixtures",
     "pyproject.toml",
     "scripts",
     "src",
@@ -110,6 +113,7 @@ def verify_build_and_install(root: Path, work: Path, output: Path) -> dict[str, 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=Path("artifacts/release"))
+    parser.add_argument("--report", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     args.output.mkdir(parents=True, exist_ok=True)
@@ -117,7 +121,19 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="p2-packaging-") as temp:
         build = verify_build_and_install(root, Path(temp), args.output)
     result = {"source_bundle": first, "build": build, "schema_version": SCHEMA, "status": "PASS"}
-    print(json.dumps(result, sort_keys=True, separators=(",", ":")))
+    encoded = json.dumps(result, sort_keys=True, separators=(",", ":"))
+    if args.report is not None:
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=args.report.parent,
+            delete=False,
+        ) as handle:
+            handle.write(encoded + "\n")
+            temporary_report = Path(handle.name)
+        os.replace(temporary_report, args.report)
+    print(encoded)
     return 0
 
 

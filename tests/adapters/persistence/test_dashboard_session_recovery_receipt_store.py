@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from smart_money.adapters.persistence.dashboard_session_recovery_receipt_store import (
@@ -38,5 +40,19 @@ def test_session_recovery_store_rejects_overwrite_and_corruption(tmp_path) -> No
     with pytest.raises(RuntimeError, match="rollback"):
         store.save(_receipt("BLOCKED"))
     path.write_text(path.read_text(encoding="utf-8") + "x", encoding="utf-8")
+    with pytest.raises(ValueError):
+        JsonDashboardSessionRecoveryReceiptStore(path)
+
+
+@pytest.mark.parametrize("mutation", ["missing_hash", "changed_payload"])
+def test_session_recovery_valid_json_tamper_rejected(tmp_path, mutation):
+    path = tmp_path / "receipt.json"
+    JsonDashboardSessionRecoveryReceiptStore(path).save(_receipt())
+    document = json.loads(path.read_text(encoding="utf-8"))
+    if mutation == "missing_hash":
+        del document["content_hash"]
+    else:
+        document["receipt"]["chain_id"] = "tampered"
+    path.write_text(json.dumps(document), encoding="utf-8")
     with pytest.raises(ValueError):
         JsonDashboardSessionRecoveryReceiptStore(path)

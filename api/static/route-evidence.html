@@ -1,0 +1,30 @@
+<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>شواهد مسیر S12</title>
+<style>body{background:#101827;color:#e4ecf7;font:16px system-ui;margin:3vw}main{max-width:1100px;margin:auto}table{width:100%;border-collapse:collapse}td,th{padding:14px;border-bottom:1px solid #34415b;text-align:right}code{overflow-wrap:anywhere}section{background:#1c2940;padding:22px;margin:18px 0;border-radius:12px}button,input{padding:10px}pre{white-space:pre-wrap;overflow-wrap:anywhere;direction:ltr;text-align:left}.warning{color:#ffce75}</style>
+<main><h1>بررسی مسیر واقعی — S12</h1><p class="warning">یک تراکنش تاریخی؛ نه سیگنال خرید و نه ارزیابی سودآوری کل ولت.</p>
+<input id="token" type="password" placeholder="توکن خواندن، در صورت نیاز" autocomplete="off"><button id="refresh">بازپخش fixture</button>
+<label for="sample">نمونه:</label><select id="sample"><option value="cycle">مسیر ردشده</option><option value="purchase">خرید واقعی LinkedInu</option></select>
+<section id="status" aria-live="polite">در انتظار بارگذاری</section>
+<section><table><thead><tr><th>Mint</th><th>تغییر خام</th><th>Decimals</th><th>طبقه‌بندی</th><th>مجاز برای ranking خرید</th></tr></thead><tbody id="rows"></tbody></table></section>
+<section><h2>مسیر انتقال‌ها و شواهد قابل بررسی</h2><pre id="details"></pre></section><section><h2>گام‌های swap و pool استخراج‌شده از دستور</h2><pre id="swaps"></pre></section></main>
+<script>
+const labels={INTERMEDIATE:'توکن واسط؛ خالص صفر',ROUND_TRIP_FLOW:'ورود و خروج؛ چرخه هنوز اثبات نشده',NET_INFLOW:'ورود خالص؛ نه BUY تأییدشده',NET_OUTFLOW:'خروج خالص',UNKNOWN:'نامشخص',UNCHANGED:'بدون تغییر'};
+let requestNumber=0;
+async function refresh(){
+ const request=++requestNumber;
+ const rows=document.getElementById('rows'),status=document.getElementById('status'),details=document.getElementById('details'),swaps=document.getElementById('swaps');
+ rows.replaceChildren();details.textContent='';swaps.textContent='';status.textContent='در حال بررسی…';
+ try{
+  const token=document.getElementById('token').value,sample=document.getElementById('sample').value;
+  const r=await fetch('/api/v1/route-evidence?sample='+encodeURIComponent(sample),{headers:token?{Authorization:'Bearer '+token}:{}});
+  if(request!==requestNumber)return;
+  if(!r.ok)throw Error('HTTP '+r.status);
+  const data=await r.json();if(request!==requestNumber)return;
+  status.textContent='Replay: '+data.replay_verified+' | خرید مشاهده‌شدهٔ مجاز: '+data.eligible_count+' | وضعیت تاریخی pool: تأییدنشده | نیازمند بررسی انسانی';
+  for(const item of data.ranking){const tr=document.createElement('tr');for(const value of [item.mint,item.raw_delta,item.decimals,item.directional_buy_verified?'خرید مشاهده‌شده (نه توصیهٔ خرید)':labels[item.classification]||item.classification,item.ranking_eligible?'بله':'خیر']){const td=document.createElement('td');td.textContent=String(value);tr.append(td);}rows.append(tr);}
+  details.textContent=JSON.stringify({route:data.report,purchase:data.purchase||null},null,2);swaps.textContent=JSON.stringify(data.swap_verification,null,2);
+ }catch(e){if(request===requestNumber)status.textContent='نمایش متوقف شد: '+e.message;}
+}
+document.getElementById('refresh').addEventListener('click',refresh);document.getElementById('sample').addEventListener('change',refresh);refresh();
+</script></html>

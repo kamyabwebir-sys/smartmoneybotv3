@@ -5,30 +5,85 @@ __pycache__/
 __pycache__/
 *.py[cod]
 
-# Local test, tool, and recovery artifacts
+# Local test, tool, build, and recovery artifacts
 .pytest*/
 .pytest_cache/
 .ruff_cache/
+.uv-cache*/
 .uv-task-cache*/
+.tmp-*/
 *.bak
 *.bak.*
+build/
+dist*/
+release/
 
-# Local environments and editor/agent state
+# Local environments, credentials, editor, and agent state
 .env
 .env.*
 .venv/
 .claude/
+.commandcode/
 .cursor/
 .freebuff/
 .vscode/
 node_modules/
-build/
-smartmoneybotv3/
-*.zip
 .npmrc
-.pass-*-evidence.txt
+
+# Runtime and diagnostic output
+artifacts/operations/
+artifacts/solana/
+artifacts/dashboard/
+artifacts/diagnostics/
+artifacts/_diag/
+artifacts/
 live_checkpoint.json
+.pass-*-evidence.txt
+help-output.txt
+market-state-*.txt
 Tree Structure First.txt
+
+# Generated distributions and local repository snapshots
+*.zip
+smartmoneybotv3/
+src/*.egg-info/
+
+# Local agent/plugin installations and machine instructions
+.agents/skills/gmgn-*/
+AGENTS.md
+skills-lock.json
+
+# One-off diagnostics, migration helpers, and local probes
+_evidence/
+wave*-bridge-hunt*/
+wave1-probes/
+wave*-bridge-hunt-bootstrap.ps1
+apply_patch.py
+check_module.py
+find_swap_tx.py
+find_tx.py
+fix_*.py
+full_clean_patch.py
+get_live_sig.py
+get_recent_sig.py
+inspect_signatures*.py
+patch_missing_function.py
+restore-target.ps1
+test_logic.py
+YOUR-GENERATOR-FILE.ps1
+install-harvester.ps1
+install_slice_*.ps1
+scriptsinstall_slice_*.ps1
+swaps_test.json
+
+# Script snapshots retained locally, never distributed
+scripts/*.final-backup-*
+scripts/*.v0fix-*
+scripts/capture_dex_fixtures.py
+scripts/get_valid_sig.py
+scripts/inspect_payload.py
+scripts/inspect_schema.py
+scripts/test_classification.py
 
 # Python bytecode
 __pycache__/

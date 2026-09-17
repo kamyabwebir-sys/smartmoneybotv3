@@ -14,10 +14,10 @@ Slice 1.33 compatibility:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Any, Mapping
-
+from typing import Any
 
 _SCHEMA_VERSION = "consumer_evidence_projection.v1"
 _CONSUMER_VERSION = "slice-1.32"
@@ -84,13 +84,7 @@ class ConsumerEvidenceProjection:
     generated_from: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
-        for name in (
-            "registry_snapshot_id",
-            "registry_entry_id",
-            "replay_manifest_ref",
-            "schema_version",
-            "consumer_version",
-        ):
+        for name in ("registry_snapshot_id", "registry_entry_id", "replay_manifest_ref", "schema_version", "consumer_version"):
             value = getattr(self, name)
             if not isinstance(value, str):
                 raise TypeError(f"{name} must be a string")
@@ -101,13 +95,13 @@ class ConsumerEvidenceProjection:
             raise TypeError("evidence_refs must be a tuple")
         if not all(isinstance(ref, str) and ref.strip() for ref in self.evidence_refs):
             raise ValueError("evidence_refs must contain non-empty strings")
-        normalized_refs = tuple(sorted(ref.strip() for ref in self.evidence_refs))
-        if len(set(normalized_refs)) != len(normalized_refs):
+        refs = tuple(sorted(ref.strip() for ref in self.evidence_refs))
+        if len(set(refs)) != len(refs):
             raise ValueError("evidence_refs must be unique")
         object.__setattr__(
             self,
             "evidence_refs",
-            normalized_refs,
+            refs,
         )
         object.__setattr__(
             self,
@@ -157,7 +151,7 @@ class ConsumerEvidenceProjection:
         replay_manifest_ref: str,
         boundary_status: Mapping[str, Any] | str | None = None,
         generated_from: Mapping[str, Any] | None = None,
-    ) -> "ConsumerEvidenceProjection":
+    ) -> ConsumerEvidenceProjection:
         """Build a projection from already-discovered registry evidence."""
         return cls(
             registry_snapshot_id=registry_snapshot_id,

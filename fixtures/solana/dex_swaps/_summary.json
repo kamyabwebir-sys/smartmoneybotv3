@@ -1,0 +1,15 @@
+{
+  "transaction_count": 0,
+  "verified_evidence": 0,
+  "human_approved": false,
+  "gate_passed": false,
+  "directions": {
+    "BUY": 0,
+    "SELL": 0,
+    "SWAP": 0,
+    "UNKNOWN": 0
+  },
+  "attributed_by_wallet": {},
+  "attributed_by_venue": {},
+  "generated_at": "2026-09-12T19:24:24.735668+00:00"
+}

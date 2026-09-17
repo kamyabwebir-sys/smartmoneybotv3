@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, dataclass as _s08_dataclass
-from datetime import datetime, datetime as _s08_datetime
-from typing import Any, Iterable as _S08Iterable, Union as _S08Union
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
-from .ids import deterministic_id, deterministic_id as _s08_deterministic_id
-from .serialization import canonical_json as _s08_canonical_json
-from .time import ensure_utc_datetime, ensure_utc_datetime as _s08_ensure_utc_datetime
+from .ids import deterministic_id
+from .time import ensure_utc_datetime
 
 
 def _require_non_empty_text(value: str, field_name: str) -> str:
@@ -147,6 +146,13 @@ def make_replay_manifest(
 # ---------------------------------------------------------------------------
 # Slice 0.8 - Golden Replay Fixtures / Baseline Replay Pack (appended)
 # ---------------------------------------------------------------------------
+from dataclasses import dataclass as _s08_dataclass
+from datetime import datetime as _s08_datetime
+from typing import Iterable as _S08Iterable, Union as _S08Union
+
+from smart_money.core.ids import deterministic_id as _s08_deterministic_id
+from smart_money.core.serialization import canonical_json as _s08_canonical_json
+from smart_money.core.time import ensure_utc_datetime as _s08_ensure_utc_datetime
 
 
 @_s08_dataclass(frozen=True, slots=True)

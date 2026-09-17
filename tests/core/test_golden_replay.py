@@ -1,5 +1,4 @@
 import dataclasses
-import dataclasses as _dc
 
 from smart_money.core.replay import BaselineReplayPack, GoldenReplayFixture
 
@@ -32,6 +31,11 @@ class TestContractCompliance:
 # ---------------------------------------------------------------------------
 # Slice 0.8 contract-compliance tests (appended)
 # ---------------------------------------------------------------------------
+import dataclasses as _dc
+
+from smart_money.core.replay import BaselineReplayPack, GoldenReplayFixture
+
+
 class TestSlice08ContractCompliance:
     def test_golden_replay_fixture_uses_slots(self):
         assert GoldenReplayFixture.__dataclass_params__.frozen is True

@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import Any
 
 from .ids import deterministic_id
-from .serialization import canonical_json
+from .serialization import canonical_json, canonicalize
 
 
 def _require_non_empty_text(value: str, field_name: str) -> str:
