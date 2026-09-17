@@ -17,7 +17,7 @@ from smart_money.application.ports.evidence_ledger import EvidenceLedger
 DEX_PROGRAMS = {
     "jupiter_v6": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
     "orca_token_swap": "9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP",
-    "orca_whirlpool": "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3sBMRyCc",
+    "orca_whirlpool": "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
     "pump_fun": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
     "raydium_amm": "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
     "raydium_clmm": "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
@@ -84,6 +84,7 @@ class DexFetchReport:
     rejected_failed: int
     rejected_non_signer: int
     rejected_unknown: int
+    rejected_rpc: int
     exhausted: bool
 
     def canonical_dict(self) -> dict[str, object]:
@@ -92,6 +93,7 @@ class DexFetchReport:
             "records": tuple(item.canonical_dict() for item in self.records),
             "rejected_failed": self.rejected_failed,
             "rejected_non_signer": self.rejected_non_signer,
+            "rejected_rpc": self.rejected_rpc,
             "rejected_unknown": self.rejected_unknown,
             "scanned_signatures": self.scanned_signatures,
             "schema_version": "solana_dex_fetch_report.v1",
@@ -111,7 +113,7 @@ def fetch_dex_swaps(
 ) -> DexFetchReport:
     records: list[DexSwapRecord] = []
     before: str | None = None
-    scanned = failed = non_signer = unknown = 0
+    scanned = failed = non_signer = unknown = rpc_rejected = 0
     exhausted = False
     program = DEX_PROGRAMS[options.dex]
     while len(records) < options.limit and scanned < options.scan_limit:
@@ -132,7 +134,11 @@ def fetch_dex_swaps(
             if not isinstance(signature, str) or _SIGNATURE_PATTERN.fullmatch(signature) is None:
                 raise ValueError("signature cursor is invalid")
             scanned += 1
-            transaction_response = rpc.capture_transaction(signature)
+            try:
+                transaction_response = rpc.capture_transaction(signature)
+            except (OSError, RuntimeError):
+                rpc_rejected += 1
+                continue
             transaction = _result(transaction_response)
             if transaction is None:
                 failed += 1
@@ -141,7 +147,11 @@ def fetch_dex_swaps(
             if not isinstance(meta, Mapping) or meta.get("err") is not None:
                 failed += 1
                 continue
-            normalized = SolanaSignatureNormalizer.normalize(transaction_response)
+            try:
+                normalized = SolanaSignatureNormalizer.normalize(transaction_response)
+            except (TypeError, ValueError):
+                failed += 1
+                continue
             if options.wallet is not None and normalized.raw.signer != options.wallet:
                 non_signer += 1
                 continue
@@ -176,7 +186,7 @@ def fetch_dex_swaps(
             exhausted = True
             break
     return DexFetchReport(
-        tuple(records), scanned, failed, non_signer, unknown, exhausted
+        tuple(records), scanned, failed, non_signer, unknown, rpc_rejected, exhausted
     )
 
 

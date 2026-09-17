@@ -104,9 +104,10 @@ def test_failed_unknown_and_non_signer_are_rejected() -> None:
     )
     assert not report.records
     assert (report.rejected_failed, report.rejected_unknown, report.rejected_non_signer) == (1, 1, 1)
+    assert report.rejected_rpc == 0
 
 
-def test_pagination_advances_and_rpc_failure_propagates() -> None:
+def test_pagination_advances_and_rpc_failure_is_accounted_for() -> None:
     first, second = _signature("9"), _signature("a")
     safe_markers = "ABCDEFGHJKLMNPQRSTUVWXYZ"
     first_page = [
@@ -128,8 +129,27 @@ def test_pagination_advances_and_rpc_failure_propagates() -> None:
     assert rpc.before_values == [None, first]
 
     failing = FakeRPC([[{"signature": first}]], {first: OSError("rpc down")})
-    with pytest.raises(OSError, match="rpc down"):
-        fetch_dex_swaps(failing, DexFetchOptions(limit=1, scan_limit=1))
+    failure_report = fetch_dex_swaps(
+        failing, DexFetchOptions(limit=1, scan_limit=1)
+    )
+    assert failure_report.rejected_rpc == 1
+    assert not failure_report.records
+
+
+def test_runtime_rpc_rejection_does_not_abort_remaining_transactions() -> None:
+    failed, successful = _signature("b"), _signature("c")
+    rpc = FakeRPC(
+        [[{"signature": failed}, {"signature": successful}]],
+        {
+            failed: RuntimeError("unsupported transaction version"),
+            successful: _transaction(successful),
+        },
+    )
+
+    report = fetch_dex_swaps(rpc, DexFetchOptions(limit=1, scan_limit=2))
+
+    assert report.records[0].signature == successful
+    assert report.rejected_rpc == 1
 
 
 def test_compatibility_wrapper_is_safe_to_import() -> None:
