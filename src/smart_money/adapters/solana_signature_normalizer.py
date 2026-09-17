@@ -5,7 +5,12 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from smart_money.application.solana_account_resolution import resolve_solana_accounts
 from smart_money.domain.solana_observation import SolanaChainObservation
+from smart_money.domain.solana_program_registry import (
+    SOLANA_MAINNET_DEX_PROGRAMS,
+    SOLANA_PROGRAM_REGISTRY_VERSION,
+)
 
 WRAPPED_SOL_MINT = "So11111111111111111111111111111111111111112"
 QUOTE_MINTS = frozenset(
@@ -16,12 +21,7 @@ QUOTE_MINTS = frozenset(
     }
 )
 
-DEX_PROGRAMS = {
-    "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9dQ5f1i8": "RAYDIUM",
-    "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK": "RAYDIUM_CLMM",
-    "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZ4vW3j6h5": "JUPITER",
-    "whirLbMiicVdio4qvUfM5KAg6CtXGBH8r95GmZJDsL": "ORCA_WHIRLPOOL",
-}
+DEX_PROGRAMS = SOLANA_MAINNET_DEX_PROGRAMS
 
 
 class TradeDirection(str, Enum):
@@ -51,6 +51,9 @@ class RawSolanaSignature:
     block_time: int | None
     signature: str
     signer: str
+    signers: tuple[str, ...]
+    account_keys: tuple[str, ...]
+    account_resolution_id: str
     fee: int
     native_pre_balance: int
     native_post_balance: int
@@ -65,6 +68,12 @@ class RawSolanaSignature:
             raise ValueError("block_time must be non-negative")
         if not self.signature.strip() or not self.signer.strip():
             raise ValueError("signature and signer must be non-empty")
+        if not self.signers or self.signer != self.signers[0]:
+            raise ValueError("primary signer must be the first resolved signer")
+        if not self.account_keys or self.signer not in self.account_keys:
+            raise ValueError("resolved signer must belong to account keys")
+        if not self.account_resolution_id.strip():
+            raise ValueError("account_resolution_id must be non-empty")
 
 
 @dataclass(frozen=True, slots=True)
@@ -147,12 +156,6 @@ def _integer(value: object, name: str, *, default: int | None = None) -> int:
     return value
 
 
-def _account_key(value: object) -> str:
-    if isinstance(value, Mapping):
-        return _text(value.get("pubkey"), "account key pubkey")
-    return _text(value, "account key")
-
-
 def _parse_token_balances(value: object) -> tuple[RawTokenBalance, ...]:
     rows: list[RawTokenBalance] = []
     for entry in _sequence(value, "token balances"):
@@ -206,14 +209,7 @@ class SolanaSignatureNormalizer:
         transaction = _mapping(result.get("transaction"), "transaction")
         message = _mapping(transaction.get("message"), "transaction.message")
         meta = _mapping(result.get("meta"), "meta")
-        account_keys = _sequence(message.get("accountKeys"), "accountKeys")
-        if not account_keys:
-            raise ValueError("accountKeys must be non-empty")
-        signer = _account_key(account_keys[0])
-        for key in account_keys:
-            if isinstance(key, Mapping) and key.get("signer") is True:
-                signer = _account_key(key)
-                break
+        resolution = resolve_solana_accounts(result)
         signatures = _sequence(transaction.get("signatures"), "signatures")
         if not signatures:
             raise ValueError("transaction signature is missing")
@@ -229,7 +225,10 @@ class SolanaSignatureNormalizer:
                 else _integer(result.get("blockTime"), "blockTime")
             ),
             signature=_text(signatures[0], "signature"),
-            signer=signer,
+            signer=resolution.signers[0],
+            signers=resolution.signers,
+            account_keys=resolution.account_keys,
+            account_resolution_id=resolution.resolution_id,
             fee=_integer(meta.get("fee"), "fee", default=0),
             native_pre_balance=_integer(pre_balances[0], "preBalances[0]"),
             native_post_balance=_integer(post_balances[0], "postBalances[0]"),
@@ -326,6 +325,7 @@ class SolanaSignatureNormalizer:
             commitment=commitment,
             facts={
                 "block_time": raw.block_time,
+                "account_resolution_id": raw.account_resolution_id,
                 "classification": classification.canonical_dict(),
                 "dex_venues": tuple(
                     sorted({DEX_PROGRAMS[item] for item in dex_programs})
@@ -334,6 +334,8 @@ class SolanaSignatureNormalizer:
                 "native_balance_delta": raw.native_post_balance
                 - raw.native_pre_balance,
                 "program_ids": raw.program_ids,
+                "program_registry_version": SOLANA_PROGRAM_REGISTRY_VERSION,
+                "signers": raw.signers,
                 "token_balance_deltas": tuple(
                     item.canonical_dict() for item in deltas
                 ),

@@ -13,15 +13,9 @@ from smart_money.adapters.solana_signature_normalizer import (
     TradeDirection,
 )
 from smart_money.application.ports.evidence_ledger import EvidenceLedger
+from smart_money.domain.solana_program_registry import SOLANA_DEX_SCAN_PROGRAMS
 
-DEX_PROGRAMS = {
-    "jupiter_v6": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
-    "orca_token_swap": "9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP",
-    "orca_whirlpool": "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
-    "pump_fun": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
-    "raydium_amm": "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
-    "raydium_clmm": "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK",
-}
+DEX_PROGRAMS = SOLANA_DEX_SCAN_PROGRAMS
 
 _WALLET_PATTERN = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,44}$")
 _SIGNATURE_PATTERN = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{64,100}$")

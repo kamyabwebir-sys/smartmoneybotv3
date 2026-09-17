@@ -1,18 +1,30 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 from smart_money.core.ids import deterministic_id
+from smart_money.domain.solana_program_registry import (
+    SOLANA_MAINNET_DEX_PROGRAMS,
+    SOLANA_PROGRAM_REGISTRY_VERSION,
+)
 
 OFFICIAL_DEX_PROGRAMS = {
-    "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9dQ5f1i8": "RAYDIUM",
-    "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8": "RAYDIUM",
-    "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZ4vW3j6h5": "JUPITER",
-    "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4": "JUPITER",
-    "9W959DqEETiGZocYWCQPaJ6Yh4vL1fY7z1N2z2v": "ORCA",
+    program_id: (
+        "RAYDIUM"
+        if venue.startswith("RAYDIUM_")
+        else "JUPITER"
+        if venue.startswith("JUPITER_")
+        else "ORCA"
+        if venue.startswith("ORCA_")
+        else venue
+    )
+    for program_id, venue in SOLANA_MAINNET_DEX_PROGRAMS.items()
 }
-DEX_REGISTRY_VERSIONS = {"solana-mainnet-beta.v1": dict(OFFICIAL_DEX_PROGRAMS)}
+DEX_REGISTRY_VERSIONS = {
+    SOLANA_PROGRAM_REGISTRY_VERSION: dict(OFFICIAL_DEX_PROGRAMS),
+}
 
 
 def paginate_signatures(fetch_page: Any, *, wallet: str, pages: int = 1, before: str | None = None) -> tuple[Mapping[str, Any], ...]:
@@ -48,7 +60,10 @@ def inventory_instruction_programs(results: tuple[Mapping[str, Any], ...]) -> di
     return dict(sorted(counts.items()))
 
 
-def resolve_program_id(program_id: str, registry_version: str = "solana-mainnet-beta.v1") -> str:
+def resolve_program_id(
+    program_id: str,
+    registry_version: str = SOLANA_PROGRAM_REGISTRY_VERSION,
+) -> str:
     registry = DEX_REGISTRY_VERSIONS.get(registry_version)
     if registry is None:
         raise ValueError("unknown DEX registry version")
@@ -70,7 +85,7 @@ def resolve_unknown_program(program_id: str, *, instruction: Mapping[str, Any] |
 def build_dex_fixture_corpus(paths: tuple[str, ...]) -> tuple[str, ...]:
     if not paths:
         raise ValueError("paths must not be empty")
-    return tuple(sorted(set(str(path).strip() for path in paths if str(path).strip())))
+    return tuple(sorted({str(path).strip() for path in paths if str(path).strip()}))
 
 
 def extract_swap_candidates(results: tuple[Mapping[str, Any], ...]) -> tuple[Mapping[str, Any], ...]:
@@ -274,4 +289,4 @@ class JsonCandidateRankingReplayReceiptStore:
         return CandidateRankingReplayReceipt(data["ranking_id"], tuple(data["candidate_ids"]), data["replay_hash"], data.get("schema_version", "solana_candidate_ranking_replay.v1"))
 
 
-__all__ = ["OFFICIAL_DEX_PROGRAMS", "DEX_REGISTRY_VERSIONS", "paginate_signatures", "inventory_instruction_programs", "resolve_program_id", "resolve_unknown_program", "build_dex_fixture_corpus", "extract_swap_candidates", "verify_exact_attribution", "historical_attribution_release_gate", "deduplicate_transaction_fixtures", "build_registry_match_report", "build_wallet_buy_sell_profile", "project_historical_scan", "build_historical_candidate_read_model", "build_dex_evidence_dashboard", "build_wallet_token_detail", "verify_historical_gate", "persist_historical_read_model", "build_historical_query_audit", "verify_historical_query_replay", "query_historical_candidates", "build_historical_api_response", "extract_parsed_swap_amounts", "resolve_pool_from_accounts", "resolve_token_pair", "attribute_buy_sell", "wash_trade_confidence", "CandidateRankingReplayReceipt", "build_ranking_replay_receipt", "JsonCandidateRankingReplayReceiptStore"]
+__all__ = ["DEX_REGISTRY_VERSIONS", "OFFICIAL_DEX_PROGRAMS", "CandidateRankingReplayReceipt", "JsonCandidateRankingReplayReceiptStore", "attribute_buy_sell", "build_dex_evidence_dashboard", "build_dex_fixture_corpus", "build_historical_api_response", "build_historical_candidate_read_model", "build_historical_query_audit", "build_ranking_replay_receipt", "build_registry_match_report", "build_wallet_buy_sell_profile", "build_wallet_token_detail", "deduplicate_transaction_fixtures", "extract_parsed_swap_amounts", "extract_swap_candidates", "historical_attribution_release_gate", "inventory_instruction_programs", "paginate_signatures", "persist_historical_read_model", "project_historical_scan", "query_historical_candidates", "resolve_pool_from_accounts", "resolve_program_id", "resolve_token_pair", "resolve_unknown_program", "verify_exact_attribution", "verify_historical_gate", "verify_historical_query_replay", "wash_trade_confidence"]

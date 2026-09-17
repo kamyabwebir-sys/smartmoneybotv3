@@ -22,7 +22,11 @@ def _buy_payload() -> dict[str, object]:
         "transaction": {
             "signatures": ["signature-1"],
             "message": {
-                "accountKeys": [{"pubkey": wallet, "signer": True}],
+                "accountKeys": [
+                    {"pubkey": wallet, "signer": True},
+                    {"pubkey": "quote-account", "signer": False},
+                    {"pubkey": "asset-account", "signer": False},
+                ],
                 "instructions": [
                     {
                         "programId": "CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK"
@@ -101,4 +105,3 @@ def test_normalizer_fails_closed_on_misaligned_native_balances() -> None:
 
     with pytest.raises(ValueError, match="aligned"):
         SolanaSignatureNormalizer.normalize(payload)
-

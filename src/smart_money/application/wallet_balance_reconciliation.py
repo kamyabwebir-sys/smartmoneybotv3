@@ -3,7 +3,10 @@
 from dataclasses import dataclass
 from typing import Any
 
-from smart_money.application.solana_token_balance_delta import extract_solana_token_balance_deltas
+from smart_money.application.solana_account_resolution import resolve_solana_accounts
+from smart_money.application.solana_token_balance_delta import (
+    extract_solana_token_balance_deltas,
+)
 from smart_money.core.ids import deterministic_id
 
 
@@ -44,21 +47,20 @@ def reconcile_wallet_balances(raw: dict[str, Any], wallet: str) -> WalletBalance
     if not isinstance(wallet, str) or not wallet or wallet != wallet.strip():
         raise ValueError("wallet must be non-empty canonical text")
     if not isinstance(raw, dict):
-        raise ValueError("transaction result required")
+        raise TypeError("transaction result must be a dictionary")
     meta = raw.get("meta")
     if not isinstance(meta, dict) or "err" not in meta or meta["err"] is not None:
         raise ValueError("successful transaction metadata required")
     try:
         tx = raw["transaction"]
         signature = tx["signatures"][0]
-        keys = [k["pubkey"] if isinstance(k, dict) else k for k in tx["message"]["accountKeys"]]
         pre, post = meta["preBalances"], meta["postBalances"]
     except (KeyError, TypeError, IndexError) as exc:
         raise ValueError("incomplete transaction") from exc
     if not isinstance(signature, str) or not signature.strip():
         raise ValueError("signature required")
-    if any(not isinstance(k, str) or not k for k in keys) or len(set(keys)) != len(keys):
-        raise ValueError("invalid resolved account keys")
+    resolution = resolve_solana_accounts(raw)
+    keys = list(resolution.account_keys)
     if wallet not in keys or not isinstance(pre, list) or not isinstance(post, list):
         raise ValueError("wallet balances unavailable")
     if len(pre) != len(keys) or len(post) != len(keys):
@@ -70,12 +72,14 @@ def reconcile_wallet_balances(raw: dict[str, Any], wallet: str) -> WalletBalance
     decimals_by_mint: dict[str, int] = {}
     for side in ("preTokenBalances", "postTokenBalances"):
         rows = meta.get(side)
+        if rows is None:
+            raise ValueError("both token balance arrays are required")
         if not isinstance(rows, list):
-            raise ValueError("both token balance arrays required")
+            raise TypeError("both token balance arrays must be lists")
         seen: set[int] = set()
         for row in rows:
             if not isinstance(row, dict):
-                raise ValueError("invalid token balance row")
+                raise TypeError("token balance row must be a dictionary")
             index = _uint(row.get("accountIndex"))
             if index >= len(keys) or index in seen:
                 raise ValueError("duplicate or out-of-range token account")
@@ -84,7 +88,7 @@ def reconcile_wallet_balances(raw: dict[str, Any], wallet: str) -> WalletBalance
             if any(not isinstance(v, str) or not v or v != v.strip() for v in (owner, mint)):
                 raise ValueError("explicit owner and mint required")
             if not isinstance(ui, dict):
-                raise ValueError("raw token amount required")
+                raise TypeError("uiTokenAmount must be a dictionary")
             amount = ui.get("amount")
             if not isinstance(amount, str) or not amount or any(c not in "0123456789" for c in amount):
                 raise ValueError("raw token amount must be unsigned decimal text")
@@ -105,6 +109,9 @@ def reconcile_wallet_balances(raw: dict[str, Any], wallet: str) -> WalletBalance
             totals[key] = totals.get(key, 0) + delta.delta
     index = keys.index(wallet)
     return WalletBalanceReconciliation(
-        signature, wallet, post[index] - pre[index], fee if index == 0 else 0,
+        signature,
+        wallet,
+        post[index] - pre[index],
+        fee if wallet == resolution.fee_payer else 0,
         tuple((mint, decimals, amount) for (mint, decimals), amount in sorted(totals.items())),
     )

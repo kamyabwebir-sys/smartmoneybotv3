@@ -2,7 +2,9 @@ from copy import deepcopy
 
 import pytest
 
-from smart_money.application.wallet_balance_reconciliation import reconcile_wallet_balances
+from smart_money.application.wallet_balance_reconciliation import (
+    reconcile_wallet_balances,
+)
 
 
 def transaction():
@@ -68,3 +70,17 @@ def test_another_fee_payer_and_new_closed_accounts():
     result = reconcile_wallet_balances(raw, "W")
     assert result.fee_paid == 0
     assert result.token_deltas == (("X", 6, 10), ("Y", 6, 0))
+
+
+def test_loaded_address_is_resolved_for_wallet_balance() -> None:
+    raw = transaction()
+    raw["transaction"]["message"]["accountKeys"] = ["A", "B", "C"]
+    raw["transaction"]["message"]["header"] = {"numRequiredSignatures": 1}
+    raw["meta"]["loadedAddresses"] = {"writable": ["W"], "readonly": []}
+    raw["meta"]["preBalances"] = [0, 0, 0, 100]
+    raw["meta"]["postBalances"] = [0, 0, 0, 90]
+
+    result = reconcile_wallet_balances(raw, "W")
+
+    assert result.native_delta == -10
+    assert result.fee_paid == 0
