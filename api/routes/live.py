@@ -19,6 +19,9 @@ from smart_money.application.independent_quality_evaluation import (
     evaluate_independent_dataset,
 )
 from smart_money.core.ids import deterministic_id
+from smart_money.reporting.solana_dashboard_persian import (
+    build_persian_live_report,
+)
 
 router = APIRouter(prefix="/api/v1/live", tags=["live-dashboard"])
 
@@ -113,3 +116,26 @@ def quality(request: Request) -> dict[str, Any]:
         return evaluate_independent_dataset(document).canonical_dict()
     except (AttributeError, OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
         raise HTTPException(503, "independent quality evaluation unavailable") from exc
+
+
+@router.get("/observations", dependencies=[Depends(_auth)])
+def observations(request: Request, page: int = 1, page_size: int = 50) -> dict[str, Any]:
+    if page < 1 or not 1 <= page_size <= 200:
+        raise HTTPException(422, "invalid observation pagination")
+    rows = _snapshot(request)["report"].get("normalized_observations", [])
+    if not isinstance(rows, list):
+        raise HTTPException(503, "normalized observations unavailable")
+    start = (page - 1) * page_size
+    return {
+        "schema_version": "normalized_observation_query.v1",
+        "items": rows[start : start + page_size],
+        "page": page,
+        "page_size": page_size,
+        "read_only": True,
+        "total": len(rows),
+    }
+
+
+@router.get("/reports/fa", dependencies=[Depends(_auth)])
+def persian_report(request: Request) -> dict[str, Any]:
+    return build_persian_live_report(_snapshot(request)["report"])

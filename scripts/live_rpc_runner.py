@@ -6,12 +6,18 @@ import os
 from decimal import Decimal
 from pathlib import Path
 
+from smart_money.adapters.persistence.durable_json_ledger import (
+    DurableJsonEvidenceLedger,
+)
 from smart_money.adapters.persistence.live_capture_store import (
     LiveCaptureStore,
     capture_lock,
     write_capture_report,
 )
 from smart_money.adapters.solana_rpc_fetcher import SolanaRPCFetcher
+from smart_money.adapters.solana_signature_ingestion import (
+    bind_normalized_signature_batch,
+)
 from smart_money.application.live_candidate_enrichment import (
     enrich_live_candidates,
     extract_funding_edges,
@@ -29,12 +35,16 @@ def main() -> int:
     parser.add_argument("--enrich-safety-funding", action="store_true")
     parser.add_argument("--mode", choices=("backfill", "head"), default="backfill")
     parser.add_argument("--output", type=Path, default=Path("artifacts/solana/live_session.json"))
+    parser.add_argument("--normalized-ledger", type=Path)
     args = parser.parse_args()
     if not 1 <= args.pages <= 100 or not 1 <= args.limit <= 1000:
         parser.error("pages must be 1..100 and limit 1..1000")
     config = SolanaRPCConfig.from_env()
     fetcher = SolanaRPCFetcher(config)
     directory = args.state_dir or args.output.with_suffix(".capture")
+    normalized_ledger = DurableJsonEvidenceLedger(
+        args.normalized_ledger or directory / "normalized-signatures.json"
+    )
     with capture_lock(directory):
         store = LiveCaptureStore(directory, args.wallet, config.network)
         try:
@@ -48,6 +58,17 @@ def main() -> int:
                     lambda signature: store.transaction(fetcher.capture_transaction, signature),
                     args.wallet, args.limit,
                 )
+                normalized_receipts = bind_normalized_signature_batch(
+                    normalized_ledger,
+                    store.transactions_for_pending_page(),
+                )
+                result["normalized_observations"] = [
+                    receipt.canonical_dict() for receipt in normalized_receipts
+                ]
+                result["normalized_ledger"] = {
+                    "content_hash": normalized_ledger.content_hash,
+                    "entry_count": normalized_ledger.entry_count,
+                }
                 if args.enrich_safety_funding:
                     safety = {}
                     for mint in sorted({row.get("mint") for row in result["ranking"] if isinstance(row.get("mint"), str)}):

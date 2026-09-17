@@ -14,6 +14,7 @@ def _build_capture(path):
               "route_reports": [{"signature": "sig", "route": "raydium"}],
               "swap_legs": [{"signature": "sig", "amount": 4}],
               "purchase_evaluations": [{"signature": "sig", "eligible": True}], "failures": [],
+              "normalized_observations": [{"signature": "sig", "slot": 10, "wallet": "wallet", "direction": "BUY", "observation_id": "obs", "evidence_id": "ev", "duplicate": False}],
               "gate": {"passed": False}}
     store.complete(result)
     store.close()
@@ -39,6 +40,13 @@ def test_live_dashboard_is_authenticated_fresh_and_reviewable(tmp_path, monkeypa
         assert detail["route_evidence"][0]["route"] == "raydium"
         assert detail["candidate"]["safety_status"] == "UNKNOWN"
         assert client.get("/api/v1/live/quality", headers=headers).json()["precision_bps"] == 6666
+        observations = client.get("/api/v1/live/observations", headers=headers).json()
+        assert observations["total"] == 1
+        assert observations["items"][0]["direction"] == "BUY"
+        report = client.get("/api/v1/live/reports/fa", headers=headers).json()
+        assert report["metrics"]["buy_count"] == 1
+        assert report["read_only"] is True
+        assert client.get("/dashboard/assets/dashboard.js").status_code == 200
         review = client.post("/api/v1/live/reviews", headers=headers, json={"candidate_id": "candidate-1", "status": "ACCEPTED", "reviewer": "operator"})
         assert review.status_code == 201 and review.json()["status"] == "ACCEPTED"
         assert client.post("/api/v1/live/reviews", headers=headers, json={"candidate_id": "candidate-1", "status": "PROPOSED", "reviewer": "operator"}).status_code == 422

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from api.routes import dashboard, historical, live, route_evidence
 from smart_money.application.dashboard_macro_read_index import DashboardMacroReadIndex
@@ -60,6 +61,11 @@ def create_app(*, lifespan_enabled: bool = True) -> FastAPI:
     app.include_router(dashboard.router)
     app.include_router(historical.router)
     app.include_router(live.router)
+    app.mount(
+        "/dashboard/assets",
+        StaticFiles(directory=Path(__file__).resolve().parent / "static"),
+        name="dashboard-assets",
+    )
     @app.get("/dashboard/historical", include_in_schema=False)
     def historical_dashboard() -> FileResponse:
         return FileResponse("artifacts/dashboard/historical.html")
