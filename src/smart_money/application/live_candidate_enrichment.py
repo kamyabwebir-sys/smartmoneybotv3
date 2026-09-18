@@ -35,10 +35,26 @@ def normalize_solana_safety(raw: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def extract_funding_edges(transaction_responses: tuple[Mapping[str, Any], ...], wallet: str) -> tuple[dict[str, Any], ...]:
+def extract_funding_edges(
+    transaction_responses: tuple[Mapping[str, Any], ...],
+    wallet: str,
+    *,
+    token_account_owners: Mapping[str, str] | None = None,
+) -> tuple[dict[str, Any], ...]:
+    """Extract inbound native and SPL funding transfers for one wallet.
+
+    Native System Program transfers and parsed SPL Token transfers
+    (transfer/transferChecked) are both accepted. For SPL transfers the
+    destination is a token account, so ownership must be proven via the
+    ``token_account_owners`` mapping (account → owner) or an explicit
+    ``owner``/``authority`` field in the parsed info; otherwise the edge is
+    rejected fail-closed. Self-routed transfers, unproven ownership, unknown
+    mint/scheme payloads and non-positive amounts never become edges.
+    """
     if not isinstance(wallet, str) or not wallet.strip():
         raise ValueError("wallet must be non-empty")
-    edges: dict[tuple[str, str], dict[str, Any]] = {}
+    owners = token_account_owners or {}
+    edges: dict[tuple[str, str, str], dict[str, Any]] = {}
     for response in transaction_responses:
         try:
             result = response["result"]
@@ -49,30 +65,64 @@ def extract_funding_edges(transaction_responses: tuple[Mapping[str, Any], ...], 
         except (KeyError, TypeError, IndexError):
             continue
         for instruction in (*outer, *inner):
-            parsed = instruction.get("parsed") if isinstance(instruction, Mapping) else None
-            if instruction.get("program") != "system" or not isinstance(parsed, Mapping) or parsed.get("type") not in {"transfer", "transferWithSeed"}:
+            if not isinstance(instruction, Mapping):
+                continue
+            parsed = instruction.get("parsed")
+            if not isinstance(parsed, Mapping):
                 continue
             info = parsed.get("info")
             if not isinstance(info, Mapping):
                 continue
-            source, target, lamports = info.get("source"), info.get("destination"), info.get("lamports")
-            if target != wallet or source == wallet or not isinstance(source, str) or type(lamports) is not int or lamports <= 0:
+            program = instruction.get("program")
+            transfer_type = parsed.get("type")
+            if program == "system" and transfer_type in {"transfer", "transferWithSeed"}:
+                source, target = info.get("source"), info.get("destination")
+                amount, mint = info.get("lamports"), "native"
+                provenance = "solana_rpc:parsed_system_transfer"
+            elif program == "spl-token" and transfer_type in {"transfer", "transferChecked"}:
+                source, target = info.get("source"), info.get("destination")
+                amount, mint = info.get("amount"), info.get("mint")
+                provenance = "solana_rpc:parsed_spl_token_transfer"
+            else:
                 continue
-            key = (signature, source)
-            edges[key] = {"source_wallet": source, "target_wallet": wallet, "native_amount": lamports,
-                          "slot": slot, "signature": signature, "source": "solana_rpc:parsed_system_transfer"}
+            if program == "spl-token":
+                # Destination is a token account: prove it is owned by wallet.
+                payload_owner = info.get("owner") or info.get("authority")
+                payload_owner = payload_owner.strip() if isinstance(payload_owner, str) else ""
+                resolved = owners.get(target, "").strip() if isinstance(target, str) else ""
+                proven_owner = wallet in {payload_owner, resolved}
+                if not proven_owner and target != wallet:
+                    continue  # unproven ownership fails closed
+            elif target != wallet:
+                continue
+            if source == wallet or not isinstance(source, str):
+                continue
+            # Accept plain ints and unsigned digit strings (RPC JSON format);
+            # everything else (bool, float, signed, decimal text) fails closed.
+            if isinstance(amount, str):
+                if not amount.isdigit():
+                    continue
+                amount = int(amount)
+            if type(amount) is not int or amount <= 0:
+                continue
+            if not isinstance(mint, str) or not mint.strip():
+                continue
+            key = (signature, source, mint)
+            edges[key] = {"source_wallet": source, "target_wallet": wallet, "mint": mint,
+                          "amount": amount, "slot": slot, "signature": signature,
+                          "source": provenance}
     return tuple(edges[key] for key in sorted(edges))
 
 
 def materialize_funding_graph_evidence(
     funding_edges: tuple[Mapping[str, Any], ...],
 ) -> tuple[FundingGraphEvidence, ...]:
-    """Convert parsed inbound system transfers into canonical evidence."""
+    """Convert parsed inbound transfers (native or SPL) into canonical evidence."""
     evidence: dict[str, FundingGraphEvidence] = {}
     for edge in funding_edges:
         identity = {
             "chain": "solana:mainnet-beta",
-            "native_amount": edge.get("native_amount"),
+            "native_amount": edge.get("amount", edge.get("native_amount")),
             "observed_slot": edge.get("slot"),
             "provenance": {"source": str(edge.get("source", "")).strip()},
             "schema_version": "funding_graph_evidence.v1",

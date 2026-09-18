@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from collections.abc import Mapping
 from decimal import Decimal
 from pathlib import Path
 
@@ -71,13 +72,40 @@ def main() -> int:
                     "entry_count": normalized_ledger.entry_count,
                 }
                 if args.enrich_safety_funding:
+                    # Prove token-account ownership from the transactions
+                    # themselves (meta pre/postTokenBalances carry the ATA,
+                    # its owner and mint per accountIndex).
+                    token_account_owners: dict[str, str] = {}
+                    for response in store.transactions_for_pending_page():
+                        try:
+                            meta = response["result"]["meta"]
+                            keys = response["result"]["transaction"]["message"]["accountKeys"]
+                        except (KeyError, TypeError, IndexError):
+                            continue
+                        for side in ("preTokenBalances", "postTokenBalances"):
+                            for row in meta.get(side, ()) or ():
+                                if not isinstance(row, Mapping):
+                                    continue
+                                index, owner = row.get("accountIndex"), row.get("owner")
+                                if type(index) is not int or not isinstance(owner, str) or not owner.strip():
+                                    continue
+                                if not 0 <= index < len(keys):
+                                    continue
+                                key = keys[index]
+                                account = key.get("pubkey") if isinstance(key, Mapping) else key
+                                if isinstance(account, str) and account.strip():
+                                    token_account_owners[account.strip()] = owner.strip()
                     safety = {}
                     for mint in sorted({row.get("mint") for row in result["ranking"] if isinstance(row.get("mint"), str)}):
                         try:
                             safety[mint] = store.provider_observation("token-safety", mint, fetcher.capture_token_safety)
                         except (OSError, RuntimeError, ValueError):
                             safety[mint] = {"error": "provider_evidence_unavailable"}
-                    funding = extract_funding_edges(store.transactions_for_pending_page(), args.wallet)
+                    funding = extract_funding_edges(
+                        store.transactions_for_pending_page(),
+                        args.wallet,
+                        token_account_owners=token_account_owners,
+                    )
                     result["ranking"] = enrich_live_candidates(result["ranking"], safety, funding)
                     result["funding_edges"] = list(funding)
                     result["funding_graph_evidence"] = [
