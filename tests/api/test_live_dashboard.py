@@ -287,6 +287,32 @@ def test_subject_detail_application_layer_is_testable_without_fastapi():
             build_subject_detail(subject_kind=kind, subject_id=missing, report=report)
 
 
+def test_h12_h13_operations_reports_provider_health_and_rpc_metrics(tmp_path, monkeypatch):
+    capture = tmp_path / "capture"
+    _build_capture(capture)
+    monkeypatch.setattr("api.routes.live.time.time", lambda: 1010)
+    app = create_app(lifespan_enabled=False)
+    app.state.live_read_token = "secret"
+    app.state.live_capture_dir = capture
+    app.state.live_stale_after_seconds = 30
+    app.state.live_review_store = JsonAlertReviewStore(tmp_path / "reviews.json")
+    app.state.live_quality_dataset = __import__("pathlib").Path("fixtures/quality/independent-evaluation-v1.json")
+    headers = {"Authorization": "Bearer secret"}
+    with TestClient(app) as client:
+        assert client.get("/api/v1/live/operations").status_code == 401
+        response = client.get("/api/v1/live/operations", headers=headers)
+        assert response.status_code == 200
+        document = response.json()
+        assert document["schema_version"] == "live_operations.v1"
+        assert document["read_only"] is True
+        health = document["provider_health"]
+        assert health["status"] in {"HEALTHY", "STALE", "DEGRADED"}
+        assert health["stale"] is False
+        assert health["unresolved_failures"] == 0
+        assert document["rpc_metrics"]["cost_basis"] in {"configured_rate", "not_configured"}
+        assert document["failure_detail"] == []
+
+
 def test_playtest_end_to_end_download_path_matches_ui_contract(tmp_path, monkeypatch):
     """Replay of the live-server playtest: the exact requests dashboard.js's
     downloadExport and loadGate make must produce decodable, batch-faithful

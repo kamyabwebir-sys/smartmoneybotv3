@@ -7,6 +7,7 @@ import hmac
 import io
 import json
 import time
+from collections.abc import Mapping
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
@@ -279,6 +280,39 @@ def token_detail(mint: str, request: Request) -> dict[str, Any]:
         raise HTTPException(404, str(exc)) from exc
     detail["freshness"] = _snapshot(request)["freshness"]
     return detail
+
+
+@router.get("/operations", dependencies=[Depends(_auth)])
+def operations(request: Request) -> dict[str, Any]:
+    """H12/H13: provider health and RPC cost/resource metrics, read-only."""
+    snapshot = _snapshot(request)
+    report = snapshot["report"]
+    metrics = report.get("operational_metrics", {}) if isinstance(report.get("operational_metrics"), Mapping) else {}
+    ingestion = report.get("ingestion", {}) if isinstance(report.get("ingestion"), Mapping) else {}
+    failures = report.get("failures", []) if isinstance(report.get("failures"), list) else []
+    provider_health = {
+        "status": "HEALTHY" if not failures and not snapshot["freshness"]["stale"] else (
+            "STALE" if snapshot["freshness"]["stale"] else "DEGRADED"
+        ),
+        "stale": snapshot["freshness"]["stale"],
+        "age_seconds": snapshot["freshness"]["age_seconds"],
+        "unresolved_failures": len(failures),
+        "page_complete": bool(ingestion.get("page_complete", False)),
+        "exhausted": bool(ingestion.get("exhausted", False)),
+        "mode": ingestion.get("mode"),
+    }
+    return {
+        "schema_version": "live_operations.v1", "read_only": True,
+        "provider_health": provider_health,
+        "rpc_metrics": {
+            "request_count": metrics.get("rpc_request_count"),
+            "retry_count": metrics.get("rpc_retry_count"),
+            "estimated_cost_usd": metrics.get("estimated_rpc_cost_usd"),
+            "cost_basis": metrics.get("cost_basis", "not_configured"),
+        },
+        "failure_detail": failures,
+        "freshness": snapshot["freshness"],
+    }
 
 
 @router.get("/gate", dependencies=[Depends(_auth)])
