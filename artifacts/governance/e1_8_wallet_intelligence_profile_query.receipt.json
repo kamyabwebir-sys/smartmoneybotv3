@@ -1,0 +1,32 @@
+{
+  "slice": "E1.8",
+  "title": "Wallet Intelligence Profile Query",
+  "verified_on": "2026-08-27",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/wallet_intelligence_profile_query.py",
+    "tests/application/test_wallet_intelligence_profile_query.py",
+    "artifacts/governance/e1_8_wallet_intelligence_profile_query.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 1, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "FAIL_PRE_EXISTING_BOM_IN_CORE_ERRORS_EVENTS",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "schema_version": "wallet_intelligence_profile_query.v1",
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS_WITH_PRE_EXISTING_BOUNDARY_FAILURE"
+}

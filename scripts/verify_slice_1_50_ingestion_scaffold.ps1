@@ -121,4 +121,4 @@ foreach ($path in $Protected) {
     }
 }
 
-Write-Output "Slice 1.50–1.52 ingestion scaffold verifier passed."
+Write-Output "Slice 1.50 ingestion scaffold verifier passed."

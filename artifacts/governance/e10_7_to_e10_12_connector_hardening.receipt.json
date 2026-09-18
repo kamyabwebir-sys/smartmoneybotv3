@@ -1,0 +1,1 @@
+{"slices":["E10.7","E10.8","E10.9","E10.10","E10.11","E10.12"],"title":"RPC Transport Error Retry Cursor Transaction Replay Hardening","verified_on":"2026-08-28","lifecycle_state":"CLOSED_LOCKED","enforcement":"FAIL_CLOSED","status":"PASS_WITH_PRE_EXISTING_BOUNDARY_FAILURE"}

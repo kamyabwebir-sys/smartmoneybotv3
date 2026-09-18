@@ -1,0 +1,17 @@
+{
+  "baseline_commit": "70d2fa3",
+  "slices": ["Q1.7", "Q1.8", "Q1.9", "Q1.10"],
+  "verification": {
+    "provider_poisoning": "PASS (2 tests)",
+    "security_scan": "PASS",
+    "mutation_smoke": "PASS (3 targets)",
+    "adversarial_tests": "PASS (15 passed)",
+    "offline_release_gate": "PASS",
+    "full_suite": "PASS",
+    "boundary_enforcer": "PASS",
+    "contract_integrity": "PASS"
+  },
+  "status": "CLOSED_LOCKED",
+  "schema_version": "q1_7_to_q1_10_adversarial_release_receipt.v1",
+  "verified_on": "2026-09-05"
+}

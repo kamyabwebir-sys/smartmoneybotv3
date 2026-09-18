@@ -1,0 +1,20 @@
+{
+  "baseline_commit": "1e520a3",
+  "slices": ["Q2.1", "Q2.2", "Q2.3", "Q2.4", "Q2.5", "Q2.6"],
+  "verification": {
+    "fixture_integrity": "PASS",
+    "commitment_reorg_attack": "PASS",
+    "provider_consensus": "PASS",
+    "historical_leakage": "PASS",
+    "ranking_stability": "PASS",
+    "adversarial_tests": "PASS (5 tests)",
+    "full_suite": "PASS",
+    "ruff": "PASS",
+    "boundary_enforcer": "PASS",
+    "contract_integrity": "PASS",
+    "release_gate": "PASS"
+  },
+  "status": "CLOSED_LOCKED",
+  "schema_version": "q2_production_data_integrity_receipt.v1",
+  "verified_on": "2026-09-05"
+}

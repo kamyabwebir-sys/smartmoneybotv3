@@ -1,0 +1,43 @@
+{
+  "slice": "M71.5",
+  "title": "Session Final Recovery Gate Audit Session Integration Mapping Chain-Level Persistence Verifier",
+  "verified_on": "2026-08-24",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_persistence_verifier.py",
+    "tests/application/test_dashboard_session_final_recovery_gate_audit_session_integration_mapping_chain_level_persistence_verifier.py",
+    "artifacts/governance/m71_5_chain_level_persistence_verifier.receipt.json"
+  ],
+  "behavior": [
+    "Recomputes the expected chain-level audit_id deterministically.",
+    "Matches persisted and generated immutable receipts byte-for-byte by value.",
+    "Fails closed when the persisted receipt is missing.",
+    "Fails closed when the store returns an invalid object or a mismatched receipt.",
+    "Preserves replay persistence linkage through the M71.3 chain-level receipt."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "M71.3 verifier, M71.4 store, M71.5 persistence verifier",
+      "passed": 9,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (98 files)",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

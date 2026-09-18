@@ -1,4 +1,4 @@
-from contracts import EvidencePayload
+from smart_money.ingestion.contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
 from smart_money.ingestion.provider import (
     EvidenceIngestionProvider as CanonicalEvidenceIngestionProvider,

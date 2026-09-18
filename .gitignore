@@ -1,54 +1,90 @@
-# Python bytecode and caches
+__pycache__/
+*.pyc
+
+# Python bytecode
 __pycache__/
 *.py[cod]
-*$py.class
+
+# Local test, tool, build, and recovery artifacts
+.pytest*/
 .pytest_cache/
 .ruff_cache/
-.mypy_cache/
-.coverage
-coverage.xml
-htmlcov/
-
-# Python build and package metadata
+.uv-cache*/
+.uv-task-cache*/
+.tmp-*/
+*.bak
+*.bak.*
 build/
-dist/
-*.egg-info/
-.venv/
-venv/
+dist*/
+release/
 
-# Editors and local agent state
-.vscode/
+# Local environments, credentials, editor, and agent state
+.env
+.env.*
+.venv/
+.claude/
+.commandcode/
 .cursor/
 .freebuff/
-smartmoneybotv3/.freebuff/
-/smartmoneybotv3/
+.vscode/
+node_modules/
+.npmrc
 
-# Local audit/recovery outputs
-audit-output-*/
-*.bak.*
-_local_untracked_recovery/
-_offline_dev_pack/
+# Runtime and diagnostic output
+artifacts/operations/
+artifacts/solana/
+artifacts/dashboard/
+artifacts/diagnostics/
+artifacts/_diag/
+artifacts/
+live_checkpoint.json
+.pass-*-evidence.txt
+help-output.txt
+market-state-*.txt
+Tree Structure First.txt
 
-# Local archives and temporary files
+# Generated distributions and local repository snapshots
 *.zip
-*.tmp
-*.log
+smartmoneybotv3/
+src/*.egg-info/
 
-# Local-only helper/configuration files
-test_gapgpt.py
-governance_context_*.txt
-audit-smartmoneybotv3new2.ps1
-upload-smart-money.ps1
+# Local agent/plugin installations and machine instructions
+.agents/skills/gmgn-*/
+AGENTS.md
+skills-lock.json
 
-# Superseded root-level governance drafts/installers retained locally
-/slice_1_49_governance_freeze_pack.md
-/slice_1_49_governance_freeze_pack.receipt.json
-/slice_1_50_evidence_ingestion_scaffold.md
-/slice_1_50_ingestion_scaffold.md
-/install_slice_1_49.ps1
-/verify_slice_1_47_governance_consistency.ps1
-/install_post_slice_1_48_non_authoritative_batch_governance_proposal.ps1
-/install_slice_1_48.ps1
-/install_slice_1_50_ingestion_scaffold.ps1
-/install_slice_1_51_1_52_ingestion_envelope.ps1
-/prepare_offline_dev_pack.ps1
+# One-off diagnostics, migration helpers, and local probes
+_evidence/
+wave*-bridge-hunt*/
+wave1-probes/
+wave*-bridge-hunt-bootstrap.ps1
+apply_patch.py
+check_module.py
+find_swap_tx.py
+find_tx.py
+fix_*.py
+full_clean_patch.py
+get_live_sig.py
+get_recent_sig.py
+inspect_signatures*.py
+patch_missing_function.py
+restore-target.ps1
+test_logic.py
+YOUR-GENERATOR-FILE.ps1
+install-harvester.ps1
+install_slice_*.ps1
+scriptsinstall_slice_*.ps1
+swaps_test.json
+
+# Script snapshots retained locally, never distributed
+scripts/*.final-backup-*
+scripts/*.v0fix-*
+scripts/capture_dex_fixtures.py
+scripts/get_valid_sig.py
+scripts/inspect_payload.py
+scripts/inspect_schema.py
+scripts/test_classification.py
+
+# Python bytecode
+__pycache__/
+*.py[cod]

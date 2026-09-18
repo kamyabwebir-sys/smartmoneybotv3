@@ -1,0 +1,38 @@
+{
+  "boundary_enforcer": {
+    "checked_files": 311,
+    "status": "PASS"
+  },
+  "changed_files": [
+    "artifacts/governance/p0_5_release_reproducibility_manifest.json",
+    "scripts/verify_p0_5_release_reproducibility.py",
+    "tests/scripts/test_p0_5_release_reproducibility.py",
+    "artifacts/governance/p0_5_release_reproducibility.receipt.json",
+    "scripts/verify_p0_4_release_artifact_inventory.ps1"
+  ],
+  "contract_integrity": "PASS",
+  "environment": {
+    "dependency_groups": [
+      "analytics",
+      "dev"
+    ],
+    "lock_status": "PASS",
+    "python": "3.11.15",
+    "uv": "0.12.0"
+  },
+  "p0_4_inventory": {
+    "status": "PASS",
+    "total_files": 1256
+  },
+  "protected_discovery_files_changed": false,
+  "pytest": {
+    "failed": 0,
+    "passed": 1215,
+    "status": "PASS"
+  },
+  "ruff": "PASS",
+  "schema_version": "p0_5_release_reproducibility_receipt.v1",
+  "slice": "P0.5",
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-04"
+}

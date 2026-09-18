@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from smart_money.adapters.persistence.atomic_file import atomic_replace
 from smart_money.application.replay_integrity import ReplayIntegrityManifest
 from smart_money.core.serialization import canonical_json
 
@@ -54,7 +55,7 @@ class JsonReplayIntegrityStore:
             stream.write(canonical_json(document))
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary_path, path)
+        atomic_replace(temporary_path, path)
 
     def load(
         self,
@@ -82,7 +83,7 @@ class JsonReplayIntegrityStore:
             raise
 
         if recovering_temporary_file:
-            os.replace(temporary_path, path)
+            atomic_replace(temporary_path, path)
         return manifest
 
     def _load_from_path(self, path: Path) -> ReplayIntegrityManifest:

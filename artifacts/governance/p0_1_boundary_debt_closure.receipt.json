@@ -1,0 +1,23 @@
+{
+  "slice": "P0.1",
+  "title": "Boundary Debt Closure",
+  "verified_on": "2026-09-04",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "change_scope": "UTF-8 BOM removal only",
+  "changed_files": [
+    "src/smart_money/core/errors.py",
+    "src/smart_money/core/events.py",
+    "artifacts/governance/p0_1_boundary_debt_closure.receipt.json"
+  ],
+  "verification": {
+    "bom_removed": "PASS",
+    "targeted_pytest": {"passed": 32, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": {"checked_files": 311, "status": "PASS"},
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false
+  },
+  "status": "PASS"
+}

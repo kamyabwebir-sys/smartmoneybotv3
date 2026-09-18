@@ -1,0 +1,24 @@
+{
+  "baseline_commit": "94490a3acf0734ab872e7e058db091e743bcc490",
+  "boundary_enforcer": {
+    "checked_files": 311,
+    "status": "PASS"
+  },
+  "changed_files": [
+    "artifacts/governance/p0_4_release_artifact_inventory.json",
+    "scripts/verify_p0_4_release_artifact_inventory.ps1",
+    "artifacts/governance/p0_4_release_artifact_inventory.receipt.json"
+  ],
+  "contract_integrity": "PASS",
+  "drift_detection": {
+    "enforcement": "FAIL_CLOSED",
+    "scopes": 6,
+    "status": "PASS",
+    "total_files": 1270
+  },
+  "protected_discovery_files_changed": false,
+  "schema_version": "p0_4_release_artifact_inventory_receipt.v1",
+  "slice": "P0.4",
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-04"
+}

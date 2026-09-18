@@ -1,0 +1,45 @@
+{
+  "slice": "C1.21",
+  "title": "Solana Cursor Sequence Checkpoint Advance Binding",
+  "verified_on": "2026-08-26",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/solana_cursor_sequence_checkpoint_binding.py",
+    "tests/application/test_solana_cursor_sequence_checkpoint_binding.py",
+    "artifacts/governance/c1_21_solana_cursor_sequence_checkpoint_advance_binding.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "command": "tests/application/test_solana_cursor_sequence_checkpoint_binding.py",
+      "passed": 2,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS",
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "binding": {
+    "schema_version": "solana_cursor_sequence_checkpoint_binding.v1",
+    "cursor_advance_and_checkpoint_persisted": true,
+    "sequence_persisted": true,
+    "canonical_recheck": true,
+    "deterministic_receipt": true,
+    "fail_closed": true
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

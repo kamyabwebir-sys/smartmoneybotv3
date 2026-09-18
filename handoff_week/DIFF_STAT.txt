@@ -1,0 +1,9 @@
+ src/smart_money/application/audit_recovery_gate.py |  35 ++---
+ .../application/commit_receipt_verification.py     |  77 +++-------
+ .../application/durable_ingestion_commit.py        |  24 +--
+ .../application/durable_run_receipt_audit.py       | 170 ++++++++-------------
+ .../application/historical_commit_receipt.py       |  40 ++---
+ .../application/historical_receipt_audit.py        |  76 ++++-----
+ .../market_state_observation_consumer.py           |  27 +---
+ src/smart_money/application/trusted_audit_head.py  |  86 +++++------
+ 8 files changed, 192 insertions(+), 343 deletions(-)

@@ -1,0 +1,43 @@
+{
+  "slice": "B8.4",
+  "title": "Typed Canonical Observation Parser",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/canonical_market_state_observation.py",
+    "tests/application/test_canonical_market_state_observation.py",
+    "artifacts/governance/b8_4_typed_canonical_observation_parser.receipt.json"
+  ],
+  "behavior": [
+    "Parses canonical observation EvidencePayload into an immutable typed contract.",
+    "Validates evidence type, exact data and metadata keys, provenance and schema linkage.",
+    "Preserves deterministic canonical serialization and replay parity.",
+    "Rejects authority or schema drift without promoting external data to truth."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B8.4 typed canonical observation parser",
+      "passed": 3,
+      "failed": 0,
+      "warnings": 4,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (103 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

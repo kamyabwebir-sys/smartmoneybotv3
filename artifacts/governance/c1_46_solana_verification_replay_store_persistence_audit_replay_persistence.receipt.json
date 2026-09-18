@@ -1,0 +1,37 @@
+{
+  "slice": "C1.46",
+  "title": "Solana Verification Replay Store Persistence Audit Replay Persistence",
+  "verified_on": "2026-08-27",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/adapters/persistence/solana_verification_replay_store_persistence_audit_replay_store.py",
+    "tests/adapters/persistence/test_solana_verification_replay_store_persistence_audit_replay_store.py",
+    "artifacts/governance/c1_46_solana_verification_replay_store_persistence_audit_replay_persistence.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 1, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "persistence": {
+    "schema_version": "solana_verification_replay_store_persistence_audit_replay_store.v1",
+    "atomic_replace": true,
+    "fsync": true,
+    "canonical_json": true,
+    "idempotent_save": true,
+    "round_trip_verified": true
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

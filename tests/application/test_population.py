@@ -2,7 +2,7 @@ from types import MappingProxyType
 
 import pytest
 
-from contracts import EvidencePayload
+from smart_money.ingestion.contracts import EvidencePayload
 from ledger import EvidenceGroundingLedger
 from smart_money.application.population import (
     EvidencePopulator as CanonicalEvidencePopulator,

@@ -1,0 +1,42 @@
+{
+  "slice": "B8.5",
+  "title": "Validation Call-Site Convergence",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/commit_receipt_verification.py",
+    "tests/application/test_commit_receipt_verification.py",
+    "artifacts/governance/b8_5_validation_call_site_convergence.receipt.json"
+  ],
+  "behavior": [
+    "Routes commit receipt text and SHA-256 validation through B8.3 shared primitives.",
+    "Preserves the existing private helper aliases and public API behavior.",
+    "Removes duplicated local validation implementation without changing receipt semantics."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B8.5 commit receipt verification parity",
+      "passed": 6,
+      "failed": 0,
+      "status": "PASS",
+      "execution": "offline cached pytest"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (103 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}

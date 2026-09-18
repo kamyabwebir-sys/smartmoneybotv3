@@ -1,0 +1,20 @@
+{
+  "artifacts": {
+    "artifacts/release/smartmoneybotv3-0.1.0-py3-none-any.whl": {
+      "bytes": 570341,
+      "sha256": "b9445e3f75c3ce488a28d9a20049708dc354958ff9325cb85195733d06ecce49"
+    },
+    "artifacts/release/smartmoneybotv3-0.1.0.tar.gz": {
+      "bytes": 262603,
+      "sha256": "73d4f0572a4728f75eb36ab36fc451e2c3ae1afc79156632c8ee688c38d3fc9b"
+    },
+    "artifacts/release/smartmoneybotv3-source.zip": {
+      "bytes": 810257,
+      "sha256": "021f26b7b227d16366e77a890e14cb6017a76323d4c0d9b6c6da9e2b26a8744b"
+    }
+  },
+  "hash_algorithm": "sha256",
+  "schema_version": "p2_release_artifact_signatures.v1",
+  "signature_semantics": "content_integrity_not_publisher_identity",
+  "slice": "P2.4"
+}

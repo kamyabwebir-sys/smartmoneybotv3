@@ -1,0 +1,7 @@
+{
+  "schema_version": "p2_release_packaging_manifest.v1",
+  "slices": ["P2.1", "P2.2", "P2.3"],
+  "verifier": "scripts/verify_p2_release_packaging.py",
+  "offline_install": true,
+  "runtime_dependencies": []
+}

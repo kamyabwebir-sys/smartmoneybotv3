@@ -1,0 +1,25 @@
+{
+  "baseline_commit": "94490a3acf0734ab872e7e058db091e743bcc490",
+  "bundle_inputs": {
+    "artifacts/governance/p0_3_release_baseline_integrity.receipt.json": "165f1ec7b6ba6a9b160ce3ce937e046765ff93ae3503389e38b147363d14c7ea",
+    "artifacts/governance/p0_3_release_baseline_integrity_manifest.json": "dcefd83e5990a9477cdc66244aaf6d3471e3d4cbbd8a163787d5a492697117bc",
+    "artifacts/governance/p0_4_release_artifact_inventory.receipt.json": "b170ebbc855d2a4630d4bb114eddefef642cd333f2143f7f3583a83545294c55",
+    "artifacts/governance/p0_4_release_artifact_inventory.json": "572d95bf843c4f40ddc2ac294ba67fcc8646bb1a7c5893c934c36cacf816c4a4",
+    "artifacts/governance/p0_5_release_reproducibility.receipt.json": "3885f83939d3db0eea8948f384c28ba911671fcd8a2551654e317e62d058c94a",
+    "artifacts/governance/p0_5_release_reproducibility_manifest.json": "6fb224e4b731d002830d47ca142421e88da3f0d98e2dead60b01d3c6a26984dd",
+    "scripts/verify_p0_3_release_baseline_integrity.ps1": "4c1a96cf8f3060669981a24772d75d3eea45733ac8639639bf78d32bbb1c63c6",
+    "scripts/verify_p0_4_release_artifact_inventory.ps1": "b738cf14e3883330db5f95bab6957e0632f76b56cbc43c4efa7e1ecd1a8dbd5b",
+    "scripts/verify_p0_5_release_reproducibility.py": "a662518689d8340bb6e3ccee20e25df744f1b47d4b17a64ac77f63f363929e37"
+  },
+  "offline_policy": {
+    "dependency_resolution_network": false,
+    "full_tests_optional": true,
+    "uv_offline": true
+  },
+  "release_inventory": {
+    "scopes": 6,
+    "total_files": 1270
+  },
+  "schema_version": "p0_6_release_bundle_manifest.v1",
+  "slice": "P0.6"
+}

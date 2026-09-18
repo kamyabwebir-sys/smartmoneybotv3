@@ -1,0 +1,24 @@
+{
+  "slice": "E17.2",
+  "title": "Outcome Label Generation",
+  "verified_on": "2026-08-29",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/candidate_quality.py",
+    "tests/application/test_candidate_quality.py",
+    "artifacts/governance/e17_2_outcome_label_generation.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 4, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "FAIL_PRE_EXISTING_BOM",
+    "ruff": "PASS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "status": "PASS_WITH_PRE_EXISTING_BOUNDARY_DEBT"
+}

@@ -28,7 +28,9 @@ jobs:
         shell: pwsh
         run: |
           $files = git ls-files "*.py"
-          python -m ruff check $files
+          if ($files.Count -gt 0) {
+            & python -m ruff check --output-format concise @files
+          }
 
       - name: Run test suite
         run: python -m pytest

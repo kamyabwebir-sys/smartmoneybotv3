@@ -1,0 +1,40 @@
+{
+  "baseline_commit": "19acd70b8e128b1adb420444cf03954cffaf3924",
+  "clean_checkout": {
+    "git_longpaths": true,
+    "head_matches_baseline": true,
+    "repository_status_before_reproduction": "CLEAN",
+    "short_temporary_path": true
+  },
+  "dependency_reproduction": {
+    "command": "uv sync --frozen --extra dev --extra analytics",
+    "lock_status": "PASS",
+    "pytest_asyncio_declared": true,
+    "status": "PASS"
+  },
+  "environment": {
+    "operating_system": "windows",
+    "python": "3.11.15",
+    "uv": "0.12.0"
+  },
+  "offline_release_gate": {
+    "checked_bundle_inputs": 9,
+    "full_tests": "PASS",
+    "status": "PASS",
+    "verified_gates": [
+      "P0.3",
+      "P0.4",
+      "P0.5"
+    ]
+  },
+  "portability_controls": {
+    "editable_install_metadata_excluded": true,
+    "line_endings_canonicalized": true,
+    "windows_long_path_checkout_required": true
+  },
+  "protected_discovery_files_changed": false,
+  "schema_version": "p1_clean_machine_reproduction_receipt.v1",
+  "slice": "P1",
+  "status": "CLOSED_LOCKED",
+  "verified_on": "2026-09-04"
+}

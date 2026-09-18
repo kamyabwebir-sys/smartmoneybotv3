@@ -1,0 +1,27 @@
+{
+  "slice": "E2.15",
+  "title": "Funding Cluster Store Replay Verification",
+  "verified_on": "2026-08-27",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/funding_cluster_store_replay.py",
+    "tests/application/test_funding_cluster_store_replay.py",
+    "artifacts/governance/e2_15_funding_cluster_store_replay.receipt.json"
+  ],
+  "verification": {
+    "targeted_pytest": {"passed": 1, "failed": 0, "status": "PASS"},
+    "compileall": "PASS",
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "FAIL_PRE_EXISTING_BOM_IN_CORE_ERRORS_EVENTS",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "schema_version": "funding_cluster_store_replay.v1",
+  "repository": {"branch": "master", "head": "d1b89f3", "commit_created": false, "push_performed": false, "unrelated_worktree_changes_preserved": true},
+  "status": "PASS_WITH_PRE_EXISTING_BOUNDARY_FAILURE"
+}

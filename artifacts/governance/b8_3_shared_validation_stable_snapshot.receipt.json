@@ -1,0 +1,42 @@
+{
+  "slice": "B8.3",
+  "title": "Shared Validation and Stable Snapshot Primitives",
+  "verified_on": "2026-08-25",
+  "lifecycle_state": "CLOSED_LOCKED",
+  "enforcement": "FAIL_CLOSED",
+  "changed_files": [
+    "src/smart_money/application/_validation.py",
+    "tests/application/test_validation_primitives.py",
+    "artifacts/governance/b8_3_shared_validation_stable_snapshot.receipt.json"
+  ],
+  "behavior": [
+    "Provides shared text, SHA-256 and non-negative count validation.",
+    "Provides immutable StableCollectionSnapshot.",
+    "Validates count, identity uniqueness, lookup parity and content hash stability.",
+    "Fails closed when a collection mutates during snapshot verification."
+  ],
+  "verification": {
+    "targeted_pytest": {
+      "scope": "B8.3 validation and stable snapshot primitives",
+      "passed": 3,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "compileall": "PASS",
+    "contract_integrity": "PASS",
+    "boundary_enforcer": "PASS (103 files)",
+    "ruff": "PASS (local cached ruff 0.11.2)",
+    "protected_discovery_files_changed": false,
+    "trading_execution": false,
+    "risk_calculation": false,
+    "opaque_ml": false
+  },
+  "repository": {
+    "branch": "master",
+    "head": "d1b89f3",
+    "commit_created": false,
+    "push_performed": false,
+    "unrelated_worktree_changes_preserved": true
+  },
+  "status": "PASS"
+}
