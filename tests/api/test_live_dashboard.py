@@ -210,3 +210,54 @@ def test_live_auth_fails_closed_when_not_configured(tmp_path):
     app.state.live_read_token = None
     with TestClient(app) as client:
         assert client.get("/api/v1/live/overview", headers={"Authorization": "Bearer anything"}).status_code == 401
+
+
+def test_playtest_end_to_end_download_path_matches_ui_contract(tmp_path, monkeypatch):
+    """Replay of the live-server playtest: the exact requests dashboard.js's
+    downloadExport and loadGate make must produce decodable, batch-faithful
+    payloads and a renderable gate status."""
+    capture = tmp_path / "capture"
+    store = LiveCaptureStore(capture, "playtest-wallet", "mainnet-beta", clock=lambda: 1000)
+    store.page(lambda *args: {"result": [{"signature": "sig-a"}]}, "playtest-wallet", 1)
+    store.transaction(lambda sig: {"result": {"transaction": {"signatures": [sig]}}}, "sig-a")
+    batch = {"signature_count": 1, "transaction_count": 1, "candidate_count": 1,
+             "ranking": [{"evidence_id": "cand-1", "wallet": "playtest-wallet", "mint": "mint-x",
+                          "score_bps": 8100, "safety_status": "EVIDENCE_COMPLETE", "funding_status": "VERIFIED"}],
+             "route_reports": [], "swap_legs": [], "funding_graph_evidence": [],
+             "failures": [], "recovery_ok": True, "gate": {"passed": True}}
+    store.complete(batch)
+    store.close()
+    monkeypatch.setattr("api.routes.live.time.time", lambda: 1010)
+    app = create_app(lifespan_enabled=False)
+    app.state.live_read_token = "secret"
+    app.state.live_capture_dir = capture
+    app.state.live_stale_after_seconds = 3600
+    app.state.live_review_store = JsonAlertReviewStore(tmp_path / "reviews.json")
+    app.state.live_quality_dataset = __import__("pathlib").Path("fixtures/quality/independent-evaluation-v1.json")
+    with TestClient(app) as client:
+        # The dashboard page itself must be servable (route-ordering regression guard).
+        page = client.get("/dashboard/live")
+        assert page.status_code == 200 and "export-buttons" in page.text
+        headers = {"Authorization": "Bearer secret"}
+
+        # downloadExport JSON path: decodable, batch-faithful, attachment-flagged.
+        response = client.get("/api/v1/live/export/candidates", headers=headers)
+        assert response.status_code == 200
+        assert "attachment" in response.headers["content-disposition"]
+        document = response.json()
+        assert document["schema_version"] == "live_dashboard_export.v1"
+        assert document["items"] == batch["ranking"]
+
+        # downloadExport CSV path: BOM-prefixed, decodable, correct columns.
+        response = client.get("/api/v1/live/export/candidates?format=csv", headers=headers)
+        assert response.status_code == 200
+        assert response.content[:3] == b"\xef\xbb\xbf"
+        decoded = response.content.decode("utf-8-sig")
+        assert decoded.splitlines()[0].startswith("evidence_id")
+        assert "cand-1" in decoded
+
+        # loadGate path: gate renders READY for a healthy batch.
+        gate = client.get("/api/v1/live/gate", headers=headers).json()
+        assert gate["ready"] is True
+        assert gate["failed_checks"] == []
+        assert gate["fail_closed"] is True
