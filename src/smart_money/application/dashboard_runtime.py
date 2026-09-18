@@ -89,6 +89,64 @@ class DashboardOperationalGate:
         return cls(normalized, deterministic_id("dashboard_operational_gate", {"checks": normalized}))
 
 
+def build_subject_detail(
+    *,
+    subject_kind: str,
+    subject_id: str,
+    report: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Aggregate one wallet's or one token's full evidence from the batch.
+
+    Aggregates ranking rows, normalized observations, swap legs, route
+    reports, purchase evaluations and funding edges that reference the
+    subject. A subject with no rows raises ValueError (caller maps to 404).
+    """
+    if subject_kind not in {"wallet", "token"}:
+        raise ValueError("subject_kind must be wallet or token")
+    key = "wallet" if subject_kind == "wallet" else "mint"
+    needle = subject_id.strip()
+    if not needle:
+        raise ValueError("subject_id must be non-empty")
+    ranking = [row for row in report.get("ranking", []) if isinstance(row, Mapping) and str(row.get(key, "")).strip() == needle]
+    observations = [row for row in report.get("normalized_observations", []) if isinstance(row, Mapping) and str(row.get(key, "")).strip() == needle]
+    signatures = {
+        str(row.get("signature", "")).strip()
+        for row in (*ranking, *observations) if row.get("signature")
+    }
+    buy = sum(str(row.get("direction", "")).upper() == "BUY" for row in observations)
+    sell = sum(str(row.get("direction", "")).upper() == "SELL" for row in observations)
+    unknown = len(observations) - buy - sell
+    safety = sorted({str(row.get("safety_status", "UNKNOWN")) for row in ranking})
+    funding = sorted({str(row.get("funding_status", "UNKNOWN")) for row in ranking})
+    scores = [int(row["score_bps"]) for row in ranking if isinstance(row.get("score_bps"), int)]
+    if not ranking and not observations:
+        raise ValueError(f"subject not found: {subject_id}")
+    return {
+        "schema_version": f"live_{subject_kind}_detail.v1",
+        "read_only": True,
+        "subject_kind": subject_kind,
+        "subject_id": needle,
+        "summary": {
+            "activity_count": len(observations),
+            "buy_count": buy,
+            "sell_count": sell,
+            "unknown_count": unknown,
+            "candidate_rows": len(ranking),
+            "max_score_bps": max(scores) if scores else None,
+            "safety_statuses": safety,
+            "funding_statuses": funding,
+        },
+        "ranking_rows": ranking,
+        "observations": observations,
+        "route_evidence": [row for row in report.get("route_reports", []) if isinstance(row, Mapping) and str(row.get("signature", "")) in signatures],
+        "swap_evidence": [row for row in report.get("swap_legs", []) if isinstance(row, Mapping) and str(row.get("signature", "")) in signatures],
+        "purchase_evidence": [row for row in report.get("purchase_evaluations", []) if isinstance(row, Mapping) and str(row.get("signature", "")) in signatures],
+        "funding_edges": [row for row in report.get("funding_graph_evidence", []) if isinstance(row, Mapping) and (
+            str(row.get("source_wallet", "")) == needle or str(row.get("target_wallet", "")) == needle
+        )] if subject_kind == "wallet" else [],
+    }
+
+
 def build_live_production_gate(
     *,
     capture_available: bool,
@@ -132,4 +190,4 @@ def build_live_production_gate(
     }
 
 
-__all__ = ["DashboardCache", "DashboardCacheEntry", "AlertReviewRecord", "JsonAlertReviewStore", "DashboardOperationalGate", "build_live_production_gate"]
+__all__ = ["DashboardCache", "DashboardCacheEntry", "AlertReviewRecord", "JsonAlertReviewStore", "DashboardOperationalGate", "build_live_production_gate", "build_subject_detail"]

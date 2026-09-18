@@ -18,6 +18,7 @@ from smart_money.adapters.persistence.live_capture_store import (
 from smart_money.application.dashboard_runtime import (
     AlertReviewRecord,
     build_live_production_gate,
+    build_subject_detail,
 )
 from smart_money.application.independent_quality_evaluation import (
     evaluate_independent_dataset,
@@ -254,6 +255,30 @@ def export_table(table: str, request: Request, format: str = "json") -> Response
 # ---------------------------------------------------------------------------
 # H15 — Dashboard production gate
 # ---------------------------------------------------------------------------
+
+
+@router.get("/wallets/{wallet}", dependencies=[Depends(_auth)])
+def wallet_detail(wallet: str, request: Request) -> dict[str, Any]:
+    try:
+        detail = build_subject_detail(
+            subject_kind="wallet", subject_id=wallet, report=_snapshot(request)["report"],
+        )
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    detail["freshness"] = _snapshot(request)["freshness"]
+    return detail
+
+
+@router.get("/tokens/{mint}", dependencies=[Depends(_auth)])
+def token_detail(mint: str, request: Request) -> dict[str, Any]:
+    try:
+        detail = build_subject_detail(
+            subject_kind="token", subject_id=mint, report=_snapshot(request)["report"],
+        )
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    detail["freshness"] = _snapshot(request)["freshness"]
+    return detail
 
 
 @router.get("/gate", dependencies=[Depends(_auth)])

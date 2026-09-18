@@ -5,6 +5,7 @@ from smart_money.adapters.persistence.live_capture_store import LiveCaptureStore
 from smart_money.application.dashboard_runtime import (
     JsonAlertReviewStore,
     build_live_production_gate,
+    build_subject_detail,
 )
 
 
@@ -210,6 +211,80 @@ def test_live_auth_fails_closed_when_not_configured(tmp_path):
     app.state.live_read_token = None
     with TestClient(app) as client:
         assert client.get("/api/v1/live/overview", headers={"Authorization": "Bearer anything"}).status_code == 401
+
+
+def test_h3_wallet_detail_aggregates_all_evidence_for_the_wallet(tmp_path, monkeypatch):
+    capture = tmp_path / "capture"
+    _build_capture(capture)
+    monkeypatch.setattr("api.routes.live.time.time", lambda: 1010)
+    app = create_app(lifespan_enabled=False)
+    app.state.live_read_token = "secret"
+    app.state.live_capture_dir = capture
+    app.state.live_stale_after_seconds = 30
+    app.state.live_review_store = JsonAlertReviewStore(tmp_path / "reviews.json")
+    app.state.live_quality_dataset = __import__("pathlib").Path("fixtures/quality/independent-evaluation-v1.json")
+    headers = {"Authorization": "Bearer secret"}
+    with TestClient(app) as client:
+        assert client.get("/api/v1/live/wallets/wallet").status_code == 401
+        detail = client.get("/api/v1/live/wallets/wallet", headers=headers)
+        assert detail.status_code == 200
+        document = detail.json()
+        assert document["schema_version"] == "live_wallet_detail.v1"
+        assert document["subject_kind"] == "wallet"
+        assert document["summary"]["buy_count"] == 1
+        assert document["summary"]["candidate_rows"] == 1
+        assert document["summary"]["safety_statuses"] == ["EVIDENCE_COMPLETE"]
+        assert document["observations"][0]["direction"] == "BUY"
+        assert document["route_evidence"][0]["route"] == "raydium"
+        assert client.get("/api/v1/live/wallets/nobody", headers=headers).status_code == 404
+
+
+def test_h4_token_detail_aggregates_and_wallet_route_still_works(tmp_path, monkeypatch):
+    capture = tmp_path / "capture"
+    _build_capture(capture)
+    monkeypatch.setattr("api.routes.live.time.time", lambda: 1010)
+    app = create_app(lifespan_enabled=False)
+    app.state.live_read_token = "secret"
+    app.state.live_capture_dir = capture
+    app.state.live_stale_after_seconds = 30
+    app.state.live_review_store = JsonAlertReviewStore(tmp_path / "reviews.json")
+    app.state.live_quality_dataset = __import__("pathlib").Path("fixtures/quality/independent-evaluation-v1.json")
+    headers = {"Authorization": "Bearer secret"}
+    with TestClient(app) as client:
+        detail = client.get("/api/v1/live/tokens/mint", headers=headers)
+        assert detail.status_code == 200
+        document = detail.json()
+        assert document["schema_version"] == "live_token_detail.v1"
+        assert document["subject_kind"] == "token"
+        assert document["summary"]["candidate_rows"] == 1
+        # Token detail carries no funding edges (edges are wallet-scoped).
+        assert document["funding_edges"] == []
+        assert client.get("/api/v1/live/tokens/unknown-mint", headers=headers).status_code == 404
+
+
+def test_subject_detail_application_layer_is_testable_without_fastapi():
+    report = {
+        "ranking": [{"wallet": "w1", "mint": "m1", "score_bps": 7000, "safety_status": "EVIDENCE_COMPLETE", "funding_status": "VERIFIED", "signature": "sig-1"}],
+        "normalized_observations": [{"wallet": "w1", "mint": "m1", "direction": "SELL", "slot": 5, "signature": "sig-1"}],
+        "route_reports": [{"signature": "sig-1", "route": "orca"}],
+        "swap_legs": [{"signature": "sig-1", "amount_in": 9}],
+        "purchase_evaluations": [],
+        "funding_graph_evidence": [{"source_wallet": "f", "target_wallet": "w1"}],
+    }
+    wallet = build_subject_detail(subject_kind="wallet", subject_id="w1", report=report)
+    assert wallet["summary"] == {
+        "activity_count": 1, "buy_count": 0, "sell_count": 1, "unknown_count": 0,
+        "candidate_rows": 1, "max_score_bps": 7000,
+        "safety_statuses": ["EVIDENCE_COMPLETE"], "funding_statuses": ["VERIFIED"],
+    }
+    assert wallet["swap_evidence"][0]["amount_in"] == 9
+    assert wallet["funding_edges"][0]["target_wallet"] == "w1"
+    token = build_subject_detail(subject_kind="token", subject_id="m1", report=report)
+    assert token["summary"]["sell_count"] == 1
+    assert token["funding_edges"] == []
+    for kind, missing in (("wallet", "w2"), ("token", "m2"), ("wallet", "  "), ("mint", "m1")):
+        with __import__("pytest").raises(ValueError):
+            build_subject_detail(subject_kind=kind, subject_id=missing, report=report)
 
 
 def test_playtest_end_to_end_download_path_matches_ui_contract(tmp_path, monkeypatch):
