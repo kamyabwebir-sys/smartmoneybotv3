@@ -15,13 +15,12 @@ lives here and never needs rewriting.
 from __future__ import annotations
 
 import hashlib
-import hmac
 import json
 import os
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, TypeVar, runtime_checkable
 
 from smart_money.adapters.persistence.atomic_file import atomic_replace
 from smart_money.core.serialization import canonical_json
@@ -79,6 +78,9 @@ class StoreManifest:
 # ---------------------------------------------------------------------------
 # Generic collection store
 # ---------------------------------------------------------------------------
+
+R = TypeVar("R")
+
 
 class GenericCollectionStore:
     """Append-only, single-writer, atomic JSON collection store.

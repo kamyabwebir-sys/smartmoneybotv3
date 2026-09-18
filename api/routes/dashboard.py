@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query
 
-from smart_money.application.dashboard_subject_detail_query import DashboardSubjectDetailQuery
 from ..deps import MacroReadIndexDep
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])

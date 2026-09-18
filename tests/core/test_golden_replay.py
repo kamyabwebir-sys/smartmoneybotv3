@@ -31,9 +31,8 @@ class TestContractCompliance:
 # ---------------------------------------------------------------------------
 # Slice 0.8 contract-compliance tests (appended)
 # ---------------------------------------------------------------------------
-import dataclasses as _dc
+import dataclasses as _dc  # noqa: E402  (appended slice section)
 
-from smart_money.core.replay import BaselineReplayPack, GoldenReplayFixture
 
 
 class TestSlice08ContractCompliance:

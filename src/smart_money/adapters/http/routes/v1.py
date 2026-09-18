@@ -5,12 +5,21 @@ Design constraints (derived from compiled test contracts):
   - limit cap: le=50 causes FastAPI to return 422 for oversized requests.
   - KeyError  -> 404  (unknown subject / response_id)
   - ValueError -> 409  (ambiguous subject_id)
-  - All success responses aastAPI to return 422 for oversized requests.
-  - KeyError  -> 404  (unknown subject / response_id)
-  - ValueError -> 409  (ambiguous subject_id)
   - All success responses are wrapped in dashboard_http_response.v1.
 """
 from __future__ import annotations
+
+from typing import Annotated, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse
+
+from smart_money.application.dashboard_macro_read_index import DashboardMacroReadIndex
+
+_PAGE_SIZE_CAP = 50
+
+router = APIRouter()
+
 
 async def _get_index() -> DashboardMacroReadIndex:  # pragma: no cover
     """

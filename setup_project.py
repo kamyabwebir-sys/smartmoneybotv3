@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 files = {
@@ -110,4 +109,3 @@ for path, content in files.items():
     with open(p, "w", encoding="utf-8") as f:
         f.write(content)
     print(f"Created: {path}")
-"""

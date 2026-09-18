@@ -22,7 +22,7 @@ jobs:
         run: python -m pip install -e . pytest
 
       - name: R8.7 verification
-        run: python tests/scripts/dashboard_release_gate.py verify
+        run: python scripts/dashboard_release_gate.py
 
       - name: Upload verification evidence
         if: always()
@@ -51,14 +51,14 @@ jobs:
 
       # Re-run on the signing runner rather than trusting downloaded evidence.
       - name: Verify exact signing revision
-        run: python tests/scripts/dashboard_release_gate.py verify
+        run: python scripts/dashboard_release_gate.py --require-signature
 
       - name: Issue and verify signed R8.8 receipt
         env:
           R8_RELEASE_REF: ${{ vars.R8_RELEASE_REF }}
           R8_SIGNING_PRIVATE_KEY_PEM: ${{ secrets.R8_SIGNING_PRIVATE_KEY_PEM }}
           R8_SIGNING_PUBLIC_KEY_PEM: ${{ vars.R8_SIGNING_PUBLIC_KEY_PEM }}
-        run: python tests/scripts/dashboard_release_gate.py gate
+        run: python scripts/dashboard_release_gate.py --require-signature --require-clean-worktree
 
       - name: Upload production gate evidence
         if: always()

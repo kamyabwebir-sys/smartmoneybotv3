@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from smart_money.adapters.persistence.generic_value_store import (
     GenericValueStore,
     ValueStoreManifest,

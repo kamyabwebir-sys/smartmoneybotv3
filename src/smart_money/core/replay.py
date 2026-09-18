@@ -146,13 +146,13 @@ def make_replay_manifest(
 # ---------------------------------------------------------------------------
 # Slice 0.8 - Golden Replay Fixtures / Baseline Replay Pack (appended)
 # ---------------------------------------------------------------------------
-from dataclasses import dataclass as _s08_dataclass
-from datetime import datetime as _s08_datetime
-from typing import Iterable as _S08Iterable, Union as _S08Union
+from dataclasses import dataclass as _s08_dataclass  # noqa: E402  (appended slice section)
+from datetime import datetime as _s08_datetime  # noqa: E402  (appended slice section)
+from typing import Iterable as _S08Iterable, Union as _S08Union  # noqa: E402  (appended slice section)
 
-from smart_money.core.ids import deterministic_id as _s08_deterministic_id
-from smart_money.core.serialization import canonical_json as _s08_canonical_json
-from smart_money.core.time import ensure_utc_datetime as _s08_ensure_utc_datetime
+from smart_money.core.ids import deterministic_id as _s08_deterministic_id  # noqa: E402  (appended slice section)
+from smart_money.core.serialization import canonical_json as _s08_canonical_json  # noqa: E402  (appended slice section)
+from smart_money.core.time import ensure_utc_datetime as _s08_ensure_utc_datetime  # noqa: E402  (appended slice section)
 
 
 @_s08_dataclass(frozen=True, slots=True)

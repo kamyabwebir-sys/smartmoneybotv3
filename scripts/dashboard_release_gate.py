@@ -122,10 +122,24 @@ def git_metadata(root: Path) -> dict[str, Any]:
 
 
 def junit_summary(path: Path) -> dict[str, int]:
+    """Summarize a pytest JUnit XML report.
+
+    pytest emits a ``<testsuites>`` wrapper whose totals live on the single
+    ``<testsuite>`` child, so read the totals from whichever element carries
+    them (wrapper first, then child).
+    """
     root = element_tree.parse(path).getroot()
+    elements: list[element_tree.Element] = [root]
+    if root.tag == "testsuites":
+        elements.extend(root.findall("testsuite"))
     values: dict[str, int] = {}
     for name in ("tests", "failures", "errors", "skipped"):
-        values[name] = int(root.attrib.get(name, "0"))
+        values[name] = 0
+        for element in elements:
+            raw = element.attrib.get(name)
+            if raw is not None:
+                values[name] = int(raw)
+                break
     return values
 
 
@@ -272,6 +286,10 @@ def execute(arguments: argparse.Namespace) -> int:
         str(junit_path),
         "--disable-warnings",
         "--maxfail=1",
+        # Keep pytest temp dirs inside the repo: the shared system temp
+        # directory is not reliably writable on multi-user Windows hosts.
+        "--basetemp",
+        str(artifact_dir / "pytest-tmp"),
         *[str(path) for path in test_files],
     ]
 

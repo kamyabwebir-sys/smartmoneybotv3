@@ -11,7 +11,6 @@ from fastapi.testclient import TestClient
 from smart_money.application.dashboard_macro_read_endpoint import DashboardMacroReadResponse
 from smart_money.application.dashboard_macro_read_index import (
     DashboardMacroReadIndex,
-    DashboardMacroReadPage,
 )
 from api.main import create_app
 from api.deps import get_macro_read_index
