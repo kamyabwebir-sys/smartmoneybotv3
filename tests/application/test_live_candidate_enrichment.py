@@ -1,6 +1,7 @@
 from smart_money.application.live_candidate_enrichment import (
     enrich_live_candidates,
     extract_funding_edges,
+    materialize_funding_graph_evidence,
     normalize_solana_safety,
 )
 
@@ -32,6 +33,9 @@ def test_safety_and_funding_are_evidence_first_and_do_not_change_score():
     assert rows[0]["ranking_score_unchanged"]
     assert rows[0]["safety_status"] == "EVIDENCE_COMPLETE"
     assert rows[0]["funding_status"] == "VERIFIED"
+    assert rows[0]["funding_edge_ids"]
+    assert rows[0]["funding_evidence"][0]["chain"] == "solana:mainnet-beta"
+    assert materialize_funding_graph_evidence(edges)[0].native_amount == 42
 
 
 def test_missing_or_risky_safety_never_becomes_pass():

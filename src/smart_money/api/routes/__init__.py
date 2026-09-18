@@ -1,1 +1,1 @@
-﻿"""Route modules for the Smart Money Dashboard API."""
+"""Route modules for the Smart Money Dashboard API."""

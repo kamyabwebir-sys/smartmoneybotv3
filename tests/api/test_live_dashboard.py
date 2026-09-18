@@ -10,7 +10,10 @@ def _build_capture(path):
     store.page(lambda *args: {"result": [{"signature": "sig"}]}, "wallet", 1)
     store.transaction(lambda sig: {"result": {"transaction": {"signatures": [sig]}}}, "sig")
     result = {"signature_count": 1, "transaction_count": 1, "candidate_count": 1,
-              "ranking": [{"evidence_id": "candidate-1", "mint": "mint", "score_bps": 8000, "signature": "sig"}],
+              "ranking": [{"evidence_id": "candidate-1", "wallet": "wallet", "mint": "mint", "score_bps": 8000, "signature": "sig",
+                           "safety_status": "EVIDENCE_COMPLETE", "safety_evidence": {"mint_authority": None, "top_accounts_concentration_bps": 2500},
+                           "funding_status": "VERIFIED", "funding_edge_ids": ["edge-1"], "funding_evidence": [{"evidence_id": "edge-1"}]}],
+              "funding_graph_evidence": [{"evidence_id": "edge-1"}],
               "route_reports": [{"signature": "sig", "route": "raydium"}],
               "swap_legs": [{"signature": "sig", "amount": 4}],
               "purchase_evaluations": [{"signature": "sig", "eligible": True}], "failures": [],
@@ -38,7 +41,11 @@ def test_live_dashboard_is_authenticated_fresh_and_reviewable(tmp_path, monkeypa
         assert overview.json()["freshness"] == {"captured_at_epoch": 1000, "age_seconds": 10, "stale": False}
         detail = client.get("/api/v1/live/candidates/candidate-1", headers=headers).json()
         assert detail["route_evidence"][0]["route"] == "raydium"
-        assert detail["candidate"]["safety_status"] == "UNKNOWN"
+        assert detail["candidate"]["safety_status"] == "EVIDENCE_COMPLETE"
+        assert detail["funding_graph"]["edge_ids"] == ["edge-1"]
+        assert detail["safety_report"]["fail_closed"] is False
+        assert client.get("/api/v1/live/candidates/candidate-1/funding", headers=headers).json()["status"] == "VERIFIED"
+        assert client.get("/api/v1/live/candidates/candidate-1/safety", headers=headers).json()["status"] == "EVIDENCE_COMPLETE"
         assert client.get("/api/v1/live/quality", headers=headers).json()["precision_bps"] == 6666
         observations = client.get("/api/v1/live/observations", headers=headers).json()
         assert observations["total"] == 1

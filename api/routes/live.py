@@ -59,6 +59,17 @@ def overview(request: Request) -> dict[str, Any]:
         "counts": {key: report.get(key, 0) for key in ("signature_count", "transaction_count", "candidate_count")},
         "ingestion": report["ingestion"], "gate": report.get("gate", {"passed": False}),
         "candidates": [_candidate_row(row) for row in report.get("ranking", [])],
+        "evidence_counts": {
+            "funding_edges": len(report.get("funding_graph_evidence", [])),
+            "safety_complete": sum(
+                row.get("safety_status") == "EVIDENCE_COMPLETE"
+                for row in report.get("ranking", [])
+            ),
+            "safety_incomplete": sum(
+                row.get("safety_status") in {"INCOMPLETE", "UNKNOWN"}
+                for row in report.get("ranking", [])
+            ),
+        },
         "failures": report.get("failures", []),
     }
 
@@ -87,6 +98,37 @@ def candidate_detail(candidate_id: str, request: Request) -> dict[str, Any]:
         "route_evidence": [row for row in report.get("route_reports", []) if row.get("signature") in signatures],
         "swap_evidence": [row for row in report.get("swap_legs", []) if row.get("signature") in signatures],
         "purchase_evidence": [row for row in report.get("purchase_evaluations", []) if row.get("signature") in signatures],
+        "safety_report": {
+            "status": candidate["safety_status"],
+            "evidence": candidate.get("safety_evidence"),
+            "fail_closed": candidate["safety_status"] != "EVIDENCE_COMPLETE",
+        },
+        "funding_graph": {
+            "status": candidate["funding_status"],
+            "edges": candidate.get("funding_evidence", []),
+            "edge_ids": candidate.get("funding_edge_ids", []),
+            "fail_closed": candidate["funding_status"] != "VERIFIED",
+        },
+    }
+
+
+@router.get("/candidates/{candidate_id}/funding", dependencies=[Depends(_auth)])
+def candidate_funding(candidate_id: str, request: Request) -> dict[str, Any]:
+    detail = candidate_detail(candidate_id, request)
+    return {
+        "schema_version": "candidate_funding_graph.v1",
+        "candidate_id": candidate_id,
+        **detail["funding_graph"],
+    }
+
+
+@router.get("/candidates/{candidate_id}/safety", dependencies=[Depends(_auth)])
+def candidate_safety(candidate_id: str, request: Request) -> dict[str, Any]:
+    detail = candidate_detail(candidate_id, request)
+    return {
+        "schema_version": "candidate_token_safety_report.v1",
+        "candidate_id": candidate_id,
+        **detail["safety_report"],
     }
 
 

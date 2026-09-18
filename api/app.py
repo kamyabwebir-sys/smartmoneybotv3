@@ -1,4 +1,4 @@
-﻿"""
+"""
 ASGI application entry-point for the Smart Money dashboard layer.
 
 Routes

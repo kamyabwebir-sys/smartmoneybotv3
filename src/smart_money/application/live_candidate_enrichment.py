@@ -5,6 +5,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from smart_money.application.funding_graph_evidence import FundingGraphEvidence
+from smart_money.core.ids import deterministic_id
+
 
 def normalize_solana_safety(raw: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(raw, Mapping):
@@ -61,11 +64,36 @@ def extract_funding_edges(transaction_responses: tuple[Mapping[str, Any], ...], 
     return tuple(edges[key] for key in sorted(edges))
 
 
+def materialize_funding_graph_evidence(
+    funding_edges: tuple[Mapping[str, Any], ...],
+) -> tuple[FundingGraphEvidence, ...]:
+    """Convert parsed inbound system transfers into canonical evidence."""
+    evidence: dict[str, FundingGraphEvidence] = {}
+    for edge in funding_edges:
+        identity = {
+            "chain": "solana:mainnet-beta",
+            "native_amount": edge.get("native_amount"),
+            "observed_slot": edge.get("slot"),
+            "provenance": {"source": str(edge.get("source", "")).strip()},
+            "schema_version": "funding_graph_evidence.v1",
+            "source_wallet": str(edge.get("source_wallet", "")).strip(),
+            "target_wallet": str(edge.get("target_wallet", "")).strip(),
+            "transaction_signature": str(edge.get("signature", "")).strip(),
+        }
+        item = FundingGraphEvidence(
+            **identity,
+            evidence_id=deterministic_id("funding_graph_evidence", identity),
+        )
+        evidence[item.evidence_id] = item
+    return tuple(evidence[key] for key in sorted(evidence))
+
+
 def enrich_live_candidates(
     ranking: list[dict[str, Any]],
     safety_by_mint: Mapping[str, Mapping[str, Any]],
     funding_edges: tuple[dict[str, Any], ...],
 ) -> list[dict[str, Any]]:
+    canonical_funding = materialize_funding_graph_evidence(funding_edges)
     enriched = []
     for original in ranking:
         row = dict(original)
@@ -82,16 +110,24 @@ def enrich_live_candidates(
         else:
             safety_status = "EVIDENCE_COMPLETE"
         wallet = row.get("wallet")
-        related = tuple(edge for edge in funding_edges if edge["target_wallet"] == wallet)
+        related = tuple(
+            edge for edge in canonical_funding if edge.target_wallet == wallet
+        )
         row.update(
             safety_status=safety_status,
             safety_evidence=safety,
             funding_status="VERIFIED" if related else "NOT_OBSERVED",
-            funding_evidence=related,
+            funding_evidence=tuple(edge.canonical_dict() for edge in related),
+            funding_edge_ids=tuple(edge.evidence_id for edge in related),
             ranking_score_unchanged=True,
         )
         enriched.append(row)
     return enriched
 
 
-__all__ = ["enrich_live_candidates", "extract_funding_edges", "normalize_solana_safety"]
+__all__ = [
+    "enrich_live_candidates",
+    "extract_funding_edges",
+    "materialize_funding_graph_evidence",
+    "normalize_solana_safety",
+]

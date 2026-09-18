@@ -1,4 +1,4 @@
-﻿"""
+"""
 Dashboard subject-detail route.
 
 GET /dashboard/{subject_kind}/{subject_id}

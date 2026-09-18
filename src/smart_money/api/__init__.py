@@ -1,1 +1,1 @@
-﻿"""Smart Money Dashboard – ASGI/FastAPI presentation layer."""
+"""Smart Money Dashboard – ASGI/FastAPI presentation layer."""

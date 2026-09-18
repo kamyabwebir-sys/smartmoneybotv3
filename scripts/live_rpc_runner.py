@@ -21,6 +21,7 @@ from smart_money.adapters.solana_signature_ingestion import (
 from smart_money.application.live_candidate_enrichment import (
     enrich_live_candidates,
     extract_funding_edges,
+    materialize_funding_graph_evidence,
 )
 from smart_money.application.live_route_batch import run_route_checked_batch
 from smart_money.application.production_shadow import SolanaRPCConfig
@@ -79,6 +80,10 @@ def main() -> int:
                     funding = extract_funding_edges(store.transactions_for_pending_page(), args.wallet)
                     result["ranking"] = enrich_live_candidates(result["ranking"], safety, funding)
                     result["funding_edges"] = list(funding)
+                    result["funding_graph_evidence"] = [
+                        edge.canonical_dict()
+                        for edge in materialize_funding_graph_evidence(funding)
+                    ]
                 request_count = getattr(fetcher, "request_count", None)
                 retry_count = getattr(fetcher, "retry_count", None)
                 rate = os.getenv("SOLANA_RPC_COST_PER_MILLION_USD")
