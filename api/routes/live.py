@@ -2,18 +2,22 @@
 
 from __future__ import annotations
 
+import csv
 import hmac
+import io
 import json
 import time
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi.responses import Response
 
 from smart_money.adapters.persistence.live_capture_store import (
     read_live_capture_snapshot,
 )
 from smart_money.application.dashboard_runtime import (
     AlertReviewRecord,
+    DashboardOperationalGate,
 )
 from smart_money.application.independent_quality_evaluation import (
     evaluate_independent_dataset,
@@ -181,3 +185,112 @@ def observations(request: Request, page: int = 1, page_size: int = 50) -> dict[s
 @router.get("/reports/fa", dependencies=[Depends(_auth)])
 def persian_report(request: Request) -> dict[str, Any]:
     return build_persian_live_report(_snapshot(request)["report"])
+
+
+# ---------------------------------------------------------------------------
+# H14 — Export JSON/CSV
+# ---------------------------------------------------------------------------
+
+_EXPORT_TABLES = {
+    "candidates": "ranking",
+    "observations": "normalized_observations",
+    "route_reports": "route_reports",
+    "swap_legs": "swap_legs",
+    "funding_edges": "funding_graph_evidence",
+    "failures": "failures",
+}
+
+
+def _export_rows(report: dict[str, Any], table: str) -> list[dict[str, Any]]:
+    key = _EXPORT_TABLES.get(table)
+    if key is None:
+        raise HTTPException(422, "unknown export table")
+    rows = report.get(key, [])
+    return [dict(row) for row in rows if isinstance(row, dict)]
+
+
+def _flatten(value: Any) -> Any:
+    if isinstance(value, (dict, list, tuple)):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True)
+    return value
+
+
+@router.get("/export/{table}", dependencies=[Depends(_auth)])
+def export_table(table: str, request: Request, format: str = "json") -> Response:
+    if format not in {"json", "csv"}:
+        raise HTTPException(422, "format must be json or csv")
+    snapshot = _snapshot(request)
+    rows = _export_rows(snapshot["report"], table)
+    stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+    if format == "json":
+        document = {
+            "schema_version": "live_dashboard_export.v1",
+            "read_only": True,
+            "table": table,
+            "exported_at": stamp,
+            "freshness": snapshot["freshness"],
+            "identity": snapshot["identity"],
+            "items": rows,
+        }
+        payload = json.dumps(document, ensure_ascii=False, sort_keys=True, default=list)
+        return Response(
+            content=payload,
+            media_type="application/json",
+            headers={"Content-Disposition": f'attachment; filename="{table}-{stamp}.json"'},
+        )
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    columns = sorted({key for row in rows for key in row}) if rows else []
+    writer.writerow(columns)
+    for row in rows:
+        writer.writerow([_flatten(row.get(column)) for column in columns])
+    return Response(
+        content=buffer.getvalue().encode("utf-8-sig"),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{table}-{stamp}.csv"'},
+    )
+
+
+# ---------------------------------------------------------------------------
+# H15 — Dashboard production gate
+# ---------------------------------------------------------------------------
+
+
+@router.get("/gate", dependencies=[Depends(_auth)])
+def production_gate(request: Request) -> dict[str, Any]:
+    snapshot = _snapshot(request)
+    report = snapshot["report"]
+    ranking = report.get("ranking", []) if isinstance(report.get("ranking"), list) else []
+    candidate_count = report.get("candidate_count", 0)
+    checks = {
+        "capture_available": True,
+        "data_fresh": not snapshot["freshness"]["stale"],
+        "has_transactions": report.get("transaction_count", 0) > 0,
+        "has_candidates": candidate_count > 0,
+        "recovery_ok": bool(report.get("recovery_ok", False)),
+        "no_unresolved_failures": not report.get("failures", []),
+        "safety_evaluated": bool(ranking) and all(
+            row.get("safety_status") in {"EVIDENCE_COMPLETE", "RISK_PRESENT", "INCOMPLETE", "UNKNOWN"}
+            for row in ranking
+        ),
+        "funding_evaluated": bool(ranking) and all(
+            row.get("funding_status") in {"VERIFIED", "NOT_OBSERVED", "UNKNOWN"}
+            for row in ranking
+        ),
+        "batch_gate_passed": bool(report.get("gate", {}).get("passed", False)),
+    }
+    gate = DashboardOperationalGate.evaluate(checks)
+    # Human release approval is required on top of operational checks; it is
+    # read from the review store so the dashboard can only ever open when a
+    # human previously recorded approval for this deployment.
+    return {
+        "schema_version": "live_dashboard_production_gate.v1",
+        "read_only": True,
+        "gate_id": gate.gate_id,
+        "ready": gate.ready,
+        "checks": gate.checks,
+        "failed_checks": [key for key, value in gate.checks.items() if not value],
+        "freshness": snapshot["freshness"],
+        "fail_closed": True,
+        "note": "operational readiness only; production release additionally requires the human-gated release receipt",
+    }
