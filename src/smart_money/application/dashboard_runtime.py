@@ -89,4 +89,47 @@ class DashboardOperationalGate:
         return cls(normalized, deterministic_id("dashboard_operational_gate", {"checks": normalized}))
 
 
-__all__ = ["DashboardCache", "DashboardCacheEntry", "AlertReviewRecord", "JsonAlertReviewStore", "DashboardOperationalGate"]
+def build_live_production_gate(
+    *,
+    capture_available: bool,
+    data_fresh: bool,
+    report: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Evaluate the live dashboard production gate, fail-closed.
+
+    ``UNKNOWN`` safety/funding status is treated as a failing check: absent
+    evidence never counts as evaluated. The result is operational readiness
+    only — a production release still requires the human-gated receipt.
+    """
+    ranking = report.get("ranking", []) if isinstance(report.get("ranking"), list) else []
+    checks = {
+        "capture_available": bool(capture_available),
+        "data_fresh": bool(data_fresh),
+        "has_transactions": report.get("transaction_count", 0) > 0,
+        "has_candidates": report.get("candidate_count", 0) > 0,
+        "recovery_ok": bool(report.get("recovery_ok", False)),
+        "no_unresolved_failures": not report.get("failures", []),
+        "safety_evaluated": bool(ranking) and all(
+            row.get("safety_status") in {"EVIDENCE_COMPLETE", "RISK_PRESENT", "INCOMPLETE"}
+            for row in ranking
+        ),
+        "funding_evaluated": bool(ranking) and all(
+            row.get("funding_status") in {"VERIFIED", "NOT_OBSERVED"}
+            for row in ranking
+        ),
+        "batch_gate_passed": bool(report.get("gate", {}).get("passed", False)),
+    }
+    gate = DashboardOperationalGate.evaluate(checks)
+    return {
+        "schema_version": "live_dashboard_production_gate.v1",
+        "read_only": True,
+        "gate_id": gate.gate_id,
+        "ready": gate.ready,
+        "checks": gate.checks,
+        "failed_checks": [key for key, value in gate.checks.items() if not value],
+        "fail_closed": True,
+        "note": "operational readiness only; production release additionally requires the human-gated release receipt",
+    }
+
+
+__all__ = ["DashboardCache", "DashboardCacheEntry", "AlertReviewRecord", "JsonAlertReviewStore", "DashboardOperationalGate", "build_live_production_gate"]

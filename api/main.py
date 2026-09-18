@@ -58,6 +58,14 @@ def create_app(*, lifespan_enabled: bool = True) -> FastAPI:
         lifespan=lifespan if lifespan_enabled else None,
     )
     app.include_router(route_evidence.router)
+    # Register exact dashboard pages BEFORE the parameterized
+    # /dashboard/{subject_id} route, which would otherwise shadow them.
+    @app.get("/dashboard/historical", include_in_schema=False)
+    def historical_dashboard() -> FileResponse:
+        return FileResponse("artifacts/dashboard/historical.html")
+    @app.get("/dashboard/live", include_in_schema=False)
+    def live_dashboard() -> FileResponse:
+        return FileResponse(Path(__file__).resolve().parent / "static/live.html")
     app.include_router(dashboard.router)
     app.include_router(historical.router)
     app.include_router(live.router)
@@ -66,12 +74,6 @@ def create_app(*, lifespan_enabled: bool = True) -> FastAPI:
         StaticFiles(directory=Path(__file__).resolve().parent / "static"),
         name="dashboard-assets",
     )
-    @app.get("/dashboard/historical", include_in_schema=False)
-    def historical_dashboard() -> FileResponse:
-        return FileResponse("artifacts/dashboard/historical.html")
-    @app.get("/dashboard/live", include_in_schema=False)
-    def live_dashboard() -> FileResponse:
-        return FileResponse(Path(__file__).resolve().parent / "static/live.html")
     return app
 
 

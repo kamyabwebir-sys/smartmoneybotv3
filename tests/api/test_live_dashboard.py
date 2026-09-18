@@ -2,7 +2,10 @@ from fastapi.testclient import TestClient
 
 from api.main import create_app
 from smart_money.adapters.persistence.live_capture_store import LiveCaptureStore
-from smart_money.application.dashboard_runtime import JsonAlertReviewStore
+from smart_money.application.dashboard_runtime import (
+    JsonAlertReviewStore,
+    build_live_production_gate,
+)
 
 
 def _build_capture(path):
@@ -138,6 +141,68 @@ def test_h15_production_gate_fails_closed_and_reports_failed_checks(tmp_path, mo
         assert document["checks"]["safety_evaluated"] is True
         assert document["checks"]["funding_evaluated"] is True
         assert client.get("/api/v1/live/gate", headers={"Authorization": "Bearer wrong"}).status_code == 401
+
+
+def test_dashboard_live_route_is_not_shadowed_by_parameterized_subject_route(tmp_path):
+    """GET /dashboard/live must serve the page, not hit /dashboard/{subject_id}."""
+    app = create_app(lifespan_enabled=False)
+    with TestClient(app) as client:
+        response = client.get("/dashboard/live")
+        assert response.status_code == 200
+        assert "text/html" in response.headers["content-type"]
+        assert "export-buttons" in response.text
+        # The exact routes win, but the parameterized subject route still works.
+        assert client.get("/dashboard/live", headers={"X-Probe": "1"}).status_code == 200
+
+
+def test_h15_gate_rejects_unknown_safety_and_funding_status():
+    """UNKNOWN must fail the gate: absent evidence is not evaluated evidence."""
+    gate = build_live_production_gate(
+        capture_available=True,
+        data_fresh=True,
+        report={"transaction_count": 1, "candidate_count": 1, "recovery_ok": True,
+                "failures": [], "gate": {"passed": True},
+                "ranking": [{"safety_status": "UNKNOWN", "funding_status": "UNKNOWN"}]},
+    )
+    assert gate["ready"] is False
+    assert "safety_evaluated" in gate["failed_checks"]
+    assert "funding_evaluated" in gate["failed_checks"]
+    gate = build_live_production_gate(
+        capture_available=True,
+        data_fresh=True,
+        report={"transaction_count": 1, "candidate_count": 1, "recovery_ok": True,
+                "failures": [], "gate": {"passed": True},
+                "ranking": [{"safety_status": "EVIDENCE_COMPLETE", "funding_status": "VERIFIED"}]},
+    )
+    assert gate["ready"] is True
+    assert gate["failed_checks"] == []
+
+
+def test_h15_gate_fails_closed_without_capture():
+    """A missing/corrupt capture must fail every dependent check, not raise."""
+    gate = build_live_production_gate(capture_available=False, data_fresh=False, report={})
+    assert gate["ready"] is False
+    assert gate["checks"]["capture_available"] is False
+    assert gate["checks"]["data_fresh"] is False
+    assert gate["checks"]["has_transactions"] is False
+    assert gate["checks"]["safety_evaluated"] is False
+    assert gate["fail_closed"] is True
+
+
+def test_h15_gate_endpoint_fails_closed_on_unavailable_capture(tmp_path):
+    """503-raising capture dir must yield a closed gate, not an error response."""
+    app = create_app(lifespan_enabled=False)
+    app.state.live_read_token = "secret"
+    app.state.live_capture_dir = tmp_path / "does-not-exist"
+    app.state.live_stale_after_seconds = 30
+    with TestClient(app) as client:
+        gate = client.get("/api/v1/live/gate", headers={"Authorization": "Bearer secret"})
+        assert gate.status_code == 200
+        document = gate.json()
+        assert document["ready"] is False
+        assert document["checks"]["capture_available"] is False
+        assert document["checks"]["data_fresh"] is False
+        assert document["failed_checks"].count("capture_available") == 1
 
 
 def test_live_auth_fails_closed_when_not_configured(tmp_path):

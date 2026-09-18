@@ -17,7 +17,7 @@ from smart_money.adapters.persistence.live_capture_store import (
 )
 from smart_money.application.dashboard_runtime import (
     AlertReviewRecord,
-    DashboardOperationalGate,
+    build_live_production_gate,
 )
 from smart_money.application.independent_quality_evaluation import (
     evaluate_independent_dataset,
@@ -258,39 +258,17 @@ def export_table(table: str, request: Request, format: str = "json") -> Response
 
 @router.get("/gate", dependencies=[Depends(_auth)])
 def production_gate(request: Request) -> dict[str, Any]:
-    snapshot = _snapshot(request)
-    report = snapshot["report"]
-    ranking = report.get("ranking", []) if isinstance(report.get("ranking"), list) else []
-    candidate_count = report.get("candidate_count", 0)
-    checks = {
-        "capture_available": True,
-        "data_fresh": not snapshot["freshness"]["stale"],
-        "has_transactions": report.get("transaction_count", 0) > 0,
-        "has_candidates": candidate_count > 0,
-        "recovery_ok": bool(report.get("recovery_ok", False)),
-        "no_unresolved_failures": not report.get("failures", []),
-        "safety_evaluated": bool(ranking) and all(
-            row.get("safety_status") in {"EVIDENCE_COMPLETE", "RISK_PRESENT", "INCOMPLETE", "UNKNOWN"}
-            for row in ranking
-        ),
-        "funding_evaluated": bool(ranking) and all(
-            row.get("funding_status") in {"VERIFIED", "NOT_OBSERVED", "UNKNOWN"}
-            for row in ranking
-        ),
-        "batch_gate_passed": bool(report.get("gate", {}).get("passed", False)),
-    }
-    gate = DashboardOperationalGate.evaluate(checks)
-    # Human release approval is required on top of operational checks; it is
-    # read from the review store so the dashboard can only ever open when a
-    # human previously recorded approval for this deployment.
-    return {
-        "schema_version": "live_dashboard_production_gate.v1",
-        "read_only": True,
-        "gate_id": gate.gate_id,
-        "ready": gate.ready,
-        "checks": gate.checks,
-        "failed_checks": [key for key, value in gate.checks.items() if not value],
-        "freshness": snapshot["freshness"],
-        "fail_closed": True,
-        "note": "operational readiness only; production release additionally requires the human-gated release receipt",
-    }
+    try:
+        snapshot = _snapshot(request)
+    except HTTPException:
+        # Capture is unavailable/corrupt: every dependent check must fail.
+        return build_live_production_gate(
+            capture_available=False,
+            data_fresh=False,
+            report={},
+        )
+    return build_live_production_gate(
+        capture_available=True,
+        data_fresh=not snapshot["freshness"]["stale"],
+        report=snapshot["report"],
+    )
